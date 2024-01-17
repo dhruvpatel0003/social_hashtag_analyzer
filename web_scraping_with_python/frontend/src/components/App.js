@@ -1,19 +1,22 @@
-import React, { Component } from "react";
-import { render } from "react-dom";
+import React from 'react';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import HomePage from './HomePage';
+import LoginPage from './LoginPage';
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-  }
 
-  render() {
-    return (
-      <div>
-        <h1>Testing React Code</h1>
-      </div>
-    );
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <HomePage />,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
   }
+]);
+
+function App() {
+  return <RouterProvider router={router} />;
 }
 
-const appDiv = document.getElementById("app");
-render(<App />, appDiv);
+export default App;
