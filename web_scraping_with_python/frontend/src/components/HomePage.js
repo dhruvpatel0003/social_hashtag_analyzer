@@ -1,23 +1,13 @@
-import React, { Component } from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  Redirect,
-} from "react-router-dom";
+import React from 'react';
 
-export default class HomePage extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
+const HomePage = () => {
     return (
-      <div>
-          <h1>Home Page</h1>
-          <p>This is the home page</p>
-      </div>
+        <div>
+            <h1>Welcome to the Home Page</h1>
+            <p>Please login or sign up to continue.</p>
+            <a href="/login">Login </a> | <a href="/signup">Sign Up</a>
+        </div>
     );
-  }
-}
+};
+
+export default HomePage;
