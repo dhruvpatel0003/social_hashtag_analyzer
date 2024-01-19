@@ -5,9 +5,34 @@ const SearchPage = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [hashtagData, setHashtagData] = useState(null);
+    const[loading, setLoading] = useState(false)
+
+
+    const handleOnSave=()=>{
+        fetch('/api/create-hashtag', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(hashtagData),
+          })
+    }
 
     const handleSearchClick = () => {
-
+        setLoading(true)
+        console.log("inside search click")
+        console.log('Hashtag search', searchTerm);
+        fetch(`/api/search?key=${searchTerm}`, { method: 'GET' })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok, status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                setLoading(false)
+                setHashtagData(data)})
+            .catch(error => console.error('Error during fetch:', error));
     };
 
     const handleCategoryClick = (category) => {
@@ -40,6 +65,7 @@ const SearchPage = () => {
                 <button onClick={handleSearchClick}>Search</button>
             </div>
             {!searchTerm && <p>Please enter term into the search box</p>}
+            {loading && <p>Loading .... .... .... .... .... .... ....</p>}
             <div>
                 <h3>Predefined Hashtags:</h3>
                 <div>
@@ -71,6 +97,7 @@ const SearchPage = () => {
                 <div>
                     <h3>Hashtag Data:</h3>
                     <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
+                    <button onClick={handleOnSave}>Save</button>
                 </div>
             )}
         </div>
