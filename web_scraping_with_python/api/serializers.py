@@ -29,7 +29,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['likes', 'retweets','comment_date']
 
 class TwitterStatsSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(many=True) 
+    comments = CommentSerializer(many=True,allow_empty=True, required=False) 
 
     class Meta:
         model = TwitterStats
@@ -40,7 +40,7 @@ class HashTagStatsSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     youtube_stats = YouTubeStatsSerializer()
     instagram_stats = InstagramStatsSerializer()
-    twitter_stats = TwitterStatsSerializer()
+    twitter_stats = TwitterStatsSerializer(allow_null=True,required=False)
 
     class Meta:
         model = HashTagStats

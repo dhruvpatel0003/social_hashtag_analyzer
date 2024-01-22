@@ -1,4 +1,4 @@
-from datetime import date
+from django.utils import timezone
 import uuid
 
 from django.db import models
@@ -14,30 +14,40 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
         
 class YouTubeStats(models.Model):
-    name = models.CharField(max_length=50)
-    views_count = models.IntegerField(default=0)
-    subscription_count = models.IntegerField(default=0)
-    video_count = models.IntegerField(default=0)
+    name = models.CharField(max_length=50,null=True)
+    views_count = models.IntegerField(default=0,null=True)
+    subscription_count = models.IntegerField(default=0,null=True)
+    video_count = models.IntegerField(default=0,null=True)
 
 
 
 class InstagramStats(models.Model):
-    followers = models.CharField(max_length=20)
-    followings = models.CharField(max_length=20)
-    posts = models.IntegerField(default=0)
+    followers = models.CharField(max_length=20,null=True)
+    followings = models.CharField(max_length=20,null=True)
+    posts = models.IntegerField(default=0,null=True)
 
 class Comment(models.Model):
-    likes = models.IntegerField(default=0)
-    retweets = models.IntegerField(default=0)
-    comment_date = models.DateField(default=date.today())
+    likes = models.IntegerField(default=0,null=True)
+    retweets = models.IntegerField(default=0,null=True)
+    comment_date = models.DateField(default=timezone.now,null=True)
 
+    def save(self, *args, **kwargs):
+         if not self.comment_date:
+            self.comment_date = timezone.now().date()
+         super().save(*args, **kwargs)
 class TwitterStats(models.Model):
-    followers = models.CharField(max_length=20)
-    followings = models.CharField(max_length=20)
-    joining_date = models.DateField()
+    followers = models.CharField(max_length=20,null=True)
+    followings = models.CharField(max_length=20,null=True)
+    comments = models.ManyToManyField(Comment, related_name='twitter_comments')
+
+    joining_date = models.DateField(default=timezone.now,null=True)
+    def save(self, *args, **kwargs):
+         if not self.joining_date:
+            self.joining_date = timezone.now().date()
+         super().save(*args, **kwargs)
     # comment_date = models.DateField()
     # comments = models.OneToOneField(Comment, related_name='twitter_comments', on_delete=models.CASCADE, null=True, blank=True)
-    comments = models.ManyToManyField(Comment, related_name='twitter_comments')
+    # comments = models.ManyToManyField(Comment, related_name='twitter_comments')
 
 
 class HashTagStats(models.Model):

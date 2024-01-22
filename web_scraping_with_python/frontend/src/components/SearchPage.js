@@ -9,13 +9,44 @@ const SearchPage = () => {
 
 
     const handleOnSave=()=>{
+        console.log( )
         fetch('/api/create-hashtag', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(hashtagData),
-          })
+            body:JSON.stringify({
+                "hashtag": hashtagData['hashtag'],
+                "hashtag_stats": [
+                    {
+                        "user": hashtagData['hashtag_stats'][0]['user'],
+                        "youtube_stats": hashtagData['hashtag_stats'][0]['youtube_stats']?null:{},
+                        "instagram_stats": {
+                            "followers": hashtagData['hashtag_stats'][0]['instagram_stats']['followers'],
+                            "followings": hashtagData['hashtag_stats'][0]['instagram_stats']['followings'],
+                            "posts": hashtagData['hashtag_stats'][0]['instagram_stats']['posts'],
+                        },
+                        "twitter_stats": {
+                            "followers": hashtagData['hashtag_stats'][0]['twitter_stats']['followers'],
+                            "followings": hashtagData['hashtag_stats'][0]['twitter_stats']['followings'],
+                            "joining_date":hashtagData['hashtag_stats'][0]['twitter_stats']['joining_date'],
+                            "comments": [
+                                {
+                                //     "likes": hashtagData['hashtag_stats'][0]['twitter_stats']['comments'][0]['likes'],
+                                //     "retweets": hashtagData['hashtag_stats'][0]['twitter_stats']['comments'][0]['retweets'],
+                                //     "comment_date": hashtagData['hashtag_stats'][0]['twitter_stats']['comments'][0]['comment_date']
+                                // },
+                                // {
+                                //     "likes": hashtagData['hashtag_stats'][0]['twitter_stats']['comments'][1]['likes'],
+                                //     "retweets": hashtagData['hashtag_stats'][0]['twitter_stats']['comments'][1]['retweets'],
+                                //     "comment_date": hashtagData['hashtag_stats'][0]['twitter_stats']['comments'][1]['comment_date']
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }),
+          }).then(response=>console.log(response)).catch(error=>console.log(error))
     }
 
     const handleSearchClick = () => {
