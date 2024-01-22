@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage';
 import SignUpPage from './components/SignUpPage';
 import UserProfile from './components/UserProfile';
 import SearchPage from './components/SearchPage';
+import ClickOnTheHashtag from './components/ClickOnTheHashtag';
 
 
 const router = createBrowserRouter([
@@ -27,9 +28,13 @@ const router = createBrowserRouter([
   {
     path: '/search',
     element: <SearchPage />,
+
   },
-
-
+  {
+    path: '/search-hashtag/:hashtag',
+    element: <ClickOnTheHashtag />,
+  }
+  
 ]);
 
 function App() {

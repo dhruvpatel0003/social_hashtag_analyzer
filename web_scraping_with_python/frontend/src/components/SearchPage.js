@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SearchPage = () => {
 
-
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [hashtagData, setHashtagData] = useState(null);
     const[loading, setLoading] = useState(false)
@@ -71,18 +72,22 @@ const SearchPage = () => {
         console.log('Category search', category);
     };
 
+    // const handleOnHashtagClick = (hashtag) => {
+    //     console.log('Hashtag search', hashtag);
+    //     fetch(`/api/get-hashtag?hashtag=${hashtag}`, { method: 'GET' })
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error(`Network response was not ok, status: ${response.status}`);
+    //             }
+    //             return response.json();
+    //         })
+    //         .then(data => setHashtagData(data))
+    //         .catch(error => console.error('Error during fetch:', error));
+    // };
+
     const handleOnHashtagClick = (hashtag) => {
-        console.log('Hashtag search', hashtag);
-        fetch(`/api/get-hashtag?hashtag=${hashtag}`, { method: 'GET' })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok, status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => setHashtagData(data))
-            .catch(error => console.error('Error during fetch:', error));
-    };
+                navigate(`/search-hashtag/${hashtag}`)
+    }
 
     return (
         <div>
@@ -135,4 +140,9 @@ const SearchPage = () => {
     );
 };
 
+
+
+
+
 export default SearchPage;
+
