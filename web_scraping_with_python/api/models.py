@@ -61,3 +61,4 @@ class HashTagStats(models.Model):
 class HashTag(models.Model):
     hashtag = models.CharField(max_length=100, blank=True, null=True)
     hashtag_stats = models.ManyToManyField(HashTagStats, related_name='hashtags')
+

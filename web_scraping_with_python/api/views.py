@@ -26,6 +26,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from ntscraper import Nitter
 from tqdm import tqdm
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
 
 
 
@@ -178,7 +180,7 @@ class SearchFromChrome(APIView):
         hashtag_data = {}
         hashtag_data['hashtag'] = enteredName
         hashtag_data['hashtag_stats'] = [{}]
-        hashtag_data['hashtag_stats'][0]['user'] = 1
+        hashtag_data['hashtag_stats'][0]['user'] = 17
         hashtag_data['hashtag_stats'][0]['youtube_stats'] = {}
         hashtag_data['hashtag_stats'][0]['instagram_stats'] = {}
         hashtag_data['hashtag_stats'][0]['twitter_stats'] = {}
@@ -261,10 +263,10 @@ class SearchFromChrome(APIView):
         time.sleep(1)
         username = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'username')))
         # username.send_keys(USERNAME)
-        username.send_keys("_dhruv_patel_0003")
+        username.send_keys(USERNAME)
         time.sleep(1)
         password = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'password')))
-        password.send_keys("Chintu$$152002")
+        password.send_keys(PASSWORD)
         time.sleep(1)
         login = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginForm"]/div/div[3]/button')))
         login.click()
@@ -294,4 +296,39 @@ class SearchFromChrome(APIView):
         
         
         return Response({'data': hashtag_data})
+    
+    
+class DeleteHashTag(APIView):
+    def delete(self, request, format=None):
+            try:
+                User.objects.all().delete()
+                return Response({'message': f'User  deleted successfully'}, status=status.HTTP_200_OK)
+            except HashTag.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # return Response({'Bad Request': 'Hashtag not provided in request'}, status=status.HTTP_400_BAD_REQUEST)
         
+        
+class UserLogin(APIView):
+       
+    # serializer_class = AuthenticateUserSerializer
+
+    def get(self,request,format=None):
+        # print("inside the get request")
+        username = request.GET.get('username')
+        password = request.GET.get('password')
+        # print(username,password)
+        try :
+            user = User.objects.get(email=username)
+            if(user):
+                # print("user",user)
+                if(user.password == password):
+                    print("password matched")
+                    print(user.user_id)
+                    return Response({'token': user.user_id}, status=status.HTTP_200_OK)
+                else:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"error : 'Invalid username or password'"}, status=status.HTTP_400_BAD_REQUEST)
+    

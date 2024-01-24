@@ -105,3 +105,5 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             hashtag_instance.hashtag_stats.add(stats)
 
         return hashtag_instance
+    
+    
