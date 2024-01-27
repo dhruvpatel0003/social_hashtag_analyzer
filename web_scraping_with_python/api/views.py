@@ -66,6 +66,7 @@ class CreateUserView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class GetUser(APIView):
     serializer_class = UserSerializer
     lookup_url_kwarg = 'user_id'
@@ -97,7 +98,8 @@ class CreateHashTag(APIView):
                 print("------------------------")
 
             return Response({'status': 'Hashtag and HashTagStats created successfully'}, status=status.HTTP_201_CREATED)
-
+        print("--------------------------")
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
@@ -185,66 +187,66 @@ class SearchFromChrome(APIView):
         hashtag_data['hashtag_stats'][0]['instagram_stats'] = {}
         hashtag_data['hashtag_stats'][0]['twitter_stats'] = {}
         
-        # youTuberName = "https://youtube.com/@"+enteredName
-        # driver.get('https://commentpicker.com/youtube-channel-id.php')
-        # time.sleep(5)
+        youTuberName = "https://youtube.com/@"+enteredName
+        driver.get('https://commentpicker.com/youtube-channel-id.php')
+        time.sleep(2)
         
-        # inputUrl = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
-        # inputUrl.send_keys(youTuberName)
-        # time.sleep(2)
+        inputUrl = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
+        inputUrl.send_keys(youTuberName)
+        time.sleep(5)
         
-        # number1 = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
-        # number2 = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
-        # sum=int(number1.text) +int( number2.text)
-        # time.sleep(2)
+        number1 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
+        number2 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
+        sum=int(number1.text) +int( number2.text)
+        time.sleep(2)
         
-        # input_answer = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
-        # input_answer.send_keys(sum)
-        # time.sleep(20)
+        input_answer = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
+        input_answer.send_keys(sum)
+        time.sleep(20)
         
-        # getButton = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
-        # getButton.click()
-        # time.sleep(5)
+        getButton = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
+        getButton.click()
+        time.sleep(5)
         
-        # channel_ID = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
-        # time.sleep(5)
+        channel_ID = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
+        time.sleep(5)
     
-        # # channel_ID = "UC61Y04JVLkByFRv1K3V-KGQ"
+        # channel_ID = "UC61Y04JVLkByFRv1K3V-KGQ"
         
-        # api_service_name = "youtube"
-        # api_version = "v3"
+        api_service_name = "youtube"
+        api_version = "v3"
         
-        # youtube = googleapiclient.discovery.build(
-        #     api_service_name, api_version, developerKey=DEVELOPER_KEY)
+        youtube = googleapiclient.discovery.build(
+            api_service_name, api_version, developerKey=DEVELOPER_KEY)
 
         
-        # request = youtube.channels().list(
-        #     part="snippet,contentDetails,statistics",
-        #     id=channel_ID.text,
-        #     # id=channel_ID,
-        #     maxResults=5
-        # )
-        # response = request.execute()
-        # # print(response)
-        # data=[]
-        # for i in range(1):
-        #     finalinfo = dict(Name=response['items'][i]['snippet']['title'],
-        #                     views_count=response['items'][i]['statistics']['viewCount'],
-        #                     subscriber_count=response['items'][i]['statistics']['subscriberCount'],video_count=response['items'][i]['statistics']['videoCount'])
-        #     data.append(finalinfo)
-        # # print(data)
-        # hashtag_data['hashtag_stats'][0]['youtube_stats'] = {
-        #     "name" : data[0]['Name'],
-        #     "views_count" : data[0]['views_count'],
-        #     "subscriber_count" : data[0]['subscriber_count'],
-        #     "video_count" : data[0]['video_count']
-        # }
-        # # print(hashtag_data)
-        # # # formatedData = pd.DataFrame(data)
-        # # # print(formatedData)
-        # # print(hashtag_data)
+        request = youtube.channels().list(
+            part="snippet,contentDetails,statistics",
+            id=channel_ID.text,
+            # id=channel_ID,
+            maxResults=5
+        )
+        response = request.execute()
+        # print(response)
+        data=[]
+        for i in range(1):
+            finalinfo = dict(Name=response['items'][i]['snippet']['title'],
+                            views_count=response['items'][i]['statistics']['viewCount'],
+                            subscriber_count=response['items'][i]['statistics']['subscriberCount'],video_count=response['items'][i]['statistics']['videoCount'])
+            data.append(finalinfo)
+        # print(data)
+        hashtag_data['hashtag_stats'][0]['youtube_stats'] = {
+            "name" : data[0]['Name'],
+            "views_count" : data[0]['views_count'],
+            "subscriber_count" : data[0]['subscriber_count'],
+            "video_count" : data[0]['video_count']
+        }
+        # print(hashtag_data)
+        # # formatedData = pd.DataFrame(data)
+        # # print(formatedData)
+        # print(hashtag_data)
         
-        # driver.quit()
+        driver.quit()
         
         
         
@@ -254,19 +256,18 @@ class SearchFromChrome(APIView):
         driver = webdriver.Chrome()
         
         
-        # # chrome_options = webdriver.ChromeOptions()
-        # # chrome_options.add_argument("--headless")
-        # # driver = webdriver.Chrome(options=chrome_options)
+        #                                                                         # # chrome_options = webdriver.ChromeOptions()
+        #                                                                         # # chrome_options.add_argument("--headless")
+        #                                                                         # # driver = webdriver.Chrome(options=chrome_options)
         
         url = 'https://www.instagram.com/'
         driver.get(url)
         time.sleep(1)
         username = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'username')))
-        # username.send_keys(USERNAME)
-        username.send_keys(USERNAME)
+        username.send_keys("codestarted01")
         time.sleep(1)
         password = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'password')))
-        password.send_keys(PASSWORD)
+        password.send_keys("UnknownCoder")
         time.sleep(1)
         login = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginForm"]/div/div[3]/button')))
         login.click()
@@ -274,24 +275,43 @@ class SearchFromChrome(APIView):
         time.sleep(5)
         driver.get(url+enteredName)
         time.sleep(10)
-        # print("after sleeping")
         ul = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.TAG_NAME,'ul')))
         items = ul.find_elements(By.TAG_NAME,'li')
-        # print("items",items)            
-        
+        numeric_part = ''.join(c for c in items[0].text if c.isdigit())
+
+        posts_value = int(numeric_part)        
         hashtag_data['hashtag_stats'][0]['instagram_stats'] = {
                 "followers" : items[1].text,
                 "followings" : items[2].text,
-                "posts" : items[0].text
+                "posts" : posts_value
             }
 
 
         
         ############################################################### Twitter ###############################################################
 
-        # scraper = Nitter(0)
-
+        # driver = webdriver.Chrome()
         
+        # driver.get("https://twitter.com/"+enteredName)
+        # time.sleep(10)
+        # following = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[1]/a/span[1]/span')))
+        # followers = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[2]/a/span[1]/span')))
+        # print("Following ",following.text,"Followers ",followers.text)
+        # time.sleep(10)
+
+        # scraper = Nitter(0)
+        # tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)
+
+        # final_tweets = []
+        # for x in tweets['tweets']:
+        #     print(x)
+        #     print('------------------------')
+            # data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments']]
+            # data = [x['stats']['likes'],x['stats']['comments']]
+            # final_tweets.append(data)
+            # print(x['text'],x['stats']['likes'])
+        
+        # df = pd.DataFrame(final_tweets,columns=['link','text','date','Likes','Tweets'])
 
         
         

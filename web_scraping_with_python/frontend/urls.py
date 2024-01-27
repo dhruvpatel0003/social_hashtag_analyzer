@@ -6,6 +6,6 @@ urlpatterns = [
    path('login',index),
    path('signup',index),
    path('search',index),
-   path('user-profile/<str:user_id>',index),
+   path('user-profile',index),
    path('search-hashtag/<str:hashtag>',index),
 ]

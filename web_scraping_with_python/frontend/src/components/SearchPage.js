@@ -10,27 +10,60 @@ const SearchPage = () => {
 
 
     const handleOnSave=()=>{
+        
         console.log(hashtagData)
+        const dict = hashtagData.data
+        console.log(JSON.stringify({
+            "hashtag": dict['hashtag'],
+            "hashtag_stats": [
+                {
+                    "user": dict['hashtag_stats'][0]['user'],
+                    "youtube_stats": dict['hashtag_stats'][0]['youtube_stats']?null:{},
+                    "instagram_stats": {
+                        "followers": dict['hashtag_stats'][0]['instagram_stats']['followers'],
+                        "followings": dict['hashtag_stats'][0]['instagram_stats']['followings'],
+                        "posts": dict['hashtag_stats'][0]['instagram_stats']['posts'],
+                    },
+                    "twitter_stats": {
+                        "followers": dict['hashtag_stats'][0]['twitter_stats']['followers'],
+                        "followings": dict['hashtag_stats'][0]['twitter_stats']['followings'],
+                        "joining_date":dict['hashtag_stats'][0]['twitter_stats']['joining_date'],
+                        "comments": [
+                            {
+                            //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['likes'],
+                            //     "retweets": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['retweets'],
+                            //     "comment_date": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['comment_date']
+                            // },
+                            // {
+                            //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['likes'],
+                            //     "retweets": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['retweets'],
+                            //     "comment_date": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['comment_date']
+                            }
+                        ]
+                    }
+                }
+            ]
+        }))
         fetch('/api/create-hashtag', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body:JSON.stringify({
-                "hashtag": data['hashtag'],
+                "hashtag": dict['hashtag'],
                 "hashtag_stats": [
                     {
-                        "user": data['hashtag_stats'][0]['user'],
-                        "youtube_stats": data['hashtag_stats'][0]['youtube_stats']?null:{},
+                        "user": dict['hashtag_stats'][0]['user'],
+                        "youtube_stats": dict['hashtag_stats'][0]['youtube_stats']?dict['hashtag_stats'][0]['youtube_stats']:'{}',
                         "instagram_stats": {
-                            "followers": data['hashtag_stats'][0]['instagram_stats']['followers'],
-                            "followings": data['hashtag_stats'][0]['instagram_stats']['followings'],
-                            "posts": data['hashtag_stats'][0]['instagram_stats']['posts'],
+                            "followers": dict['hashtag_stats'][0]['instagram_stats']['followers'],
+                            "followings": dict['hashtag_stats'][0]['instagram_stats']['followings'],
+                            "posts": dict['hashtag_stats'][0]['instagram_stats']['posts'],
                         },
                         "twitter_stats": {
-                            "followers": data['hashtag_stats'][0]['twitter_stats']['followers'],
-                            "followings": data['hashtag_stats'][0]['twitter_stats']['followings'],
-                            "joining_date":data['hashtag_stats'][0]['twitter_stats']['joining_date'],
+                            "followers": dict['hashtag_stats'][0]['twitter_stats']['followers'],
+                            "followings": dict['hashtag_stats'][0]['twitter_stats']['followings'],
+                            "joining_date":dict['hashtag_stats'][0]['twitter_stats']['joining_date'],
                             "comments": [
                                 {
                                 //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['likes'],
@@ -67,6 +100,10 @@ const SearchPage = () => {
                 setHashtagData(data)})
             .catch(error => console.error('Error during fetch:', error));
     };
+
+    const handleOnUserProfile = () => {
+        navigate('/user-profile/');
+    }
 
     const handleCategoryClick = (category) => {
         // Perform search based on the searchTerm
@@ -127,8 +164,8 @@ const SearchPage = () => {
                     <li>
                         <button onClick={() => handleCategoryClick('Facebook')}>Facebook</button>
                     </li>
-                    {/* Add more categories here */}
                 </ul>
+                <button onClick={handleOnUserProfile}>Profile</button>
             </div>
             {hashtagData && (
                 <div>

@@ -5,13 +5,13 @@ from .models import HashTag, User, HashTagStats, YouTubeStats, InstagramStats, T
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'user_id', 'email', 'password', 'phone_number', 'subscription_status', 'created_at')
+        fields = ['id', 'user_id', 'email', 'password', 'phone_number', 'subscription_status', 'created_at']
+        # fields = ['email', 'password', 'phone_number', 'subscription_status']
 
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'password', 'phone_number', 'subscription_status')
-
+        fields = ('email', 'password', 'phone_number', 'subscription_status')    
 class YouTubeStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = YouTubeStats
@@ -65,6 +65,9 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         hashtag_stats_data = validated_data.pop('hashtag_stats')
         hashtag_instance = HashTag.objects.create(**validated_data)
+
+        print("after getting the hastag instance",hashtag_stats_data)
+
 
         for stats_data in hashtag_stats_data:
             user = stats_data['user']

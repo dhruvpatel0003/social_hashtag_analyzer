@@ -4,8 +4,10 @@ import { useParams } from 'react-router-dom';
 const UserProfile = () => {
 
     const [user, setUser] = useState(null);
-    const { user_id }= useParams();
+    // const { user_id }= useParams();
     
+    const user_id = (document.cookie.split('; ').find(cookie => cookie.startsWith('user_id=')) || '').split('=')[1];
+    console.log("user_id", user_id);
 
     useEffect(() => {
         fetch('/api/get-user?user_id=' + user_id, { method: 'GET' })
