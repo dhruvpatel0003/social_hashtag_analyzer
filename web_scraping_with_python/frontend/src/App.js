@@ -6,7 +6,7 @@ import SignUpPage from './components/SignUpPage';
 import UserProfile from './components/UserProfile';
 import SearchPage from './components/SearchPage';
 import ClickOnTheHashtag from './components/ClickOnTheHashtag';
-
+import Dashboard from './components/Dashboard';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: '/search-hashtag/:hashtag',
     element: <ClickOnTheHashtag />,
+  },
+  {
+    path:'/dashboard',
+    element:<Dashboard />
   }
   
 ]);

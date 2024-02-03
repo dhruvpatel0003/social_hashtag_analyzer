@@ -18,23 +18,31 @@ const LoginPage = () => {
 
 
     const handleLogin = () => {
-        console.log("before the validate the user");
-        // console.log(username);
-        // console.log(password);
-        const encodedUsername = encodeURIComponent(username);
-        const encodedPassword = encodeURIComponent(password);
-        fetch(`/api/user-login?username=${encodedUsername}&password=${encodedPassword}`, { method: 'GET' })
+        console.log("before validating the user");
+    
+        const credentials = {
+            username: username,
+            password: password
+        };
+    
+        fetch('/api/user-login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+        })
         .then(response => {
             if (response.ok) {
-                return response.json(); // This returns a promise that resolves to the parsed JSON
-            } else if(response.status === 400) {
-                // window.location.href = '/signup';
+                return response.json(); // Resolves to parsed JSON
+            } else if (response.status === 400) {
                 setError('Please login with valid credentials or sign up');
-                // throw new Error('Invalid username or password');
             }
         })
         .then(data => {
             console.log("User ID:", data.token);
+            document.cookie = `user_id=${data.token}`;
+            console.log("::::::::::::::::::::::", document.cookie," ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ");
             navigate('/search');
         })
         .catch(error => {
@@ -42,6 +50,7 @@ const LoginPage = () => {
             setError('Please login with valid credentials or sign up');
         });     
     };
+    
 
     const handleSignUp = () => {
         navigate('/signup');

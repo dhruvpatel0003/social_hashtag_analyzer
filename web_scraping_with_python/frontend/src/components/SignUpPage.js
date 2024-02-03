@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const bcrypt = require('bcryptjs');
+const saltRounds = 10;
 
 const SignUpPage = () => {
     const navigate = useNavigate();
@@ -10,58 +12,6 @@ const SignUpPage = () => {
     const [subscriptionStatus, setSubscriptionStatus] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-
-    //     // Email validation
-    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //     const domainRegex = /@gmail\.com$/;
-    //     if (!emailRegex.test(email) || !domainRegex.test(email)) {
-    //         setErrorMessage('Please enter a valid Gmail address');
-    //         return;
-    //     }
-
-    //     // Password validation
-    //     const passwordRegex = /^(?=.*[@#])(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$/;
-    //     if (!passwordRegex.test(password)) {
-    //         setErrorMessage('Password must contain the @ or # symbol, numbers, and be at least 8 characters long');
-    //         return;
-    //     }
-
-    //     // Confirm password validation
-    //     if (password !== confirmPassword) {
-    //         setErrorMessage('Passwords do not match');
-    //         return;
-    //     }
-    //     console.log(password, email, phoneNumber, subscriptionStatus)
-    //     try {
-    //         const response = await fetch('/api/create-user',  {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({            
-    //                 email: "email@gmail.com",
-    //                 password: "pasrd@123##",
-    //                 phone_number: "111111111",
-    //                 subscription_status: false})
-    //         });
-    //         const data = await response.json();
-    //         console.log("data   ------------------------------- ", data)
-    //         if (response.status === 200) {
-    //             const userId = data.user_id;
-    //             // document.cookie = `user_id=${userId}`;
-    //             // console.log(document.cookie);
-    //             navigate('/search');
-    //         } else if (response.status === 400) {
-    //         //    setErrorMessage(data.message);
-    //             console.error();
-    //         } else {
-    //             console.error('Unexpected Error:', response.statusText,response.status);
-    //         }
-            // navigate(`/user-profile/${data.user_id}`);
-        // } catch (error) {
-        //     console.error('Error creating user:', error);
-        // }
-    // };
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -86,10 +36,12 @@ const SignUpPage = () => {
             return;
         }
 
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, phone_number: phoneNumber, subscription_status: subscriptionStatus })
+            body: JSON.stringify({ email, password : hashedPassword, phone_number: phoneNumber, subscription_status: subscriptionStatus })
         };
 
         try {
@@ -101,6 +53,7 @@ const SignUpPage = () => {
                     const userId = data.user_id;
                     document.cookie = `user_id=${userId}`;
                     console.log("document coookiee ::::::: ",document.cookie);
+                    // navigate('/dashboard');
                     navigate('/search');
 
             }

@@ -8,7 +8,7 @@ class User(models.Model):
 
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email=models.EmailField(max_length=100,unique=True)
-    password = models.CharField(max_length=15)
+    password = models.CharField(max_length=100)
     phone_number= models.CharField(max_length=10,unique=True)
     subscription_status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -27,9 +27,13 @@ class InstagramStats(models.Model):
     posts = models.IntegerField(default=0,null=True)
 
 class Comment(models.Model):
+    text = models.CharField(max_length=1000,null=True)
+    url = models.CharField(max_length=1000,null=True)
+    comments = models.CharField(max_length=1000,null=True)
     likes = models.IntegerField(default=0,null=True)
     retweets = models.IntegerField(default=0,null=True)
     comment_date = models.DateField(default=timezone.now,null=True)
+    
 
     def save(self, *args, **kwargs):
          if not self.comment_date:

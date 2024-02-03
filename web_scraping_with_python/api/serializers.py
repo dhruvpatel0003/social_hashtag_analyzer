@@ -26,7 +26,7 @@ class InstagramStatsSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['likes', 'retweets','comment_date']
+        fields = ['text','url','comments','likes', 'retweets','comment_date']
 
 class TwitterStatsSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True,allow_empty=True, required=False) 
@@ -96,7 +96,7 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
                 joining_date=twitter_stats_data.get('joining_date', ''),
             )
 
-            twitter_stats_instance.comments.set(comments_instances)  # Set the ManyToMany relationship
+            twitter_stats_instance.comments.set(comments_instances) 
 
             stats = HashTagStats.objects.create(
                 user=user,
