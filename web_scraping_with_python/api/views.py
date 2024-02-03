@@ -85,7 +85,7 @@ class GetUser(APIView):
     
 
 class CreateHashTag(APIView):
-    
+    print("inside the create hashtag request :::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
     def post(self, request, format=None):
         print("inside the create hashtag request :::::::::::::::::::::::::::::::::::::::::::::::::::::::::",request.data)
         serializer = CreateHashtagSerializer(data=request.data)
@@ -166,8 +166,8 @@ class SearchFromChrome(APIView):
     def get(self, request, *args, **kwargs):
 
         hashtagName = request.GET.get(self.lookup_url_kwarg)
-        # print("request header :::::::::::**************************::::::::::::::::: ",request.headers['Authorization'].split(' '))
-        user_id = request.headers['Authorization'].split(' ')[2]
+        print("request header :::::::::::**************************::::::::::::::::: ",request.headers['Authorization'].split(' '))
+        user_id = request.headers['Authorization'].split(' ')[1]
         # print("user_id inside searchView ----------------- ",user_id)
         
     ############################################################### YouTube ###############################################################
@@ -187,7 +187,7 @@ class SearchFromChrome(APIView):
         hashtag_data['hashtag'] = enteredName
         hashtag_data['hashtag_stats'] = [{}]
         # hashtag_data['hashtag_stats'][0]['user'] = 17
-        hashtag_data['hashtag_stats'][0]['user'] = user_id.split('=')[1]
+        hashtag_data['hashtag_stats'][0]['user'] = user_id
         hashtag_data['hashtag_stats'][0]['youtube_stats'] = {}
         hashtag_data['hashtag_stats'][0]['instagram_stats'] = {}
         hashtag_data['hashtag_stats'][0]['twitter_stats'] = {}

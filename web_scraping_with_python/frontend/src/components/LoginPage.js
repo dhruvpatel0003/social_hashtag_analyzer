@@ -42,7 +42,7 @@ const LoginPage = () => {
         .then(data => {
             console.log("User ID:", data.token);
             document.cookie = `user_id=${data.token}`;
-            console.log("::::::::::::::::::::::", document.cookie," ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ");
+            console.log("::::::::::::::::::::::", document.cookie.split(' ')[0].split('=')[1]," ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ");
             navigate('/search');
         })
         .catch(error => {

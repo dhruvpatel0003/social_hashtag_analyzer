@@ -1,3 +1,4 @@
+from datetime  import datetime
 from rest_framework import serializers
 from .models import HashTag, User, HashTagStats, YouTubeStats, InstagramStats, TwitterStats, Comment
 
@@ -37,7 +38,6 @@ class TwitterStatsSerializer(serializers.ModelSerializer):
 
 
 class HashTagStatsSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     youtube_stats = YouTubeStatsSerializer()
     instagram_stats = InstagramStatsSerializer()
     twitter_stats = TwitterStatsSerializer(allow_null=True,required=False)
@@ -63,10 +63,12 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
         fields = ['hashtag', 'hashtag_stats']
 
     def create(self, validated_data):
+        print("inside the create method")
         hashtag_stats_data = validated_data.pop('hashtag_stats')
+        print("aftre the poping")
         hashtag_instance = HashTag.objects.create(**validated_data)
 
-        print("after getting the hastag instance",hashtag_stats_data)
+        print("after getting the hastag instance ::::::::::::::::::::   :::::::::::::::::::::::::::::::::::::::: ",hashtag_stats_data)
 
 
         for stats_data in hashtag_stats_data:
@@ -75,7 +77,8 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             instagram_stats_data = stats_data.get('instagram_stats')
             twitter_stats_data = stats_data.get('twitter_stats', {})
             
-            comments_data = twitter_stats_data.get('comments', {})
+            # comments_data = twitter_stats_data.get('comments', {})
+            comments_data = twitter_stats_data.get('comments', [])
             
             youtube_stats_instance = YouTubeStats.objects.create(**youtube_stats_data) if youtube_stats_data else None
             instagram_stats_instance = InstagramStats.objects.create(**instagram_stats_data) if instagram_stats_data else None
@@ -88,7 +91,15 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             #     comment_date=twitter_stats_data.get('comment_date', ''),
             #     comments=comments_instance  
             # )
-            comments_instances = [Comment.objects.create(**comment) for comment in comments_data]
+            # comments_instances = [Comment.objects.create(**comment) for comment in comments_data]
+            comments_instances = [Comment.objects.create(
+            text=comment['text'],
+            url=comment['url'],
+            likes=comment['likes'],
+            retweets=comment['retweets'],
+            comments=comment['comments'],
+            comment_date=comment['comment_date'])
+            for comment in comments_data]
 
             twitter_stats_instance = TwitterStats.objects.create(
                 followers=twitter_stats_data.get('followers', ''),

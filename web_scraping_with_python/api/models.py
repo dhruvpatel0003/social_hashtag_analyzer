@@ -32,7 +32,8 @@ class Comment(models.Model):
     comments = models.CharField(max_length=1000,null=True)
     likes = models.IntegerField(default=0,null=True)
     retweets = models.IntegerField(default=0,null=True)
-    comment_date = models.DateField(default=timezone.now,null=True)
+    # comment_date = models.DateField(default=timezone.now,null=True)
+    comment_date = models.CharField(max_length=100,null=True)
     
 
     def save(self, *args, **kwargs):
@@ -56,7 +57,8 @@ class TwitterStats(models.Model):
 
 class HashTagStats(models.Model):
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.CharField(max_length=100)
     youtube_stats = models.ForeignKey(YouTubeStats, related_name='youtube_stats', on_delete=models.CASCADE, null=True, blank=True)
     instagram_stats = models.ForeignKey(InstagramStats, related_name='instagram_stats', on_delete=models.CASCADE, null=True, blank=True)
     twitter_stats = models.ForeignKey(TwitterStats, related_name='twitter_stats', on_delete=models.CASCADE, null=True, blank=True)

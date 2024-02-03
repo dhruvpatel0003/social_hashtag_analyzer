@@ -2,46 +2,34 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SearchPage = () => {
-
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [hashtagData, setHashtagData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleOnSave = () => {
-    console.log(hashtagData);
+    // console.log(
+    //   "-------------- hashtag data --------------------------",
+    //   hashtagData
+    // );
+
+    const months = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+
     const dict = hashtagData.data;
-    // console.log(JSON.stringify({
-    //     "hashtag": dict['hashtag'],
-    //     "hashtag_stats": [
-    //         {
-    //             "user": document.cookie['user_id'],
-    //             "youtube_stats": dict['hashtag_stats'][0]['youtube_stats']?null:{},
-    //             "instagram_stats": {
-    //                 "followers": dict['hashtag_stats'][0]['instagram_stats']['followers'],
-    //                 "followings": dict['hashtag_stats'][0]['instagram_stats']['followings'],
-    //                 "posts": dict['hashtag_stats'][0]['instagram_stats']['posts'],
-    //             },
-    //             "twitter_stats": {
-    //                 "followers": dict['hashtag_stats'][0]['twitter_stats']['followers'],
-    //                 "followings": dict['hashtag_stats'][0]['twitter_stats']['followings'],
-    //                 "joining_date":dict['hashtag_stats'][0]['twitter_stats']['joining_date'],
-    //                 "comments": [
-    //                     {
-    //                     //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['likes'],
-    //                     //     "retweets": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['retweets'],
-    //                     //     "comment_date": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['comment_date']
-    //                     // },
-    //                     // {
-    //                     //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['likes'],
-    //                     //     "retweets": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['retweets'],
-    //                     //     "comment_date": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['comment_date']
-    //                     }
-    //                 ]
-    //             }
-    //         }
-    //     ]
-    // }))
+
     fetch("/api/create-hashtag", {
       method: "POST",
       headers: {
@@ -52,7 +40,7 @@ const SearchPage = () => {
         hashtag: dict["hashtag"],
         hashtag_stats: [
           {
-            user: document.cookie["user_id"],
+            user: document.cookie.split(" ")[0].split("=")[1],
             youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
               ? dict["hashtag_stats"][0]["youtube_stats"]
               : "{}",
@@ -69,18 +57,36 @@ const SearchPage = () => {
                 dict["hashtag_stats"][0]["twitter_stats"]["followings"],
               joining_date:
                 dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-              comments: [
-                {
-                  //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['likes'],
-                  //     "retweets": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['retweets'],
-                  //     "comment_date": data['hashtag_stats'][0]['twitter_stats']['comments'][0]['comment_date']
-                  // },
-                  // {
-                  //     "likes": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['likes'],
-                  //     "retweets": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['retweets'],
-                  //     "comment_date": data['hashtag_stats'][0]['twitter_stats']['comments'][1]['comment_date']
-                },
-              ],
+              comments: dict["hashtag_stats"][0]["twitter_stats"][
+                "comments"
+              ].map((comment) => ({
+                text: comment.text,
+                comments: comment.comments,
+                url: comment.url,
+                likes: comment.likes,
+                retweets: comment.retweets,
+                comment_date: new Date(
+                  parseInt(
+                    comment.comment_date.split(" · ")[0].split(",")[1],
+                    10
+                  ),
+                  months[
+                    comment.comment_date
+                      .split(" · ")[0]
+                      .split(",")[0]
+                      .split(" ")[0]
+                  ],
+                  parseInt(
+                    comment.comment_date
+                      .split(" · ")[0]
+                      .split(",")[0]
+                      .split(" ")[1],
+                    10
+                  )
+                )
+                  .toISOString()
+                  .split("T")[0],
+              })),
             },
           },
         ],
@@ -92,18 +98,28 @@ const SearchPage = () => {
 
   const handleSearchClick = () => {
     setHashtagData(null);
-    if(document.cookie.length < 1){
+    if (document.cookie.length < 1) {
       navigate("/login/");
     }
     setLoading(true);
-    console.log("inside search click");
-    console.log("Hashtag search", searchTerm);
-    console.log("----------------------------------------- user Id ------------------------------", document.cookie.split(';')[1]);
+
+    //////////////////////////////////////////////////////////////////////////
+
+    // console.log("inside search click");
+    // console.log("Hashtag search", searchTerm);
+    // console.log(
+    //   "----------------------------------------- user Id ------------------------------",
+    //   document.cookie.split(" ")[0].split("=")[1]
+    // );
+    // console.log("----------------------------------------- user Id ------------------------------", document.cookie.split(';')[1]);
+
+    //////////////////////////////////////////////////////////////////////////
+
     fetch(`/api/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${document.cookie.split(';')[1]}`,
+        Authorization: `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
       },
     })
       .then((response) => {
@@ -119,6 +135,50 @@ const SearchPage = () => {
         setHashtagData(data);
       })
       .catch((error) => console.error("Error during fetch:", error));
+
+    // setHashtagData({
+    //   "data": {
+    //     "hashtag": "carryminati",
+    //     "hashtag_stats": [
+    //       {
+    //         "user": "cdc37d4f-2f95-489f-ba4e-9ce606092ca2",
+    //         "youtube_stats": {},
+    //         "instagram_stats": {},
+    //         "twitter_stats": {
+    //           "followers": "111 M",
+    //           "followings": "1212",
+    //           "joining_date": "2020-01-11",
+    //           "comments": [
+    //             {
+    //               "text": "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+    //               "url": "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+    //               "likes": 2320,
+    //               "retweets": 100,
+    //               "comments": 112,
+    //               "comment_date": "Dec 24, 2023 · 7:00 AM UTC"
+    //             },
+    //             {
+    //               "text": "Bhai vacation pe 4 se zada dost nhi home chahiye, zada excited hojate hai",
+    //               "url": "https://twitter.com/CarryMinati/status/1753331206291149234#m",
+    //               "likes": 1412,
+    //               "retweets": 44,
+    //               "comments": 68,
+    //               "comment_date": "Feb 2, 2024 · 8:15 AM UTC"
+    //             },
+    //             {
+    //               "text": "Happy 75th Republic day 🇮🇳",
+    //               "url": "https://twitter.com/CarryMinati/status/1750791211881824569#m",
+    //               "likes": 5476,
+    //               "retweets": 133,
+    //               "comments": 80,
+    //               "comment_date": "Jan 26, 2024 · 8:02 AM UTC"
+    //             }
+    //           ]
+    //         }
+    //       }
+    //     ]
+    //   }
+    // });
   };
 
   const handleOnUserProfile = () => {
@@ -148,7 +208,7 @@ const SearchPage = () => {
   };
 
   return (
-    <div style={{ overflowY: 'scroll', right:'1 px'}}>
+    <div>
       <div>
         <input
           type="text"
