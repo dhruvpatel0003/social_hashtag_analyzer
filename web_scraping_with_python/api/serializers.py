@@ -28,13 +28,23 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['text','url','comments','likes', 'retweets','comment_date']
+        
+# class hashtagIncludeSearchSerializer(serializers.ModelSerializer):
+    
+#     class Meta:
+#         model = HashtagIncludeSearch
+#         # field = ['title', 'text', 'url', 'views', 'reposts', 'comment_date']
+#         field = ['title', 'text', 'url']
+    
 
 class TwitterStatsSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True,allow_empty=True, required=False) 
+    # hashtagIncludeSearch = hashtagIncludeSearchSerializer(many=True,allow_empty=True, required=False)
 
     class Meta:
         model = TwitterStats
         fields = ['followers', 'followings', 'joining_date', 'comments']
+        # fields = ['followers', 'followings', 'joining_date', 'comments','hashtagIncludeSearch']
 
 
 class HashTagStatsSerializer(serializers.ModelSerializer):
@@ -78,7 +88,9 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             twitter_stats_data = stats_data.get('twitter_stats', {})
             
             # comments_data = twitter_stats_data.get('comments', {})
+            
             comments_data = twitter_stats_data.get('comments', [])
+            # hashtagIncludeSearch_data = twitter_stats_data.get('hashtagIncludeSearch', [])
             
             youtube_stats_instance = YouTubeStats.objects.create(**youtube_stats_data) if youtube_stats_data else None
             instagram_stats_instance = InstagramStats.objects.create(**instagram_stats_data) if instagram_stats_data else None
@@ -93,13 +105,23 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             # )
             # comments_instances = [Comment.objects.create(**comment) for comment in comments_data]
             comments_instances = [Comment.objects.create(
-            text=comment['text'],
-            url=comment['url'],
-            likes=comment['likes'],
-            retweets=comment['retweets'],
-            comments=comment['comments'],
-            comment_date=comment['comment_date'])
-            for comment in comments_data]
+                text=comment['text'],
+                url=comment['url'],
+                likes=comment['likes'],
+                retweets=comment['retweets'],
+                comments=comment['comments'],
+                comment_date=comment['comment_date'])
+                for comment in comments_data]
+            
+            # hashtagIncludeSearch_instances = [HashtagIncludeSearch.objects.create(
+            #     title=hashtagSearch['title'],
+            #     text=hashtagSearch['text'],
+            #     url=hashtagSearch['url'],
+            #     # views=hashtagSearch['views'],
+            #     # reposts=hashtagSearch['reposts'],
+            #     # comment_date=hashtagSearch['comment_date']
+            #     )
+            #     for hashtagSearch in hashtagIncludeSearch_data]
 
             twitter_stats_instance = TwitterStats.objects.create(
                 followers=twitter_stats_data.get('followers', ''),
@@ -108,6 +130,7 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             )
 
             twitter_stats_instance.comments.set(comments_instances) 
+            # twitter_stats_instance.hashtagIncludeSearch.set(hashtagIncludeSearch_instances) 
 
             stats = HashTagStats.objects.create(
                 user=user,

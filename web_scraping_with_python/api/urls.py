@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CreateHashTag, CreateUserView, DeleteAllHashTag, DeleteUser, GetHashTagData, GetUser, HashTagListView, UserLogin, UserView, SearchFromChrome
+from .views import CreateHashTag, CreateUserView, DeleteAllHashTag, DeleteUser, GetHashTagData, GetUser, HashTagListView, HashTagTwitterSearch, UserLogin, UserView, SearchFromChrome
 
 urlpatterns = [
     path('user',UserView.as_view()),
@@ -12,5 +12,6 @@ urlpatterns = [
     path('get-hashtag',GetHashTagData.as_view()),
     path('delete-hashtag',DeleteAllHashTag.as_view()),
     path('search',SearchFromChrome.as_view()),
+    path('twitter/search',HashTagTwitterSearch.as_view())
 ]
     

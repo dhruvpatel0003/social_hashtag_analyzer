@@ -41,7 +41,11 @@ const LoginPage = () => {
         })
         .then(data => {
             console.log("User ID:", data.token);
-            document.cookie = `user_id=${data.token}`;
+            const twoDaysInSeconds = 2 * 24 * 60 * 60; // 2 days in seconds
+            const expirationDate = new Date(Date.now() + twoDaysInSeconds * 1000).toUTCString();
+
+            document.cookie = `user_id=${data.token}; expires=${expirationDate}`;
+            console.log("::::::::::::::::::::::",document.cookie);
             console.log("::::::::::::::::::::::", document.cookie.split(' ')[0].split('=')[1]," ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ");
             navigate('/search');
         })

@@ -40,11 +40,28 @@ class Comment(models.Model):
          if not self.comment_date:
             self.comment_date = timezone.now().date()
          super().save(*args, **kwargs)
+         
+# class HashtagIncludeSearch(models.Model):
+#     title = models.CharField(max_length=1000,null=True)
+#     text = models.CharField(max_length=1000,null=True)
+#     url = models.CharField(max_length=1000,null=True)
+#     # views = models.IntegerField(default=0,null=True)
+#     # reposts = models.IntegerField(default=0,null=True)
+#     # comment_date = models.DateField(default=timezone.now,null=True)
+#     # comment_date = models.CharField(max_length=100,null=True)
+    
+#     def save(self, *args, **kwargs):
+#          if not self.comment_date:
+#             self.comment_date = timezone.now().date()
+#          super().save(*args, **kwargs)
+    
 class TwitterStats(models.Model):
     followers = models.CharField(max_length=20,null=True)
     followings = models.CharField(max_length=20,null=True)
     comments = models.ManyToManyField(Comment, related_name='twitter_comments')
+    # hashtagIncludeSearch = models.ManyToManyField(HashtagIncludeSearch, related_name='twitter_hashtagIncludeSearch')
 
+    
     joining_date = models.DateField(default=timezone.now,null=True)
     def save(self, *args, **kwargs):
          if not self.joining_date:

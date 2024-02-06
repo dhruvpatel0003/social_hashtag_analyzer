@@ -1,18 +1,19 @@
 import os
-from django.http import JsonResponse
 from dotenv import load_dotenv
-
 load_dotenv()
 
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
 DEVELOPER_KEY = os.getenv('DEVELOPER_KEY')
+TWITTER_API_KEY = os.getenv('API_KEY')
 
-import pandas as pd
+
+import requests
 import googleapiclient.discovery
 import time
 import bcrypt
 
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import generics, status
 from .serializers import HashTagSerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
@@ -335,18 +336,19 @@ class SearchFromChrome(APIView):
 
         # driver.quit()
 
-        scraper = Nitter(0)
-        tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
-        print("tweets -------------------------------------------------------------- ",tweets)
-        final_tweets = []
-        for x in tweets['tweets']:
-        #     print(x)
-        #     print('------------------------')
-            data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
-            # data = [x['stats']['likes'],x['stats']['comments']]
-            final_tweets.append(data)
-            # print(x['text'],x['stats']['likes'])
-        print("final_tweets -------------------------------------------------------------- ",final_tweets)
+        # scraper = Nitter(0)
+        # tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
+        # # tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
+        # print("tweets -------------------------------------------------------------- ",tweets)
+        # final_tweets = []
+        # for x in tweets['tweets']:
+        # #     print(x)
+        # #     print('------------------------')
+        #     data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
+        #     # data = [x['stats']['likes'],x['stats']['comments']]
+        #     final_tweets.append(data)
+        #     # print(x['text'],x['stats']['likes'])
+        # print("final_tweets -------------------------------------------------------------- ",final_tweets)
 
         hashtag_data['hashtag_stats'][0]['twitter_stats'] = {
         # "followers" : followers.text,
@@ -357,23 +359,30 @@ class SearchFromChrome(APIView):
         "comments" : []
            }
 
-        if(tweets['tweets']):
-            for i in range(0,3):
-                hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
-                                "text":final_tweets[i][1],
-                                "url":final_tweets[i][0],
-                                "likes":final_tweets[i][3],
-                                "retweets": final_tweets[i][5],
-                                "comments":final_tweets[i][4],
-                #                 # "text":x['text'],
-                #                 # "url":x['link'],
-                #                 # "likes":x['stats']['likes'],
-                #                 # "retweets": x['stats']['retweets'],
-                #                 # "comments":x['stats']['comments'],
-                                "comment_date": final_tweets[i][2]
-                                # "comment_date": "2020-01-05"
-            })
-    
+        # if(tweets['tweets']):
+        #     for i in range(0,3):
+        #         hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
+        #                         "text":final_tweets[i][1],
+        #                         "url":final_tweets[i][0],
+        #                         "likes":final_tweets[i][3],
+        #                         "retweets": final_tweets[i][5],
+        #                         "comments":final_tweets[i][4],
+        #         #                 # "text":x['text'],
+        #         #                 # "url":x['link'],
+        #         #                 # "likes":x['stats']['likes'],
+        #         #                 # "retweets": x['stats']['retweets'],
+        #         #                 # "comments":x['stats']['comments'],
+        #                         "comment_date": final_tweets[i][2]
+        #                         # "comment_date": "2020-01-05"
+        #     })
+
+
+
+       ####################################################################################################################################################################
+
+        
+        
+        
         return Response({'data': hashtag_data})
     
     
@@ -411,3 +420,34 @@ class UserLogin(APIView):
             return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class HashTagTwitterSearch(APIView):
+    
+    lookup_url_kwarg = 'key'
+    
+    def get(self, request, *args, **kwargs):
+        
+        hashtag_data = []   
+        hashtagName = request.GET.get(self.lookup_url_kwarg)
+        number_of_tweets = 25
+        payload = {
+            'api_key': TWITTER_API_KEY,
+            'query' : hashtagName,
+            'num' : number_of_tweets
+        }
+
+    
+        response = requests.get('https://api.scraperapi.com/structured/twitter/search',params = payload)
+        search_result = response.json()['organic_results']
+        print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++",search_result[0])
+        for i in range(0,number_of_tweets-1):
+            hashtag_data.append({
+                        "title":search_result[i]['title'],
+                        "text":search_result[i]['snippet'],
+                        "url":search_result[i]['link']
+        })
+        print('hashtag_data ---------------------------',hashtag_data)
+        return Response({'data': hashtag_data})
+        
