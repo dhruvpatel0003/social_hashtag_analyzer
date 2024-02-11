@@ -71,7 +71,13 @@ class TwitterStats(models.Model):
     # comments = models.OneToOneField(Comment, related_name='twitter_comments', on_delete=models.CASCADE, null=True, blank=True)
     # comments = models.ManyToManyField(Comment, related_name='twitter_comments')
 
-
+class History(models.Model):   
+        user = models.CharField(max_length=100)
+        history = models.JSONField()
+        
+        def __str__(self):
+            return f"{self.user} - Search History"
+    
 class HashTagStats(models.Model):
 
     # user = models.ForeignKey(User, on_delete=models.CASCADE)

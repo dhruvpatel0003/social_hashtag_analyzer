@@ -16,11 +16,13 @@ import bcrypt
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import generics, status
-from .serializers import HashTagSerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
-from .models import User, HashTag, HashTagStats
+from .serializers import HashTagSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
+from .models import History, User, HashTag, HashTagStats
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
+from datetime import datetime
+
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -167,9 +169,27 @@ class SearchFromChrome(APIView):
     def get(self, request, *args, **kwargs):
 
         hashtagName = request.GET.get(self.lookup_url_kwarg)
-        print("request header :::::::::::**************************::::::::::::::::: ",request.headers['Authorization'].split(' '))
-        user_id = request.headers['Authorization'].split(' ')[1]
+        
+        # print("request header :::::::::::**************************::::::::::::::::: ",request.headers['Authorization'].split(' '))
+        user_id = request.headers['Authorization'].split(' ')[1].replace(";",'')
         # print("user_id inside searchView ----------------- ",user_id)
+        
+        ##############################################################################
+        print('before the history creation')
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        create_user_history = CreateUserHistory()
+        create_user_history.request  =  {
+        "user": user_id,
+        "history": {
+            current_date: [
+                hashtagName
+            ]
+        }
+        }
+        create_user_history.post(create_user_history.request)
+
+        
+        ##############################################################################
         
     ############################################################### YouTube ###############################################################
     
@@ -336,19 +356,19 @@ class SearchFromChrome(APIView):
 
         # driver.quit()
 
-        # scraper = Nitter(0)
+        scraper = Nitter(0)
         # tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
-        # # tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
+        tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
         # print("tweets -------------------------------------------------------------- ",tweets)
-        # final_tweets = []
-        # for x in tweets['tweets']:
-        # #     print(x)
-        # #     print('------------------------')
-        #     data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
-        #     # data = [x['stats']['likes'],x['stats']['comments']]
-        #     final_tweets.append(data)
-        #     # print(x['text'],x['stats']['likes'])
-        # print("final_tweets -------------------------------------------------------------- ",final_tweets)
+        final_tweets = []
+        for x in tweets['tweets']:
+        #     print(x)
+        #     print('------------------------')
+            data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
+            # data = [x['stats']['likes'],x['stats']['comments']]
+            final_tweets.append(data)
+            # print(x['text'],x['stats']['likes'])
+        # # print("final_tweets -------------------------------------------------------------- ",final_tweets)
 
         hashtag_data['hashtag_stats'][0]['twitter_stats'] = {
         # "followers" : followers.text,
@@ -359,22 +379,22 @@ class SearchFromChrome(APIView):
         "comments" : []
            }
 
-        # if(tweets['tweets']):
-        #     for i in range(0,3):
-        #         hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
-        #                         "text":final_tweets[i][1],
-        #                         "url":final_tweets[i][0],
-        #                         "likes":final_tweets[i][3],
-        #                         "retweets": final_tweets[i][5],
-        #                         "comments":final_tweets[i][4],
-        #         #                 # "text":x['text'],
-        #         #                 # "url":x['link'],
-        #         #                 # "likes":x['stats']['likes'],
-        #         #                 # "retweets": x['stats']['retweets'],
-        #         #                 # "comments":x['stats']['comments'],
-        #                         "comment_date": final_tweets[i][2]
+        if(tweets['tweets']):
+            for i in range(0,3):
+                hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
+                                "text":final_tweets[i][1],
+                                "url":final_tweets[i][0],
+                                "likes":final_tweets[i][3],
+                                "retweets": final_tweets[i][5],
+                                "comments":final_tweets[i][4],
+                #                 # "text":x['text'],
+                #                 # "url":x['link'],
+                #                 # "likes":x['stats']['likes'],
+                #                 # "retweets": x['stats']['retweets'],
+                #                 # "comments":x['stats']['comments'],
+                                "comment_date": final_tweets[i][2]
         #                         # "comment_date": "2020-01-05"
-        #     })
+            })
 
 
 
@@ -450,4 +470,63 @@ class HashTagTwitterSearch(APIView):
         })
         print('hashtag_data ---------------------------',hashtag_data)
         return Response({'data': hashtag_data})
+    
+class CreateUserHistory(APIView):
+    
+    def post(self, request, formate=None):
         
+        print("user history inside create-user-history ***************** ",request)
+        user_id = request.get('user')
+        history = request.get('history') 
+        current_date = list(history.keys())[0]
+        search_text = history[list(history.keys())[0]][0]
+        print("search_text ----------------- ",search_text)
+
+        
+        history_entry = History.objects.filter(user=user_id).first()
+        # print("history_entry ----------------- ",list(history_entry.history.keys()))
+        
+        if history_entry:
+            # history_dict = dict(history_entry.history)
+            if current_date in list(history_entry.history.keys()):
+                print("current_date inside if condition ----------------- ",current_date)
+                
+                history_entry.history[current_date].append(search_text)
+            else:
+                print('inside else statement',search_text)
+                history_entry.history.update({current_date: [search_text]})
+            
+            history_entry.save()
+            serializer = UserHistorySerializer(history_entry)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        try : 
+            serializer = UserHistorySerializer(data=request)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except : 
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+
+class GetUserHistoryByID(APIView):
+    
+    lookup_url_kwarg = 'user_id'
+
+    def get(self,request, *args, **kwargs):
+        user_id =kwargs.get(self.lookup_url_kwarg)
+        user_search = History.objects.get(user=user_id)
+        serializer = UserHistorySerializer(user_search)
+        return Response(serializer.data, status=200)
+
+class DeleteHistory(APIView):
+    
+        def delete(self, request, format=None):
+                History.objects.all().delete()  
+                return Response({'message': 'History  deleted successfully'}, status=status.HTTP_200_OK)
+
+class HistoryView(generics.ListAPIView):
+    queryset = History.objects.all()
+    serializer_class = UserHistorySerializer

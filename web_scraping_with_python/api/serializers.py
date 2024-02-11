@@ -1,6 +1,6 @@
 from datetime  import datetime
 from rest_framework import serializers
-from .models import HashTag, User, HashTagStats, YouTubeStats, InstagramStats, TwitterStats, Comment
+from .models import HashTag, History, User, HashTagStats, YouTubeStats, InstagramStats, TwitterStats, Comment
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -144,3 +144,21 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
         return hashtag_instance
     
     
+class UserHistorySerializer(serializers.ModelSerializer):
+    
+    user = serializers.CharField(max_length=255)
+    history = serializers.DictField(child=serializers.ListField(child=serializers.CharField()))
+    
+    class Meta:
+        model = History
+        fields = ['user', 'history']
+    
+    def create(self, validated_data):
+        print("inside the create method of UserHistorySerializer")
+        return History.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.user_id = validated_data.get('user', instance.user)
+        instance.history = validated_data.get('history', instance.history)
+        instance.save()
+        return instance

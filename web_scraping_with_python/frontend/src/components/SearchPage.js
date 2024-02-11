@@ -7,7 +7,7 @@ const SearchPage = () => {
   const [hashtagData, setHashtagData] = useState(null);
   const [hashtagIncludeData, setHashtagIncludeData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showMessage,setShowMessage] = useState(false)
+  const [showMessage, setShowMessage] = useState(false);
   const [downloadOption, setDownloadOption] = useState(false);
 
   const handleOnSave = () => {
@@ -99,41 +99,38 @@ const SearchPage = () => {
       .catch((error) => console.log(error));
   };
 
-
   const handleOnTwitterHashtagSearch = () => {
-    fetch(`/api/twitter/search?key=${searchTerm}`,{
+    fetch(`/api/twitter/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    }).then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Network response was not ok, status: ${response.status}`
-        );
-      }
-      return response.json();
     })
-    .then((data) => {
-      // setLoading(false);
-      setHashtagIncludeData(data);
-      setDownloadOption(true);
-    });
-  }
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok, status: ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // setLoading(false);
+        setHashtagIncludeData(data);
+        setDownloadOption(true);
+      });
+  };
 
   const handleOnDownloadFile = () => {
     const jsonString = JSON.stringify(hashtagIncludeData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const downloadLink = document.createElement('a');
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const downloadLink = document.createElement("a");
     downloadLink.href = window.URL.createObjectURL(blob);
     downloadLink.download = "data.txt";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
-
-  }
-
-
+  };
 
   const handleSearchClick = () => {
     setHashtagData(null);
@@ -141,7 +138,6 @@ const SearchPage = () => {
       navigate("/login/");
     }
     setLoading(true);
-
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -154,7 +150,7 @@ const SearchPage = () => {
     // console.log("----------------------------------------- user Id ------------------------------", document.cookie.split(';')[1]);
 
     //////////////////////////////////////////////////////////////////////////
-    if(searchTerm.length < 1){
+    if (searchTerm.length < 1) {
       setShowMessage(true);
       setLoading(false);
       return;
@@ -227,16 +223,21 @@ const SearchPage = () => {
     // });
   };
 
+  const handleOnVisualize = () => {
+
+    };
+
+
   const handleOnUserProfile = () => {
     navigate("/user-profile/");
   };
 
   const handleOnSignOut = () => {
     navigate("/login/");
-  }
+  };
 
   const handleCategoryClick = (category) => {
-    if(category === "Twitter"){
+    if (category === "Twitter") {
       setOnTwitterMessage(true);
     }
     // Perform search based on the searchTerm
@@ -301,7 +302,9 @@ const SearchPage = () => {
             <button onClick={() => handleCategoryClick("Twitter")}>
               Twitter
             </button>
-            <button onClick={handleOnTwitterHashtagSearch}>HashTagInclude</button>
+            <button onClick={handleOnTwitterHashtagSearch}>
+              HashTagInclude
+            </button>
           </li>
           <li>
             <button onClick={() => handleCategoryClick("Instagram")}>
@@ -316,21 +319,23 @@ const SearchPage = () => {
         </ul>
         <button onClick={handleOnUserProfile}>Profile</button>
       </div>
-      {!hashtagIncludeData && (
+
+      {!hashtagIncludeData && hashtagData && (
         <div>
           <h3>Hashtag Data:</h3>
           <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
-          {downloadOption && <button onClick={handleOnSave}>Save</button>}
+          <button onClick={handleOnSave}>Save</button>
         </div>
       )}
       {hashtagIncludeData && (
         <div>
           <h3>Hashtag Include Data:</h3>
           <pre>{JSON.stringify(hashtagIncludeData, null, 2)}</pre>
-          {downloadOption && <button onClick={handleOnDownloadFile}>Download</button>}
+          {downloadOption && (
+            <button onClick={handleOnDownloadFile}>Download</button>
+          )}
         </div>
       )}
-
     </div>
   );
 };
