@@ -58,16 +58,18 @@ class CreateUserView(APIView):
             email = serializer.data.get('email')
             password = serializer.data.get('password')
             phone_number = serializer.data.get('phone_number')
-            subscription_status = serializer.data.get('subscription_status')
+            subscription_date = serializer.data.get('subscription_date')
+            subscription_expires_date = serializer.data.get('subscription_expires_date')
+            subscription_plan = serializer.data.get('subscription_amount')
+            # subscription_status = serializer.data.get('subscription_status')
 
             user = User.objects.filter(email=email)
-            if user.exists():
-                return Response({'error': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                user = User.objects.create(email=email, password=password, phone_number=phone_number, subscription_status=subscription_status)
-                user.save()
-                return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+            user = User.objects.create(email=email, password=password, phone_number=phone_number,subscription_amount=subscription_plan,subscription_date=subscription_date,subscription_expires_date=subscription_expires_date)
+            user.save()
+            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
         else:
+            print("inside the else statement")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -168,9 +170,11 @@ class SearchFromChrome(APIView):
     
     def get(self, request, *args, **kwargs):
 
+        print("inside the searchView ----------------- ")
+
         hashtagName = request.GET.get(self.lookup_url_kwarg)
-        
-        # print("request header :::::::::::**************************::::::::::::::::: ",request.headers['Authorization'].split(' '))
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",hashtagName)
+        print("request header :::::::::::**************************::::::::::::::::: ",request.headers['Authorization'].split(' '))
         user_id = request.headers['Authorization'].split(' ')[1].replace(";",'')
         # print("user_id inside searchView ----------------- ",user_id)
         
@@ -357,9 +361,12 @@ class SearchFromChrome(APIView):
         # driver.quit()
 
         scraper = Nitter(0)
-        # tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
-        tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
-        # print("tweets -------------------------------------------------------------- ",tweets)
+        print("before tweets -------------------------------------------------------------- ")
+        tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
+
+        # tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
+        print("After tweets -------------------------------------------------------------- ")
+        print("tweets -------------------------------------------------------------- ",tweets)
         final_tweets = []
         for x in tweets['tweets']:
         #     print(x)

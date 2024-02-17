@@ -1,0 +1,31 @@
+{
+        "hashtag": "exampleHashtag",
+        "hashtag_stats": [
+            {
+                "user": 1,
+                "youtube_stats": {
+                    "name": "YouTubeUser",
+                    "views_count": 1000,
+                    "subscription_count": 200,
+                    "video_count": 50
+                },
+                "instagram_stats": {
+                    "followers": "500",
+                    "followings": "100",
+                    "posts": 30
+                },
+                "twitter_stats": {
+                    "followers": "500",
+                    "followings": "100",
+                    "joining_date": "2022-01-01",
+                    "comments": [
+                        {
+                            "likes": 50,
+                            "retweets": 20,
+                            "comment_date": "2020-01-05"
+                        }
+                    ]
+                }
+            }
+        ]
+    }

@@ -6,13 +6,13 @@ from .models import HashTag, History, User, HashTagStats, YouTubeStats, Instagra
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'user_id', 'email', 'password', 'phone_number', 'subscription_status', 'created_at']
+        fields = ['id', 'user_id', 'email', 'password', 'phone_number', 'subscription_amount','subscription_date','subscription_expires_date', 'created_at']
         # fields = ['email', 'password', 'phone_number', 'subscription_status']
 
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'password', 'phone_number', 'subscription_status')    
+        fields = ('email', 'password', 'phone_number', 'subscription_amount','subscription_date','subscription_expires_date')    
 class YouTubeStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = YouTubeStats

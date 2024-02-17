@@ -10,7 +10,10 @@ class User(models.Model):
     email=models.EmailField(max_length=100,unique=True)
     password = models.CharField(max_length=100)
     phone_number= models.CharField(max_length=10,unique=True)
-    subscription_status = models.BooleanField(default=False)
+    # subscription_status = models.BooleanField(default=False)
+    subscription_amount = models.CharField(max_length=100,null=True)
+    subscription_date = models.CharField(max_length=100,null=True)
+    subscription_expires_date = models.CharField(max_length=100,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
         
 class YouTubeStats(models.Model):

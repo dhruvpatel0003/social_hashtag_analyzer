@@ -161,7 +161,7 @@ const SearchPage = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
+        "Authorization": `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
       },
     })
       .then((response) => {
@@ -223,11 +223,6 @@ const SearchPage = () => {
     // });
   };
 
-  const handleOnVisualize = () => {
-
-    };
-
-
   const handleOnUserProfile = () => {
     navigate("/user-profile/");
   };
@@ -258,7 +253,7 @@ const SearchPage = () => {
   // };
 
   const handleOnHashtagClick = (hashtag) => {
-    navigate(`/search-hashtag/${hashtag}`);
+    // navigate(`/search-hashtag/${hashtag}`);
   };
 
   return (
