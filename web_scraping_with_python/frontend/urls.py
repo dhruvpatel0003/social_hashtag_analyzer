@@ -9,4 +9,5 @@ urlpatterns = [
    path('user-profile',index),
    path('dashboard',index),
    path('search-hashtag/<str:hashtag>',index),
+   path('analysis',index),
 ]

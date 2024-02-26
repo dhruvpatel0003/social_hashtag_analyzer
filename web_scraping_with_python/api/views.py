@@ -56,7 +56,7 @@ class CreateUserView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             email = serializer.data.get('email')
-            password = serializer.data.get('password')
+            password = serializer.data.get('password')  
             phone_number = serializer.data.get('phone_number')
             subscription_date = serializer.data.get('subscription_date')
             subscription_expires_date = serializer.data.get('subscription_expires_date')
@@ -90,7 +90,7 @@ class GetUser(APIView):
     
 
 class CreateHashTag(APIView):
-    print("inside the create hashtag request :::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+    print("inside the post request : ::::::::::::::::::::::::::::")
     def post(self, request, format=None):
         print("inside the create hashtag request :::::::::::::::::::::::::::::::::::::::::::::::::::::::::",request.data)
         serializer = CreateHashtagSerializer(data=request.data)
@@ -100,7 +100,7 @@ class CreateHashTag(APIView):
             print(hashtag_instance.hashtag)
             for stats_data in serializer.validated_data.get('hashtag_stats', []):
                 print("User:", stats_data.get('user'))
-                print("YouTube Stats:", stats_data.get('youtube_stats'))
+                print("YouTube Stats:", stats_data.get('youtube_stats',{}))
                 print("Instagram Stats:", stats_data.get('instagram_stats', {}))
                 print("Twitter Stats:", stats_data.get('twitter_stats', {}))
                 print("------------------------")
@@ -149,18 +149,13 @@ class GetHashTagData(APIView):
 class DeleteAllHashTag(APIView):
 
     def delete(self, request, format=None):
-        # hashtag = request.GET.get(self.lookup_url_kwarg)
-        # if hashtag is not None:
             try:
-                # hashtag_instance = HashTag.objects.get(hashtag="examplehashtag")
-                # hashtag_instance.delete()
                 HashTag.objects.all().delete()
                 return Response({'message': f'Hashtag  deleted successfully'}, status=status.HTTP_200_OK)
             except HashTag.DoesNotExist:
                 return Response({'error': 'Hashtag not found'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # return Response({'Bad Request': 'Hashtag not provided in request'}, status=status.HTTP_400_BAD_REQUEST)
         
         
 class SearchFromChrome(APIView):
@@ -200,10 +195,10 @@ class SearchFromChrome(APIView):
         hashtag_data = {}
         
         # driver = webdriver.Chrome()
-        # chrome_options = webdriver.ChromeOptions()
-        # chrome_options.add_argument("--headless")
-        # chrome_options.add_argument('--ignore-certificate-errors')
-        # driver = webdriver.Chrome(options=chrome_options)
+        # # chrome_options = webdriver.ChromeOptions()
+        # # chrome_options.add_argument("--headless")
+        # # chrome_options.add_argument('--ignore-certificate-errors')
+        # # driver = webdriver.Chrome(options=chrome_options)
         
         enteredName = hashtagName
         
@@ -235,11 +230,15 @@ class SearchFromChrome(APIView):
         # input_answer.send_keys(sum)
         # time.sleep(20)
         
+        # print("Before the error point ___________________________")
         # getButton = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
         # getButton.click()
         # time.sleep(5)
-        
+        # print("After the error point ___________________________")
+
+        # print("Before the error point 2 ___________________________")
         # channel_ID = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
+        # print("After the error point 2___________________________")        
         # time.sleep(5)
     
         # # channel_ID = "UC61Y04JVLkByFRv1K3V-KGQ"
@@ -255,7 +254,7 @@ class SearchFromChrome(APIView):
         #     part="snippet,contentDetails,statistics",
         #     id=channel_ID.text,
         #     # id=channel_ID,
-        #     maxResults=5
+        #     maxResults=10
         # )
         # response = request.execute()
         # # print(response)
@@ -266,75 +265,80 @@ class SearchFromChrome(APIView):
         #                     subscriber_count=response['items'][i]['statistics']['subscriberCount'],video_count=response['items'][i]['statistics']['videoCount'])
         #     data.append(finalinfo)
         # # print(data)
-        # hashtag_data['hashtag_stats'][0]['youtube_stats'] = {
-        #     "name" : data[0]['Name'],
+
+        # hashtag_data['hashtag_stats'][0]['youtube_stats']['name']=data[0]['Name']
+        # hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status']=[]
+        # hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status'].append({
+        #     "current_date" : "2022-01-22",
         #     "views_count" : data[0]['views_count'],
         #     "subscriber_count" : data[0]['subscriber_count'],
         #     "video_count" : data[0]['video_count']
-        # }
-        
+        # })
         # driver.quit()
         
         
         
-        # ############################################################### Instagram ###############################################################
+        # # ############################################################### Instagram ###############################################################
 
         
-        # driver = webdriver.Chrome()
+        driver = webdriver.Chrome()
         
         
-        # #                                                                         # # chrome_options = webdriver.ChromeOptions()
-        # #                                                                         # # chrome_options.add_argument("--headless")
-        # #                                                                         # # driver = webdriver.Chrome(options=chrome_options)
+        #                                                                         # # chrome_options = webdriver.ChromeOptions()
+        #                                                                         # # chrome_options.add_argument("--headless")
+        #                                                                         # # driver = webdriver.Chrome(options=chrome_options)
         
-        # url = 'https://www.instagram.com/'
-        # driver.get(url)
-        # time.sleep(1)
-        # username = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'username')))
-        # username.send_keys("codestarted01")
-        # time.sleep(1)
-        # password = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'password')))
-        # password.send_keys("UnknownCoder")
-        # time.sleep(1)
-        # login = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginForm"]/div/div[3]/button')))
-        # login.click()
+        url = 'https://www.instagram.com/'
+        driver.get(url)
+        time.sleep(10)
+        username = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'username')))
+        username.send_keys("codestarted01")
+        time.sleep(10)
+        password = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'password')))
+        password.send_keys("UnknownCoder")
+        time.sleep(10)
+        login = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginForm"]/div/div[3]/button')))
+        login.click()
         
-        # time.sleep(5)
-        # driver.get(url+enteredName)
-        # time.sleep(10)
-        # ul = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.TAG_NAME,'ul')))
-        # items = ul.find_elements(By.TAG_NAME,'li')
-        # numeric_part = ''.join(c for c in items[0].text if c.isdigit())
+        time.sleep(5)
+        driver.get(url+enteredName)
+        time.sleep(10)
+        ul = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.TAG_NAME,'ul')))
+        items = ul.find_elements(By.TAG_NAME,'li')
+        numeric_part = ''.join(c for c in items[0].text if c.isdigit())
 
-        # posts_value = int(numeric_part)        
-        # hashtag_data['hashtag_stats'][0]['instagram_stats'] = {
-        #         "followers" : items[1].text,
-        #         "followings" : items[2].text,
-        #         "posts" : posts_value
-        #     }
+        posts_value = int(numeric_part)  
+        
+        hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status']=[] 
+        hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status'].append({
+                "current_date":"2022-01-11",
+                "followers" : items[1].text,
+                "followings" : items[2].text,
+                "posts" : posts_value
+            })
 
-
+        driver.quit()
         
         ############################################################### Twitter ###############################################################
 
-        # driver = webdriver.Chrome()
+        driver = webdriver.Chrome()
         
-        # driver.get("https://twitter.com/"+enteredName)
+        driver.get("https://twitter.com/"+enteredName)
         
-        # ############################################### ####### ################### ########################
+        ############################################### ####### ################### ########################
         
         # driver.get('https://twitter.com/i/flow/login?redirect_after_login=%2Fsearch%3Fq%3Dbjp%26src%3Dtyped_query%26f%3Dlist')
         
-        # time.sleep(2)
+        # time.sleep(10)
         
-        # username = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[1]/input')))
+        # username = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div/main/div/div/div/div[2]/div[2]/div/div[5]/label/div/div[2]/div/input')))
         # username.send_keys("@DhruvPa15607876")
         
-        # time.sleep(5)
+        # time.sleep(10)
         
-        # password =  WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input')))
+        # password =  WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input')))
         # password.send_keys("Dhruv$$152002")
-        # time.sleep(5)
+        # time.sleep(10)
         
         
         # driver.get(f'https://twitter.com/search?q={enteredName}&src=typed_query&f=list')
@@ -352,13 +356,26 @@ class SearchFromChrome(APIView):
         
         # ####################### ################## #################################### ###################
         
-        # time.sleep(10)
-        # following = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[1]/a/span[1]/span')))
-        # followers = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[2]/a/span[1]/span')))
-        # print("Following ",following.text,"Followers ",followers.text)
-        # time.sleep(10)
+        time.sleep(10)
+        following = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[1]/a/span[1]/span')))
+        followers = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[2]/a/span[1]/span')))
+        time.sleep(10)
 
-        # driver.quit()
+        print("Following ",following.text,"Followers ",followers.text)
+        hashtag_data['hashtag_stats'][0]['twitter_stats'] = {
+        "current_status":[],
+        "joining_date" : '2020-01-11', 
+        "comments" : []
+           }
+        
+        hashtag_data['hashtag_stats'][0]['twitter_stats']['current_status'].append({
+            "current_date" : "2022-02-11",
+            "followers" : followers.text,
+            "followings" : following.text,
+        })
+        
+      
+        driver.quit()
 
         scraper = Nitter(0)
         print("before tweets -------------------------------------------------------------- ")
@@ -377,14 +394,7 @@ class SearchFromChrome(APIView):
             # print(x['text'],x['stats']['likes'])
         # # print("final_tweets -------------------------------------------------------------- ",final_tweets)
 
-        hashtag_data['hashtag_stats'][0]['twitter_stats'] = {
-        # "followers" : followers.text,
-        # "followings" : following.text,
-        "followers" : '111 M',
-        "followings" : '1212',
-        "joining_date" : '2020-01-11', 
-        "comments" : []
-           }
+       
 
         if(tweets['tweets']):
             for i in range(0,3):
@@ -394,13 +404,7 @@ class SearchFromChrome(APIView):
                                 "likes":final_tweets[i][3],
                                 "retweets": final_tweets[i][5],
                                 "comments":final_tweets[i][4],
-                #                 # "text":x['text'],
-                #                 # "url":x['link'],
-                #                 # "likes":x['stats']['likes'],
-                #                 # "retweets": x['stats']['retweets'],
-                #                 # "comments":x['stats']['comments'],
                                 "comment_date": final_tweets[i][2]
-        #                         # "comment_date": "2020-01-05"
             })
 
 

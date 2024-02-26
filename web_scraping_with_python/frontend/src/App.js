@@ -7,6 +7,7 @@ import UserProfile from './components/UserProfile';
 import SearchPage from './components/SearchPage';
 import ClickOnTheHashtag from './components/ClickOnTheHashtag';
 import Dashboard from './components/Dashboard';
+import Analysis from './components/Analysis';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path:'/dashboard',
     element:<Dashboard />
+  },
+  {
+    path:'/analysis',
+    element:<Analysis />
   }
   
 ]);
