@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfile = () => {
 
     const [user, setUser] = useState(null);
     // const { user_id }= useParams();
-    
+    const navigate = useNavigate();
+
     const user_id = (document.cookie.split('; ').find(cookie => cookie.startsWith('user_id=')) || '').split('=')[1];
     console.log("user_id", user_id);
 
@@ -22,6 +23,7 @@ const UserProfile = () => {
 
     return (
         <div>
+            <button onClick={()=>navigate("/search")}>Back</button>
             <h2>User Profile</h2>
             <p>Email: {user.email}</p>
             <p>Phone Number: {user.phone_number}</p>

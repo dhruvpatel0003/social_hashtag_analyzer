@@ -3,17 +3,21 @@ import uuid
 
 from django.db import models
 
-
+class SubScription(models.Model):
+    subscription_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    subscription_amount = models.CharField(max_length=100,null=True)
+    subscription_date = models.CharField(max_length=100,null=True)
+    subscription_expires_date = models.CharField(max_length=100,null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 class User(models.Model):
 
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email=models.EmailField(max_length=100,unique=True)
     password = models.CharField(max_length=100)
     phone_number= models.CharField(max_length=10,unique=True)
-    subscription_amount = models.CharField(max_length=100,null=True)
-    subscription_date = models.CharField(max_length=100,null=True)
-    subscription_expires_date = models.CharField(max_length=100,null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    subscription_status = models.ManyToManyField(SubScription, related_name='subscription_status')
+
         
 class YouTubeProfile(models.Model):
     current_date = models.CharField(max_length=100,null=True)

@@ -46,6 +46,13 @@ const SignUpPage = () => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     console.log("subscriptionPlan ::::::: ", subscriptionPlan);
 
+    const subscriptionStatus = [{
+      "subscription_amount": subscriptionPlan,
+      "subscription_date" : subscriptionDate,
+      "subscription_expires_date" : subscriptionExpiresDate,
+    }]
+
+
     const requestOptions = {
       method: "POST",   
       headers: { "Content-Type": "application/json" },
@@ -53,10 +60,7 @@ const SignUpPage = () => {
         email,
         password: hashedPassword,
         phone_number: phoneNumber,
-        subscription_amount: subscriptionPlan,
-        subscription_date : subscriptionDate,
-        subscription_expires_date : subscriptionExpiresDate,
-        // subscription_status: subscriptionStatus,
+        subscription_status : subscriptionStatus
       }),
     };
 

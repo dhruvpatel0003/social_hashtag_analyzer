@@ -10,8 +10,13 @@ import {
   Legend,
   ResponsiveContainer,
   Line,
-  Tooltip, Brush
+  Tooltip,
+  Brush,
 } from "recharts";
+import html2canvas from "html2canvas";
+import ExcelJS from "exceljs";
+
+let workbook;
 
 const Analysis = () => {
   const navigate = useNavigate();
@@ -338,160 +343,141 @@ const Analysis = () => {
     navigate("/search");
   };
 
+  /////////////////////////////////////////////// Download Analysis Page ///////////////////////////////////////////////////////////////////////
+
+  // const downloadPageData = () => {
+  //   const workbook = XLSX.utils.book_new();
+
+  //   // Add Twitter Comments Graph
+  //   XLSX.utils.book_append_sheet(
+  //     workbook,
+  //     XLSX.utils.json_to_sheet(transformedData_graph1),
+  //     "Twitter_Comments_Table"
+  //   );
+
+  //   // Add Twitter Profile Table
+  //   XLSX.utils.book_append_sheet(
+  //     workbook,
+  //     XLSX.utils.json_to_sheet(transformedData_graph_twitter),
+  //     "Twitter_Profile_Table"
+  //   );
+
+  //   // Add Instagram Profile Table
+  //   XLSX.utils.book_append_sheet(
+  //     workbook,
+  //     XLSX.utils.json_to_sheet(transformedData_graph_instagram),
+  //     "Instagram_Profile_Table"
+  //   );
+
+  //   // Add YouTube Profile Table
+  //   XLSX.utils.book_append_sheet(
+  //     workbook,
+  //     XLSX.utils.json_to_sheet(transformedData_graph_youtube),
+  //     "YouTube_Profile_Table"
+  //   );
+
+  //   XLSX.writeFile(workbook, "SocialMediaAnalysisData.xlsx");
+  // };
+  const captureAndConvertToBase64 = async (selector) => {
+    const element = document.querySelector(selector);
+    const canvas = await html2canvas(element);
+    return canvas.toDataURL("image/png");
+  };
+
+  const addImageToWorksheet = (sheet, base64Image, startCol, startRow) => {
+    const imageId = workbook.addImage({
+      base64: base64Image,
+      extension: "png",
+    });
+
+    sheet.addImage(imageId, {
+      tl: { col: startCol, row: startRow },
+      br: { col: startCol + 10, row: startRow + 15 },
+      editAs: "oneCell",
+    });
+  };
+  const downloadPageData = async () => {
+    if (!workbook) {
+      workbook = new ExcelJS.Workbook();
+    }
+
+    const sheet = workbook.addWorksheet("Analysis");
+
+    const graph1Image = await captureAndConvertToBase64("#graph1-container");
+    addImageToWorksheet(sheet, graph1Image, 1, 1);
+
+    const twitterProfileImage = await captureAndConvertToBase64(
+      "#twitter-profile-container"
+    );
+    addImageToWorksheet(sheet, twitterProfileImage, 12, 1);
+
+    const instagramProfileImage = await captureAndConvertToBase64(
+      "#instagram-profile-container"
+    );
+    addImageToWorksheet(sheet, instagramProfileImage, 1, 20);
+
+    const youtubeProfileImage = await captureAndConvertToBase64(
+      "#youtube-profile-container"
+    );
+    addImageToWorksheet(sheet, youtubeProfileImage, 12, 20);
+
+    addTableToWorksheet(sheet, "#twitter-comments-table-container", 1, 40);
+    addTableToWorksheet(sheet, "#twitter-profile-table-container", 1, 60);
+    addTableToWorksheet(sheet, "#instagram-profile-table-container", 1, 80);
+    addTableToWorksheet(sheet, "#youtube-profile-table-container", 1, 100);
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = "SocialAnalyzer_Analysis.xlsx";
+      link.click();
+    });
+  };
+
+  const addTableToWorksheet = (sheet, selector, startCol, startRow) => {
+    const tableElement = document.querySelector(selector);
+
+    if (!tableElement) {
+      console.error(`Table with selector ${selector} not found.`);
+      return;
+    }
+
+    const headerRow = tableElement.querySelector("thead tr");
+
+    if (!headerRow) {
+      console.error(
+        `Header row not found in the table with selector ${selector}.`
+      );
+      return;
+    }
+
+    Array.from(headerRow.cells).forEach((cell, index) => {
+      sheet.getCell(startRow, startCol + index).value = cell.textContent.trim();
+    });
+
+    const rows = tableElement.querySelectorAll("tbody tr");
+    rows.forEach((row, rowIndex) => {
+      const cells = row.cells;
+      Array.from(cells).forEach((cell, cellIndex) => {
+        sheet.getCell(startRow + rowIndex + 1, startCol + cellIndex).value =
+          cell.textContent.trim();
+      });
+    });
+  };
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   return (
     <div>
       <div>
         <button onClick={handleOnBack}>Back</button>
       </div>
-      {/*<div style={{ display: "flex", flexDirection: "row" }}>
-        <div>
-          <h1>Twitter Comments Graph</h1>
-          <ResponsiveContainer width={500} height={500}>
-            <LineChart
-              width={500}
-              height={700}
-              data={transformedData_graph1}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="likes"
-                stroke="#8884d8"
-                activeDot={{ r: 8 }}
-              />
-              <Line type="monotone" dataKey="retweets" stroke="#82ca9d" />
-              <Line type="monotone" dataKey="comments" stroke="#ffc658" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div>
-          <h1>Twitter Profile</h1>
-          <ResponsiveContainer width={500} height={500}>
-            <LineChart
-              width={500}
-              height={700}
-              data={transformedData_graph_twitter}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatNumber} />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="followers"
-                stroke="#8884d8"
-                name="Followers"
-              />
-              <Line
-                type="monotone"
-                dataKey="followings"
-                stroke="#82ca9d"
-                name="Followings"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
 
-        <div>
-          <h1>Instagram Profile</h1>
-          <ResponsiveContainer width={500} height={500}>
-            <LineChart
-              width={500}
-              height={700}
-              data={transformedData_graph_instagram}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatNumber} />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="followers"
-                stroke="#8884d8"
-                name="Followers"
-              />
-              <Line
-                type="monotone"
-                dataKey="followings"
-                stroke="#82ca9d"
-                name="Followings"
-              />
-              <Line
-                type="monotone"
-                dataKey="posts"
-                stroke="#ffc658"
-                name="Posts"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div>
-          <h1>YouTube Profile</h1>
-          <ResponsiveContainer width={500} height={500}>
-            <LineChart
-              width={500}
-              height={400}
-              data={transformedData_graph_youtube}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatNumber} />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="video_count"
-                stroke="#8884d8"
-                name="Video Count"
-              />
-              <Line
-                type="monotone"
-                dataKey="subscriber_count"
-                stroke="#82ca9d"
-                name="subscriber Count"
-              />
-              <Line
-                type="monotone"
-                dataKey="views_count"
-                stroke="#ffc658"
-                name="Views Count"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-            </div>*/}
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <div>
+        <div id="graph1-container">
           <h1>Twitter Comments Graph</h1>
           <ResponsiveContainer width={800} height={500}>
             <LineChart
@@ -512,7 +498,7 @@ const Analysis = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div>
+        <div id="twitter-profile-container">
           <h1>Twitter Profile</h1>
           <ResponsiveContainer width={800} height={500}>
             <LineChart
@@ -532,7 +518,7 @@ const Analysis = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div>
+        <div id="instagram-profile-container">
           <h1>Instagram Profile</h1>
           <ResponsiveContainer width={800} height={500}>
             <LineChart
@@ -553,7 +539,7 @@ const Analysis = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div>
+        <div id="youtube-profile-container">
           <h1>YouTube Profile</h1>
           <ResponsiveContainer width={800} height={500}>
             <LineChart
@@ -580,7 +566,7 @@ const Analysis = () => {
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ margin: "10px" }}>
+        <div id="twitter-comments-table-container" style={{ margin: "10px" }}>
           <h1>Twitter Comments Table</h1>
           <table border="1">
             <thead>
@@ -604,7 +590,7 @@ const Analysis = () => {
           </table>
         </div>
 
-        <div style={{ margin: "10px" }}>
+        <div id="twitter-profile-table-container" style={{ margin: "10px" }}>
           <h1>Twitter Profile Table</h1>
           <table border="1">
             <thead>
@@ -649,7 +635,7 @@ const Analysis = () => {
             </tbody>
           </table>
         </div>
-        <div style={{ margin: "10px" }}>
+        <div id="instagram-profile-table-container" style={{ margin: "10px" }}>
           <h1>Instagram Profile Table</h1>
           <table border="1">
             <thead>
@@ -697,7 +683,7 @@ const Analysis = () => {
           </table>
         </div>
 
-        <div style={{ margin: "10px" }}>
+        <div id="youtube-profile-table-container" style={{ margin: "10px" }}>
           <h1>YouTube Profile Table</h1>
           <table border="1">
             <thead>
@@ -745,6 +731,7 @@ const Analysis = () => {
           </table>
         </div>
       </div>
+      <button onClick={downloadPageData}>Download Page Data</button>
     </div>
   );
 };

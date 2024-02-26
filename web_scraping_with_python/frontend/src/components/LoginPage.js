@@ -46,7 +46,7 @@ const LoginPage = () => {
         ).toUTCString();
 
         document.cookie = `user_id=${data.token}; expires=${expirationDate}`;
-        console.log("::::::::::::::::::::::", document.cookie);
+        console.log("::::::::::document Cookie::::::::::::", document.cookie);
         console.log(
           "::::::::::::::::::::::",
           document.cookie.split(" ")[0].split("=")[1],

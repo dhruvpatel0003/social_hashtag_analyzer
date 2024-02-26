@@ -1,19 +1,26 @@
 from datetime  import datetime
 from rest_framework import serializers
-from .models import HashTag, History, InstagramProfile, TwitterProfile, User, HashTagStats, YouTubeProfile, YouTubeStats, InstagramStats, TwitterStats, Comment
+from .models import HashTag, History, InstagramProfile, SubScription, TwitterProfile, User, HashTagStats, YouTubeProfile, YouTubeStats, InstagramStats, TwitterStats, Comment
 
+
+class SubScriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubScription
+        fields = ['subscription_id', 'subscription_amount', 'subscription_date', 'subscription_expires_date', 'created_at']
 
 class UserSerializer(serializers.ModelSerializer):
+    subscription_status = SubScriptionSerializer(many=True, allow_empty=True, required=False)
+
     class Meta:
         model = User
-        fields = ['id', 'user_id', 'email', 'password', 'phone_number', 'subscription_amount','subscription_date','subscription_expires_date', 'created_at']
-        # fields = ['email', 'password', 'phone_number', 'subscription_status']
+        fields = ['user_id', 'email', 'password', 'phone_number', 'subscription_status']
 
 class CreateUserSerializer(serializers.ModelSerializer):
+    subscription_status = SubScriptionSerializer(many=True, allow_empty=True, required=False)
+
     class Meta:
         model = User
-        fields = ('email', 'password', 'phone_number', 'subscription_amount','subscription_date','subscription_expires_date')    
-
+        fields = ['email', 'password', 'phone_number', 'subscription_status']
 class YouTubeSerializer(serializers.ModelSerializer):
     class Meta:
         model = YouTubeProfile

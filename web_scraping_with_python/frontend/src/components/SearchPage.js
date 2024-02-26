@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ExcelJS from 'exceljs';
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [downloadOption, setDownloadOption] = useState(false);
+  const [historyData, setHistoryData] = useState("");
 
   const handleOnSave = () => {
     const months = {
@@ -33,7 +35,7 @@ const SearchPage = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body : JSON.stringify({
+      body: JSON.stringify({
         hashtag: dict["hashtag"],
         hashtag_stats: [
           {
@@ -44,56 +46,81 @@ const SearchPage = () => {
                   current_status: [
                     {
                       current_date:
-                        dict["hashtag_stats"][0]["youtube_stats"]["current_status"][0]["current_date"],
+                        dict["hashtag_stats"][0]["youtube_stats"][
+                          "current_status"
+                        ][0]["current_date"],
                       views_count:
-                        dict["hashtag_stats"][0]["youtube_stats"]["current_status"][0]["views_count"],
+                        dict["hashtag_stats"][0]["youtube_stats"][
+                          "current_status"
+                        ][0]["views_count"],
                       subscription_count:
-                        dict["hashtag_stats"][0]["youtube_stats"]["current_status"][0]["subscription_count"],
+                        dict["hashtag_stats"][0]["youtube_stats"][
+                          "current_status"
+                        ][0]["subscription_count"],
                       video_count:
-                        dict["hashtag_stats"][0]["youtube_stats"]["current_status"][0]["video_count"]
-                    }
-                  ]
+                        dict["hashtag_stats"][0]["youtube_stats"][
+                          "current_status"
+                        ][0]["video_count"],
+                    },
+                  ],
                 }
               : {},
             instagram_stats: {
               current_status: [
                 {
                   current_date:
-                    dict["hashtag_stats"][0]["instagram_stats"]["current_status"][0]["current_date"],
+                    dict["hashtag_stats"][0]["instagram_stats"][
+                      "current_status"
+                    ][0]["current_date"],
                   followers:
-                    dict["hashtag_stats"][0]["instagram_stats"]["current_status"][0]["followers"],
+                    dict["hashtag_stats"][0]["instagram_stats"][
+                      "current_status"
+                    ][0]["followers"],
                   followings:
-                    dict["hashtag_stats"][0]["instagram_stats"]["current_status"][0]["followings"],
+                    dict["hashtag_stats"][0]["instagram_stats"][
+                      "current_status"
+                    ][0]["followings"],
                   posts:
-                    dict["hashtag_stats"][0]["instagram_stats"]["current_status"][0]["posts"]
-                }
-              ]
+                    dict["hashtag_stats"][0]["instagram_stats"][
+                      "current_status"
+                    ][0]["posts"],
+                },
+              ],
             },
             twitter_stats: {
               current_status: [
                 {
                   current_date:
-                    dict["hashtag_stats"][0]["twitter_stats"]["current_status"][0]["current_date"],
+                    dict["hashtag_stats"][0]["twitter_stats"][
+                      "current_status"
+                    ][0]["current_date"],
                   followers:
-                    dict["hashtag_stats"][0]["twitter_stats"]["current_status"][0]["followers"],
+                    dict["hashtag_stats"][0]["twitter_stats"][
+                      "current_status"
+                    ][0]["followers"],
                   followings:
-                    dict["hashtag_stats"][0]["twitter_stats"]["current_status"][0]["followings"]
-                }
+                    dict["hashtag_stats"][0]["twitter_stats"][
+                      "current_status"
+                    ][0]["followings"],
+                },
               ],
-              joining_date: dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-              comments: dict["hashtag_stats"][0]["twitter_stats"]["comments"].map((comment) => ({
+              joining_date:
+                dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
+              comments: dict["hashtag_stats"][0]["twitter_stats"][
+                "comments"
+              ].map((comment) => ({
                 text: comment.text,
                 comments: comment.comments,
                 url: comment.url,
                 likes: comment.likes,
                 retweets: comment.retweets,
-                comment_date: comment.comment_date
-              }))
-            }
-          }
-        ]
-      })
-      
+                comment_date: comment.comment_date,
+              })),
+            },
+          },
+        ],
+      }),
+
       // body: JSON.stringify({
       //   hashtag: dict["hashtag"],
       //   hashtag_stats: [
@@ -217,7 +244,8 @@ const SearchPage = () => {
   };
 
   const handleOnTwitterHashtagSearch = () => {
-    fetch(`/api/twitter/search?key=${searchTerm}`, {
+    fetch(`/api/twitter/search?key=carryminati`, {
+    // fetch(`/api/twitter/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -238,16 +266,100 @@ const SearchPage = () => {
       });
   };
 
-  const handleOnDownloadFile = () => {
+  const handleOnDownloadTxTFile = () => {
     const jsonString = JSON.stringify(hashtagIncludeData, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
     const downloadLink = document.createElement("a");
     downloadLink.href = window.URL.createObjectURL(blob);
-    downloadLink.download = "data.txt";
+    downloadLink.download = "SocialAnalyzer_HashTagIncludeData.txt";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
   };
+
+  ////////////////////////////////////////////////////// Download Excel File ////////////////////////////////////////
+ 
+  const handleOnDownloadExcelFile = ()=>{
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('SocialAnalyzer_HashTagIncludeData');
+  
+    const headerRow = sheet.getRow(1);
+    headerRow.getCell(1).value = 'Title';
+    headerRow.getCell(2).value = 'Text';
+    headerRow.getCell(3).value = 'URL';
+  
+    hashtagIncludeData.data.forEach((entry, index) => {
+      const row = sheet.getRow(index + 2);
+      row.getCell(1).value = entry.title;
+      row.getCell(2).value = entry.text;
+      row.getCell(3).value = entry.url;
+    });
+  
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'hashtag_data.xlsx';
+      link.click();
+    });
+  }
+
+  ////////////////////////////////////////////////////// Download Excel File with Analysis ////////////////////////////////////////
+
+  const handleOnDownloadExcelAnalysisFile = () => {
+    // Create a new workbook and add a worksheet
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('HashtagData');
+  
+    // Add headers to the worksheet
+    sheet.addRow(['Title', 'Text', 'URL', 'Date', 'Followers', 'Quotes', 'Posts']);
+  
+    // Iterate through each entry in hashtagIncludeData
+    hashtagIncludeData.data.forEach(entry => {
+      // Parse the text field to extract additional information
+      const { date, followers, quotes, posts } = parseText(entry.text);
+  
+      // Add a new row to the worksheet with the extracted information
+      sheet.addRow([
+        entry.title,
+        entry.text,
+        entry.url,
+        date !== undefined ? date : 'NA',
+        followers !== undefined ? followers : 'NA',
+        quotes !== undefined ? quotes : 'NA',
+        posts !== undefined ? posts : 'NA',
+      ]);
+    });
+  
+    // Save the workbook to a file
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'SocialAnalyzer-HashTagIncludeData.xlsx';
+      link.click();
+    });
+  };
+  
+  // Function to parse the text and extract relevant information
+  const parseText = (text) => {
+    // Here, you need to implement logic to extract relevant information from the text
+    // For example, you can use regular expressions to extract date, followers, quotes, posts, etc.
+  
+    // Sample implementation (you may need to adjust this based on the actual text structure)
+    const dateMatch = text.match(/(\b\w+ \d{1,2}, \d{4}\b)/);
+    const followersMatch = text.match(/(\d+) followers/);
+    const quotesMatch = text.match(/(\d+) quotes/);
+    const postsMatch = text.match(/(\d+) posts/);
+  
+    return {
+      date: dateMatch ? dateMatch[0] : undefined,
+      followers: followersMatch ? followersMatch[1] : undefined,
+      quotes: quotesMatch ? quotesMatch[1] : undefined,
+      posts: postsMatch ? postsMatch[1] : undefined,
+    };
+  };
+  
 
   const handleSearchClick = () => {
     setHashtagData(null);
@@ -308,8 +420,8 @@ const SearchPage = () => {
                   current_date: "2022-01-22",
                   views_count: 1002,
                   subscription_count: 197,
-                  video_count: 50
-                }
+                  video_count: 50,
+                },
               ],
             },
             instagram_stats: {
@@ -318,28 +430,29 @@ const SearchPage = () => {
                   current_date: "2022-01-22",
                   followers: "139 M",
                   followings: "231 K",
-                  posts: 193
+                  posts: 193,
                 },
                 {
                   current_date: "2022-01-21",
                   followers: "911 M",
                   followings: "201 K",
-                  posts: 183
-                }
+                  posts: 183,
+                },
               ],
             },
             twitter_stats: {
-              current_status : [{
-                current_date : '2022-01-19',
-                followers : '200 M',
-                followings : '100 K'
-              },
-              {
-                current_date : '2022-01-18',
-                followers : '333 M',
-                followings : '222 K'
-              }
-            ],
+              current_status: [
+                {
+                  current_date: "2022-01-19",
+                  followers: "200 M",
+                  followings: "100 K",
+                },
+                {
+                  current_date: "2022-01-18",
+                  followers: "333 M",
+                  followings: "222 K",
+                },
+              ],
               joining_date: "2020-01-1",
               comments: [
                 {
@@ -348,8 +461,8 @@ const SearchPage = () => {
                   comments: "120",
                   likes: 2350,
                   retweets: 101,
-                  comment_date: "2023-12-23"
-                }
+                  comment_date: "2023-12-23",
+                },
               ],
             },
           },
@@ -390,6 +503,23 @@ const SearchPage = () => {
 
   const handleOnHashtagClick = (hashtag) => {
     // navigate(`/search-hashtag/${hashtag}`);
+  };
+
+  const handleOnHistoryClick = () => {
+    // console.log(document.cookie.split(" ")[3].split("=")[1]);
+    fetch(`/api/my-history/Np5ZqaNWgXbxFpmqmSkLiyjLtupnydWL`, {
+    // fetch(`/api/history/${document.cookie.split(" ")[3].split("=")[1]}`, {
+      method: "GET",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok, status: ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => setHistoryData(data));
   };
 
   const handleOnClickStastatic = () => {
@@ -453,6 +583,13 @@ const SearchPage = () => {
           </li>
         </ul>
         <button onClick={handleOnUserProfile}>Profile</button>
+        <button onClick={handleOnHistoryClick}>History</button>
+        {historyData && (
+          <div>
+            <h3>My History</h3>
+            <pre>{JSON.stringify(historyData, null, 2)}</pre>
+          </div>
+        )}
       </div>
 
       {!hashtagIncludeData && hashtagData && (
@@ -468,11 +605,14 @@ const SearchPage = () => {
           <h3>Hashtag Include Data:</h3>
           <pre>{JSON.stringify(hashtagIncludeData, null, 2)}</pre>
           {downloadOption && (
-            <button onClick={handleOnDownloadFile}>Download</button>
+           <div>
+            <button onClick={handleOnDownloadTxTFile}>Download TxT</button>
+            <button onClick={handleOnDownloadExcelFile}>Download Excel</button>
+            <button onClick={handleOnDownloadExcelAnalysisFile}>Download Analysis Excel</button>
+           </div>
           )}
         </div>
       )}
-      {/* {showAnalysis && <h2>Twitter Activity</h2>} */}
     </div>
   );
 };

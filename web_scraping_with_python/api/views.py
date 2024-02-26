@@ -16,8 +16,8 @@ import bcrypt
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import generics, status
-from .serializers import HashTagSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
-from .models import History, User, HashTag, HashTagStats
+from .serializers import HashTagSerializer, SubScriptionSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
+from .models import History, SubScription, User, HashTag, HashTagStats
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
@@ -46,30 +46,60 @@ class HashTagListView(generics.ListAPIView):
     serializer_class = HashTagSerializer
 
 
+# class CreateUserView(APIView):
+    # serializer_class = CreateUserSerializer
+
+    # def post(self, request, format=None):
+    #     if not self.request.session.exists(self.request.session.session_key):
+    #         self.request.session.create()
+
+    #     serializer = self.serializer_class(data=request.data)
+    #     if serializer.is_valid():
+    #         email = serializer.data.get('email')
+    #         password = serializer.data.get('password')  
+    #         phone_number = serializer.data.get('phone_number')
+    #         subscription_date = serializer.data.get('subscription_date')
+    #         subscription_expires_date = serializer.data.get('subscription_expires_date')
+    #         subscription_plan = serializer.data.get('subscription_amount')
+    #         # subscription_status = serializer.data.get('subscription_status')
+
+    #         user = User.objects.filter(email=email)
+
+    #         user = User.objects.create(email=email, password=password, phone_number=phone_number,subscription_amount=subscription_plan,subscription_date=subscription_date,subscription_expires_date=subscription_expires_date)
+    #         user.save()
+    #         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         print("inside the else statement")
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
 class CreateUserView(APIView):
     serializer_class = CreateUserSerializer
 
     def post(self, request, format=None):
+        
+        print("request body ::::::::::::::::::::::::::::::::::::::::: ",request.body)
         if not self.request.session.exists(self.request.session.session_key):
-            self.request.session.create()
+            self.request.session.create()   
 
         serializer = self.serializer_class(data=request.data)
+        
         if serializer.is_valid():
+            
             email = serializer.data.get('email')
             password = serializer.data.get('password')  
             phone_number = serializer.data.get('phone_number')
-            subscription_date = serializer.data.get('subscription_date')
-            subscription_expires_date = serializer.data.get('subscription_expires_date')
-            subscription_plan = serializer.data.get('subscription_amount')
-            # subscription_status = serializer.data.get('subscription_status')
-
-            user = User.objects.filter(email=email)
-
-            user = User.objects.create(email=email, password=password, phone_number=phone_number,subscription_amount=subscription_plan,subscription_date=subscription_date,subscription_expires_date=subscription_expires_date)
-            user.save()
-            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+            subscription_data = serializer.data.get('subscription_status',[])
+            print("subscription_date :::::: ",subscription_data)
+            user = User.objects.create(email=email, password=password, phone_number=phone_number)
+            print(user)
+            for subscription_details in subscription_data:
+                print("subscription_details )))))))))))))))) ",subscription_details)
+                subscription = SubScription.objects.create(**subscription_details)
+                user.subscription_status.add(subscription)
+                
+            user_serializer = UserSerializer(user)
+            return Response(user_serializer.data, status=status.HTTP_201_CREATED)
         else:
-            print("inside the else statement")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
