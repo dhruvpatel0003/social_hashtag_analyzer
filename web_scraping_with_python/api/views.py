@@ -1,4 +1,5 @@
 import os
+from django.views import View
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -12,16 +13,20 @@ import requests
 import googleapiclient.discovery
 import time
 import bcrypt
+import pandas as pd
+import os
 
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.http import FileResponse, HttpResponse, HttpResponseForbidden
+from django.shortcuts import redirect, render
 from rest_framework import generics, status
-from .serializers import HashTagSerializer, SubScriptionSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
-from .models import History, SubScription, User, HashTag, HashTagStats
+from .serializers import AnalysisReportSerializer, HashTagSerializer, SubScriptionSerializer, UserHistorySerializer, UserProfileSerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
+from .models import AnalysisReport, History, SubScription, User, HashTag, HashTagStats, UserProfile
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from datetime import datetime
+from django.http import JsonResponse
+from openpyxl import Workbook
 
 
 from selenium import webdriver
@@ -34,7 +39,35 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 
 
+# class UserProfileView(View):
+#     template_name = 'profile.html'
 
+#     def get(self, request, *args, **kwargs):
+#         user_profile = UserProfile.objects.get(user=request.user)
+#         return render(request, self.template_name, {'user_profile': user_profile})
+
+#     def post(self, request, *args, **kwargs):
+#         user_profile = UserProfile.objects.get(user=request.user)
+#         serializer = UserProfileSerializer(user_profile, data=request.POST, files=request.FILES)
+        
+#         if serializer.is_valid():
+#             serializer.save()
+#             return redirect('user_profile')
+#         else:
+#             # Handle invalid serializer data
+#             return render(request, self.template_name, {'user_profile': user_profile, 'serializer': serializer})
+class UserProfilePhotoView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_profile = UserProfile.objects.get(user=request.user)
+
+        # Assuming you have 'profile_photo_url' in the request data
+        profile_photo_url = request.data.get('profile_photo_url')
+
+        user_profile.profile_photo_url = profile_photo_url
+        user_profile.save()
+
+        serializer = UserProfileSerializer(user_profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserView(generics.ListAPIView):
     queryset = User.objects.all()
@@ -45,33 +78,79 @@ class HashTagListView(generics.ListAPIView):
     queryset = HashTag.objects.all()
     serializer_class = HashTagSerializer
 
+class AnalysisReportListCreateView(generics.CreateAPIView):
+    serializer_class = AnalysisReportSerializer
 
-# class CreateUserView(APIView):
-    # serializer_class = CreateUserSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        user_id = serializer.validated_data['user']
+        url = serializer.validated_data['url']
 
-    # def post(self, request, format=None):
-    #     if not self.request.session.exists(self.request.session.session_key):
-    #         self.request.session.create()
+        # Create the directory if it doesn't exist
+        directory = 'api/excel_reports'
+        os.makedirs(directory, exist_ok=True)
 
-    #     serializer = self.serializer_class(data=request.data)
-    #     if serializer.is_valid():
-    #         email = serializer.data.get('email')
-    #         password = serializer.data.get('password')  
-    #         phone_number = serializer.data.get('phone_number')
-    #         subscription_date = serializer.data.get('subscription_date')
-    #         subscription_expires_date = serializer.data.get('subscription_expires_date')
-    #         subscription_plan = serializer.data.get('subscription_amount')
-    #         # subscription_status = serializer.data.get('subscription_status')
+        # Use the user_id as the file name
+        file_name = f'{user_id}_report.xlsx'
+        file_path = os.path.join(directory, file_name)
 
-    #         user = User.objects.filter(email=email)
+        # Update the URL field in the serializer with the file path
+        serializer.validated_data['url'] = file_path
+        serializer.save()
 
-    #         user = User.objects.create(email=email, password=password, phone_number=phone_number,subscription_amount=subscription_plan,subscription_date=subscription_date,subscription_expires_date=subscription_expires_date)
-    #         user.save()
-    #         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         print("inside the else statement")
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+        # Generate your Excel file content here, for example using pandas
+        # This is just an example, adjust it based on your data structure
+        data = {'url': [url]}
+        df = pd.DataFrame(data)
+        df.to_excel(file_path, index=False)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+class GetAnalysisReport(generics.ListAPIView):
+    queryset = AnalysisReport.objects.all()
+    serializer_class = AnalysisReportSerializer
+    
+    
+################################################################################## TO-DO ###########################################################
+
+# class GetDocumentURLView(generics.RetrieveAPIView):
+#     serializer_class = AnalysisReportSerializer
+
+#     def get(self, request, *args, **kwargs):
+#         user_id = kwargs.get('user_id', None)
+
+#         if not user_id:
+#             return Response({'error': 'User ID is required.'}, status=400)
+
+#         try:
+#             analysis_report = AnalysisReport.objects.get(user=user_id)
+#             serializer = self.get_serializer(analysis_report)
+#             document_url = serializer.data['url']
+
+#             # Check if the file exists
+#             if os.path.exists(document_url):
+#                 # Open the file and return it as a response
+#                 with open(document_url, 'rb') as file:
+#                     response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+#                     # Set the Content-Disposition header
+#                     response['Content-Disposition'] = f'inline; filename="{os.path.basename(document_url)}"'
+
+#                     return response
+#             else:
+#                 return Response({'error': 'File not found.'}, status=404)
+
+#         except AnalysisReport.DoesNotExist:
+#             return Response({'error': 'Analysis report not found for the user.'}, status=404)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=500)
+
+######################################################################################################################################################  
+
 class CreateUserView(APIView):
     serializer_class = CreateUserSerializer
 
@@ -224,7 +303,7 @@ class SearchFromChrome(APIView):
     
         hashtag_data = {}
         
-        # driver = webdriver.Chrome()
+        driver = webdriver.Chrome()
         # # chrome_options = webdriver.ChromeOptions()
         # # chrome_options.add_argument("--headless")
         # # chrome_options.add_argument('--ignore-certificate-errors')
@@ -243,68 +322,68 @@ class SearchFromChrome(APIView):
         hashtag_data['hashtag_stats'][0]['twitter_stats'] = {}
         
         
-        # youTuberName = "https://youtube.com/@"+enteredName
-        # driver.get('https://commentpicker.com/youtube-channel-id.php')
-        # time.sleep(2)
+        youTuberName = "https://youtube.com/@"+enteredName
+        driver.get('https://commentpicker.com/youtube-channel-id.php')
+        time.sleep(2)
         
-        # inputUrl = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
-        # inputUrl.send_keys(youTuberName)
-        # time.sleep(5)
+        inputUrl = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
+        inputUrl.send_keys(youTuberName)
+        time.sleep(5)
         
-        # number1 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
-        # number2 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
-        # sum=int(number1.text) +int( number2.text)
-        # time.sleep(2)
+        number1 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
+        number2 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
+        sum=int(number1.text) +int( number2.text)
+        time.sleep(2)
         
-        # input_answer = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
-        # input_answer.send_keys(sum)
-        # time.sleep(20)
+        input_answer = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
+        input_answer.send_keys(sum)
+        time.sleep(20)
         
-        # print("Before the error point ___________________________")
-        # getButton = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
-        # getButton.click()
-        # time.sleep(5)
-        # print("After the error point ___________________________")
+        print("Before the error point ___________________________")
+        getButton = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
+        getButton.click()
+        time.sleep(5)
+        print("After the error point ___________________________")
 
-        # print("Before the error point 2 ___________________________")
-        # channel_ID = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
-        # print("After the error point 2___________________________")        
-        # time.sleep(5)
+        print("Before the error point 2 ___________________________")
+        channel_ID = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
+        print("After the error point 2___________________________")        
+        time.sleep(5)
     
-        # # channel_ID = "UC61Y04JVLkByFRv1K3V-KGQ"
+        # channel_ID = "UC61Y04JVLkByFRv1K3V-KGQ"
         
-        # api_service_name = "youtube"
-        # api_version = "v3"
+        api_service_name = "youtube"
+        api_version = "v3"
         
-        # youtube = googleapiclient.discovery.build(
-        #     api_service_name, api_version, developerKey=DEVELOPER_KEY)
+        youtube = googleapiclient.discovery.build(
+            api_service_name, api_version, developerKey=DEVELOPER_KEY)
 
         
-        # request = youtube.channels().list(
-        #     part="snippet,contentDetails,statistics",
-        #     id=channel_ID.text,
-        #     # id=channel_ID,
-        #     maxResults=10
-        # )
-        # response = request.execute()
-        # # print(response)
-        # data=[]
-        # for i in range(1):
-        #     finalinfo = dict(Name=response['items'][i]['snippet']['title'],
-        #                     views_count=response['items'][i]['statistics']['viewCount'],
-        #                     subscriber_count=response['items'][i]['statistics']['subscriberCount'],video_count=response['items'][i]['statistics']['videoCount'])
-        #     data.append(finalinfo)
-        # # print(data)
+        request = youtube.channels().list(
+            part="snippet,contentDetails,statistics",
+            id=channel_ID.text,
+            # id=channel_ID,
+            maxResults=10
+        )
+        response = request.execute()
+        # print(response)
+        data=[]
+        for i in range(1):
+            finalinfo = dict(Name=response['items'][i]['snippet']['title'],
+                            views_count=response['items'][i]['statistics']['viewCount'],
+                            subscriber_count=response['items'][i]['statistics']['subscriberCount'],video_count=response['items'][i]['statistics']['videoCount'])
+            data.append(finalinfo)
+        # print(data)
 
-        # hashtag_data['hashtag_stats'][0]['youtube_stats']['name']=data[0]['Name']
-        # hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status']=[]
-        # hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status'].append({
-        #     "current_date" : "2022-01-22",
-        #     "views_count" : data[0]['views_count'],
-        #     "subscriber_count" : data[0]['subscriber_count'],
-        #     "video_count" : data[0]['video_count']
-        # })
-        # driver.quit()
+        hashtag_data['hashtag_stats'][0]['youtube_stats']['name']=data[0]['Name']
+        hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status']=[]
+        hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status'].append({
+            "current_date" : "2022-01-22",
+            "views_count" : data[0]['views_count'],
+            "subscriber_count" : data[0]['subscriber_count'],
+            "video_count" : data[0]['video_count']
+        })
+        driver.quit()
         
         
         
@@ -407,35 +486,35 @@ class SearchFromChrome(APIView):
       
         driver.quit()
 
-        scraper = Nitter(0)
-        print("before tweets -------------------------------------------------------------- ")
-        tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
+        # scraper = Nitter(0)
+        # print("before tweets -------------------------------------------------------------- ")
+        # tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
 
-        # tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
-        print("After tweets -------------------------------------------------------------- ")
-        print("tweets -------------------------------------------------------------- ",tweets)
-        final_tweets = []
-        for x in tweets['tweets']:
-        #     print(x)
-        #     print('------------------------')
-            data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
-            # data = [x['stats']['likes'],x['stats']['comments']]
-            final_tweets.append(data)
-            # print(x['text'],x['stats']['likes'])
-        # # print("final_tweets -------------------------------------------------------------- ",final_tweets)
+        # # tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
+        # print("After tweets -------------------------------------------------------------- ")
+        # print("tweets -------------------------------------------------------------- ",tweets)
+        # final_tweets = []
+        # for x in tweets['tweets']:
+        # #     print(x)
+        # #     print('------------------------')
+        #     data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
+        #     # data = [x['stats']['likes'],x['stats']['comments']]
+        #     final_tweets.append(data)
+        #     # print(x['text'],x['stats']['likes'])
+        # # # print("final_tweets -------------------------------------------------------------- ",final_tweets)
 
        
 
-        if(tweets['tweets']):
-            for i in range(0,3):
-                hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
-                                "text":final_tweets[i][1],
-                                "url":final_tweets[i][0],
-                                "likes":final_tweets[i][3],
-                                "retweets": final_tweets[i][5],
-                                "comments":final_tweets[i][4],
-                                "comment_date": final_tweets[i][2]
-            })
+        # if(tweets['tweets']):
+        #     for i in range(0,3):
+        #         hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
+        #                         "text":final_tweets[i][1],
+        #                         "url":final_tweets[i][0],
+        #                         "likes":final_tweets[i][3],
+        #                         "retweets": final_tweets[i][5],
+        #                         "comments":final_tweets[i][4],
+        #                         "comment_date": final_tweets[i][2]
+        #     })
 
 
 
@@ -443,6 +522,12 @@ class SearchFromChrome(APIView):
 
         
         
+        ##########################################################
+        # execute the code by the command line
+        # create .bat 
+        # task schedular
+        # for the instagram and youtube
+        ##########################################################        
         
         return Response({'data': hashtag_data})
     

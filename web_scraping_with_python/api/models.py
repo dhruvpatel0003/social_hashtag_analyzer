@@ -2,6 +2,21 @@ from django.utils import timezone
 import uuid
 
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserProfile(models.Model):
+    user_id = models.CharField(max_length=100,null=True)
+    profile_photo_url = models.URLField(null=True, blank=True)
+
+class AnalysisReport(models.Model):
+    user = models.CharField(max_length=100,null=False)
+    url = models.URLField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.user_id} - {self.url}'
 
 class SubScription(models.Model):
     subscription_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

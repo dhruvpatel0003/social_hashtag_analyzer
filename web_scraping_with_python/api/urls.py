@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteHistory, DeleteUser, GetHashTagData, GetUser, GetUserHistoryByID, HashTagListView, HashTagTwitterSearch, HistoryView, UserLogin, UserView, SearchFromChrome
+from .views import AnalysisReportListCreateView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteHistory, DeleteUser, GetAnalysisReport, GetHashTagData, GetUser, GetUserHistoryByID, HashTagListView, HashTagTwitterSearch, HistoryView, UserLogin, UserView,UserProfilePhotoView, SearchFromChrome
 
 urlpatterns = [
     path('user',UserView.as_view()),
@@ -17,6 +17,10 @@ urlpatterns = [
     path('create-user-history',CreateUserHistory.as_view()),
     path('my-history/<str:user_id>',GetUserHistoryByID.as_view()),
     path('delete-all-history',DeleteHistory.as_view()),
-    path('history',HistoryView.as_view())
+    path('history',HistoryView.as_view()),
+    path('save-analysis-reports', AnalysisReportListCreateView.as_view()),
+    path('get-analysis-reports',GetAnalysisReport.as_view()),
+    path('user-profile-photo/', UserProfilePhotoView.as_view())
+    # path('my-reports/<str:user_id>',GetDocumentURLView.as_view())
 ]
     

@@ -1,8 +1,18 @@
 from datetime  import datetime
 from rest_framework import serializers
-from .models import HashTag, History, InstagramProfile, SubScription, TwitterProfile, User, HashTagStats, YouTubeProfile, YouTubeStats, InstagramStats, TwitterStats, Comment
+from .models import AnalysisReport, HashTag, History, InstagramProfile, SubScription, TwitterProfile, User, HashTagStats, UserProfile, YouTubeProfile, YouTubeStats, InstagramStats, TwitterStats, Comment
 
 
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields =  ['user_id','profile_photo_url']
+
+class AnalysisReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalysisReport
+        fields = '__all__'    
 class SubScriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubScription
@@ -86,8 +96,8 @@ class HashTagSerializer(serializers.ModelSerializer):
         model = HashTag
         fields = ['hashtag','hashtag_stats']
 
-
 class CreateHashtagSerializer(serializers.ModelSerializer):
+
     hashtag_stats = HashTagStatsSerializer(many=True)
 
     class Meta:
@@ -96,7 +106,7 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         hashtag_stats_data = validated_data.pop('hashtag_stats')
-        hashtag_instance = HashTag.objects.create(**validated_data)
+        hashtag, created = HashTag.objects.get_or_create(hashtag=validated_data['hashtag'])
 
         for stats_data in hashtag_stats_data:
             user = stats_data['user']
@@ -160,10 +170,10 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
                 twitter_stats=twitter_stats_instance,
             )
 
-            hashtag_instance.hashtag_stats.add(stats)
-        return hashtag_instance
-    
-    
+            hashtag.hashtag_stats.add(stats)
+
+        return hashtag
+
 class UserHistorySerializer(serializers.ModelSerializer):
     
     user = serializers.CharField(max_length=255)

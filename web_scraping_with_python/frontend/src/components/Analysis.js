@@ -470,6 +470,72 @@ const Analysis = () => {
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  const handleOnSaveReport = () => {
+    // console.log(document.cookie.split(" ")[]);
+    console.log(
+      "inside the report save functionality : ",
+      document.cookie.split(" ")[1].split("=")[1]
+    );
+    const userId = document.cookie.split(" ")[1].split("=")[1]; // Replace with the actual user ID
+    // const basePath = "http://your-backend-base-url"; // Replace with your backend base URL
+    // const relativePath = "/analysis"; // Replace with the actual path you want to save
+    const url = window.location.href;
+    const reportData = {
+      user: userId,
+      url: url,
+      // url: basePath + relativePath,
+    };
+
+    saveReport(reportData);
+  };
+
+  const saveReport = (reportData) => {
+    console.log(document.cookie);
+    fetch("/api/save-analysis-reports", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reportData),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log("Report saved successfully");
+        } else {
+          console.error("Error saving report:", response.statusText);
+        }
+      })
+      .catch((error) => console.error("Error saving report:", error.message));
+  };
+  ///////////////////////////////////////////////////                      TODO   - View Document Functionality                  //////////////////////////////////////////////////////////////////
+
+  // const handleOnFetchDocument = () => {
+  //   console.log(document.cookie);
+  //   const user_id = document.cookie.split(" ")[1].split("=")[1];
+  //   console.log("fetch Document by URL ::: ", user_id);
+  //   fetch(`/api/my-reports/Sv0rQ8KUMgSLLqk8ZjhtZnLUyQwznzXv;`, {
+  //     method: "GET",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   })
+  //   .then(response => response.blob()) // Convert the response to a Blob
+  //   .then(blob => {
+  //     console.log(blob);
+  //     const fileURL = URL.createObjectURL(blob);
+  //     const newWindow = window.open(fileURL, '_blank');
+  //     if (newWindow) {
+  //       newWindow.focus();
+  //     } else {
+  //       console.error('Failed to open a new window.');
+  //     }
+  //   })
+  //   .catch(error => console.error('Error fetching document:', error));
+      
+  // };
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   return (
     <div>
       <div>
@@ -732,6 +798,8 @@ const Analysis = () => {
         </div>
       </div>
       <button onClick={downloadPageData}>Download Page Data</button>
+      <button onClick={handleOnSaveReport}>Save Report</button>
+      {/* <button onClick={handleOnFetchDocument}>View Report</button> */}
     </div>
   );
 };
