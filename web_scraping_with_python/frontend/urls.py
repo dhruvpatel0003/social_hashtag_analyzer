@@ -10,4 +10,6 @@ urlpatterns = [
    path('dashboard',index),
    path('search-hashtag/<str:hashtag>',index),
    path('analysis',index),
+   path('forgot-password',index),
+   path('reset-password',index)
 ]

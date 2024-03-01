@@ -1,49 +1,57 @@
-import React from 'react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import HomePage from './components/HomePage';
-import LoginPage from './components/LoginPage';
-import SignUpPage from './components/SignUpPage';
-import UserProfile from './components/UserProfile';
-import SearchPage from './components/SearchPage';
-import ClickOnTheHashtag from './components/ClickOnTheHashtag';
-import Dashboard from './components/Dashboard';
-import Analysis from './components/Analysis';
+import React from "react";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import HomePage from "./components/HomePage";
+import LoginPage from "./components/LoginPage";
+import SignUpPage from "./components/SignUpPage";
+import UserProfile from "./components/UserProfile";
+import SearchPage from "./components/SearchPage";
+import ClickOnTheHashtag from "./components/ClickOnTheHashtag";
+import Dashboard from "./components/Dashboard";
+import Analysis from "./components/Analysis";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPasswordPage from "./components/ResetPasswordPage";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <HomePage />,
   },
   {
-    path: '/login',
+    path: "/login",
     element: <LoginPage />,
   },
   {
-    path: '/signup',
+    path: "/signup",
     element: <SignUpPage />,
   },
   {
-    path: '/user-profile',
+    path: "/user-profile",
     element: <UserProfile />,
   },
   {
-    path: '/search',
+    path: "/search",
     element: <SearchPage />,
-
   },
   {
-    path: '/search-hashtag/:hashtag',
+    path: "/search-hashtag/:hashtag",
     element: <ClickOnTheHashtag />,
   },
   {
-    path:'/dashboard',
-    element:<Dashboard />
+    path: "/dashboard",
+    element: <Dashboard />,
   },
   {
-    path:'/analysis',
-    element:<Analysis />
+    path: "/analysis",
+    element: <Analysis />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path:'/reset-password',
+    element:<ResetPasswordPage />
   }
-  
 ]);
 
 function App() {

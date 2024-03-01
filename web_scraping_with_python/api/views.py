@@ -1,3 +1,4 @@
+import json
 import os
 from django.views import View
 from dotenv import load_dotenv
@@ -7,7 +8,8 @@ USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
 DEVELOPER_KEY = os.getenv('DEVELOPER_KEY')
 TWITTER_API_KEY = os.getenv('API_KEY')
-
+EMAIL = os.getenv("EMAIL")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 import requests
 import googleapiclient.discovery
@@ -15,6 +17,7 @@ import time
 import bcrypt
 import pandas as pd
 import os
+import smtplib          
 
 from django.http import FileResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
@@ -27,7 +30,11 @@ from rest_framework.generics import ListAPIView
 from datetime import datetime
 from django.http import JsonResponse
 from openpyxl import Workbook
-
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -475,7 +482,7 @@ class SearchFromChrome(APIView):
         "current_status":[],
         "joining_date" : '2020-01-11', 
         "comments" : []
-           }
+        }
         
         hashtag_data['hashtag_stats'][0]['twitter_stats']['current_status'].append({
             "current_date" : "2022-02-11",
@@ -483,7 +490,7 @@ class SearchFromChrome(APIView):
             "followings" : following.text,
         })
         
-      
+    
         driver.quit()
 
         # scraper = Nitter(0)
@@ -503,7 +510,7 @@ class SearchFromChrome(APIView):
         #     # print(x['text'],x['stats']['likes'])
         # # # print("final_tweets -------------------------------------------------------------- ",final_tweets)
 
-       
+    
 
         # if(tweets['tweets']):
         #     for i in range(0,3):
@@ -518,7 +525,7 @@ class SearchFromChrome(APIView):
 
 
 
-       ####################################################################################################################################################################
+    ####################################################################################################################################################################
 
         
         
@@ -656,3 +663,80 @@ class DeleteHistory(APIView):
 class HistoryView(generics.ListAPIView):
     queryset = History.objects.all()
     serializer_class = UserHistorySerializer
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ForgotPassword(View):
+    
+    
+  def post(self, request, *args, **kwargs):
+      
+    print("inside the forgot password")
+        
+    try:
+        request_data = json.loads(request.body.decode('utf-8'))
+
+            # Access the 'email' field
+        user_email = request_data.get('email')
+        print("user email for the forgot password : ",user_email)  
+        try:
+            user = User.objects.get(email=user_email)
+        except User.DoesNotExist:
+            return HttpResponse("This email address is not registered.", status=404)
+        
+        subject = 'Password Reset'
+        message = f'Dear {user.user_id},\n\nOpen the following URL in the browser: http://127.0.0.1:8000/reset-password'
+
+        msg = MIMEMultipart()
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Setup the parameters of the message
+        msg['From'] = EMAIL
+        msg['To'] = user_email
+        msg['Subject'] = subject
+        print("before sending mail ",EMAIL,"password : ",EMAIL_PASSWORD)
+        # Connect to the SMTP server, send the email, and close the connection
+        with smtplib.SMTP('smtp.gmail.com', 587) as conn:
+            conn.starttls()
+            conn.login(user=EMAIL, password=EMAIL_PASSWORD)
+            conn.sendmail(from_addr=EMAIL, to_addrs=user_email, msg=msg.as_string())
+            conn.close()
+            
+        print("After mail was sent")
+        return HttpResponse("Password reset email sent successfully!",status=200)
+    except Exception as e:
+        print(e)
+        return HttpResponse(f"Error sending password reset email: {str(e)}", status=500)
+    
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ResetPassword(View):
+    
+    def post(self, request, *args, **kwargs):
+      
+        print("inside the reset password")
+        request_data = json.loads(request.body.decode('utf-8'))
+
+            # Access the 'email' field
+        user_email = request_data.get('email')
+        user_password = request_data.get('password')
+        
+        print("email ",user_email,"password ",user_password)
+        
+        
+        try:
+            user = User.objects.get(email=user_email)
+        except User.DoesNotExist:
+            print("User not find")
+            return JsonResponse({"message": "This email address is not registered."}, status=404)        
+        if(user):
+            print("old password ",user.password)
+            user.password = user_password
+            print("New password ",user.password)
+            print("after the user password")
+            user.save()  
+            print("after the save")    
+            return HttpResponse("Password reset successfully!",status=200)
+        
+        return HttpResponse("This email address is not registered.")
+

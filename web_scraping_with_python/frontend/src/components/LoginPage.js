@@ -64,6 +64,12 @@ const LoginPage = () => {
     navigate("/signup");
   };
 
+  const handleOnClickForgotPassword = () => {
+    navigate("/forgot-password");
+  }
+
+
+
   const handleTabClick = (tab) => {
     setSelectedTab(tab);
   };
@@ -124,8 +130,8 @@ const LoginPage = () => {
               </div>
               {/* Forgot Password */}
               <div>
-                <p style={{ color: "darkblue" }}>Forgot Password?</p>
-              </div>
+                <button onClick={handleOnClickForgotPassword}>Forgot Password</button>
+              </div>  
               {/* Login Button */}
               <button
                 onClick={handleLogin}
