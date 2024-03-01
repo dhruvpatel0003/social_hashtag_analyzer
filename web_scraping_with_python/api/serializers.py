@@ -85,7 +85,7 @@ class HashTagStatsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HashTagStats
-        fields = ['user', 'youtube_stats', 'instagram_stats', 'twitter_stats']
+        fields = ['youtube_stats', 'instagram_stats', 'twitter_stats']
         
 
 class HashTagSerializer(serializers.ModelSerializer):
@@ -109,7 +109,6 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
         hashtag, created = HashTag.objects.get_or_create(hashtag=validated_data['hashtag'])
 
         for stats_data in hashtag_stats_data:
-            user = stats_data['user']
 
             youtube_stats_data = stats_data.get('youtube_stats', {})
             instagram_stats_data = stats_data.get('instagram_stats', {})
@@ -164,7 +163,6 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
             twitter_stats_instance.comments.set(comments_instances)
 
             stats = HashTagStats.objects.create(
-                user=user,
                 youtube_stats=youtube_stats_instance,
                 instagram_stats=instagram_stats_instance,
                 twitter_stats=twitter_stats_instance,

@@ -209,13 +209,12 @@ class CreateHashTag(APIView):
     print("inside the post request : ::::::::::::::::::::::::::::")
     def post(self, request, format=None):
         print("inside the create hashtag request :::::::::::::::::::::::::::::::::::::::::::::::::::::::::",request.data)
-        serializer = CreateHashtagSerializer(data=request.data)
+        serializer = CreateHashtagSerializer(data=request.data,context={'request': request})
 
         if serializer.is_valid():
             hashtag_instance = serializer.save()
             print(hashtag_instance.hashtag)
             for stats_data in serializer.validated_data.get('hashtag_stats', []):
-                print("User:", stats_data.get('user'))
                 print("YouTube Stats:", stats_data.get('youtube_stats',{}))
                 print("Instagram Stats:", stats_data.get('instagram_stats', {}))
                 print("Twitter Stats:", stats_data.get('twitter_stats', {}))
@@ -246,7 +245,6 @@ class GetHashTagData(APIView):
 
                 for stat in hashtag_stats:
                     modified_stat = {
-                        "user": stat['user'],
                         "youtube_stats": stat['youtube_stats'],
                         "instagram_stats": stat['instagram_stats'],
                         "twitter_stats": stat['twitter_stats'],

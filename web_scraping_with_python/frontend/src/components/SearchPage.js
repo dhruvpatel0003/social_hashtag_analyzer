@@ -12,7 +12,7 @@ const SearchPage = () => {
   const [downloadOption, setDownloadOption] = useState(false);
   const [historyData, setHistoryData] = useState("");
 
-  const handleOnSave = () => {
+  const handleOnAddPredefineHashtag = () => {
     const months = {
       Jan: 0,
       Feb: 1,
@@ -39,7 +39,6 @@ const SearchPage = () => {
         hashtag: dict["hashtag"],
         hashtag_stats: [
           {
-            user: document.cookie.split(" ")[0].split("=")[1],
             youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
               ? {
                   name: dict["hashtag_stats"][0]["youtube_stats"]["name"],
@@ -125,7 +124,6 @@ const SearchPage = () => {
       //   hashtag: dict["hashtag"],
       //   hashtag_stats: [
       //     {
-      //       user: document.cookie.split(" ")[0].split("=")[1],
       //       youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
       //         ? {
       //             name: dict["hashtag_stats"][0]["youtube_stats"]["name"],
@@ -387,89 +385,88 @@ const SearchPage = () => {
     }
     setShowMessage(false);
 
-    fetch(`/api/search?key=${searchTerm}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Network response was not ok, status: ${response.status}`
-          );
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setLoading(false);
-        setHashtagData(data);
-      })
-      .catch((error) => console.error("Error during fetch:", error));
-
-    // setHashtagData({
-    //   data: {
-    //     hashtag: "carryminati",
-    //     hashtag_stats: [
-    //       {
-    //         user: "xyxj0vdUu6mBfMDI8UtDJrH9oW1BKvIZ;",
-    //         youtube_stats: {
-    //           name: "YouTubeUser",
-    //           current_status: [
-    //             {
-    //               current_date: "2022-01-22",
-    //               views_count: 1002,
-    //               subscription_count: 197,
-    //               video_count: 50,
-    //             },
-    //           ],
-    //         },
-    //         instagram_stats: {
-    //           current_status: [
-    //             {
-    //               current_date: "2022-01-22",
-    //               followers: "139 M",
-    //               followings: "231 K",
-    //               posts: 193,
-    //             },
-    //             {
-    //               current_date: "2022-01-21",
-    //               followers: "911 M",
-    //               followings: "201 K",
-    //               posts: 183,
-    //             },
-    //           ],
-    //         },
-    //         twitter_stats: {
-    //           current_status: [
-    //             {
-    //               current_date: "2022-01-19",
-    //               followers: "200 M",
-    //               followings: "100 K",
-    //             },
-    //             {
-    //               current_date: "2022-01-18",
-    //               followers: "333 M",
-    //               followings: "222 K",
-    //             },
-    //           ],
-    //           joining_date: "2020-01-1",
-    //           comments: [
-    //             {
-    //               text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
-    //               url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
-    //               comments: "120",
-    //               likes: 2350,
-    //               retweets: 101,
-    //               comment_date: "2023-12-23",
-    //             },
-    //           ],
-    //         },
-    //       },
-    //     ],
+    // fetch(`/api/search?key=${searchTerm}`, {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Authorization": `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
     //   },
-    // });
+    // })
+    //   .then((response) => {
+    //     if (!response.ok) {
+    //       throw new Error(
+    //         `Network response was not ok, status: ${response.status}`
+    //       );
+    //     }
+    //     return response.json();
+    //   })
+    //   .then((data) => {
+    //     setLoading(false);
+    //     setHashtagData(data);
+    //   })
+    //   .catch((error) => console.error("Error during fetch:", error));
+
+    setHashtagData({
+      data: {
+        hashtag: "carryminati",
+        hashtag_stats: [
+          {
+            youtube_stats: {
+              name: "YouTubeUser",
+              current_status: [
+                {
+                  current_date: "2022-01-22",
+                  views_count: 1002,
+                  subscription_count: 197,
+                  video_count: 50,
+                },
+              ],
+            },
+            instagram_stats: {
+              current_status: [
+                {
+                  current_date: "2022-01-22",
+                  followers: "139 M",
+                  followings: "231 K",
+                  posts: 193,
+                },
+                {
+                  current_date: "2022-01-21",
+                  followers: "911 M",
+                  followings: "201 K",
+                  posts: 183,
+                },
+              ],
+            },
+            twitter_stats: {
+              current_status: [
+                {
+                  current_date: "2022-01-19",
+                  followers: "200 M",
+                  followings: "100 K",
+                },
+                {
+                  current_date: "2022-01-18",
+                  followers: "333 M",
+                  followings: "222 K",
+                },
+              ],
+              joining_date: "2020-01-1",
+              comments: [
+                {
+                  text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+                  url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+                  comments: "120",
+                  likes: 2350,
+                  retweets: 101,
+                  comment_date: "2023-12-23",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    });
   };
 
   const handleOnUserProfile = () => {
@@ -502,7 +499,7 @@ const SearchPage = () => {
   // };
 
   const handleOnHashtagClick = (hashtag) => {
-    // navigate(`/search-hashtag/${hashtag}`);
+    navigate(`/search-hashtag/${hashtag}`);
   };
 
   const handleOnHistoryClick = () => {
@@ -546,12 +543,13 @@ const SearchPage = () => {
           <button onClick={() => handleOnHashtagClick("imVKholi")}>
             #imVKohli
           </button>
-          <button onClick={() => handleOnHashtagClick("#hashtag2")}>
-            #hashtag2
+          <button onClick={() => handleOnHashtagClick("carryminati")}>
+            #Carryminati
           </button>
-          <button onClick={() => handleOnHashtagClick("#hashtag3")}>
-            #hashtag3
+          <button onClick={() => handleOnHashtagClick("BJP")}>
+            #BJP
           </button>
+          <button onClick={handleOnAddPredefineHashtag}>Add More Hashtags</button>
           {/* Add more predefined hashtags here */}
         </div>
       </div>
@@ -596,7 +594,6 @@ const SearchPage = () => {
         <div>
           <h3>Hashtag Data:</h3>
           <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
-          <button onClick={handleOnSave}>Save</button>
           <button onClick={handleOnClickStastatic}>Stastatic</button>
         </div>
       )}

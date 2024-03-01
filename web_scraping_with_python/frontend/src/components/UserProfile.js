@@ -64,7 +64,11 @@ const UserProfile = () => {
       },
     })
       .then((response) => response.json())
-      .then((data) => {setUser(data);setProfilePhoto(data.profile_photo);})
+      .then((data) => {
+        console.log("user data : ", data);
+        setUser(data);
+        setProfilePhoto(data.profile_photo);
+      })
       .catch((error) => console.log(error));
   }, [user_id]);
 
@@ -73,9 +77,12 @@ const UserProfile = () => {
 
     // Prepare form data
     const formData = new FormData();
-    console.log("profile photo data : ",e.target.elements.profile_photo.files);
+    console.log("profile photo data : ", e.target.elements.profile_photo.files);
     formData.append("profile_photo", e.target.elements.profile_photo.files[0]);
-    console.log("formData :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ",formData);
+    console.log(
+      "formData :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ",
+      formData
+    );
     // Make a POST request to update the profile photo
     const response = await fetch("/api/user-profile-photo/", {
       method: "POST",
@@ -106,9 +113,10 @@ const UserProfile = () => {
       <p>Phone Number: {user.phone_number}</p>
       {/* Assuming you don't want to display the password for security reasons */}
       <p>Password: ********</p>
+      <p>Suscribe amount : {user.subscription_status[0].subscription_amount}</p>
+      <p>Subscribe At : {user.subscription_status[0].subscription_date}</p>
       <p>
-        Subscription Status:{" "}
-        {user.subscription_status ? "Subscribed" : "Not Subscribed"}
+        Expires At : {user.subscription_status[0].subscription_expires_date}
       </p>
 
       {/* Add a form for updating the profile photo */}
