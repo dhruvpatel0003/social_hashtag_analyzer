@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from django.views import View
@@ -19,11 +20,12 @@ import pandas as pd
 import os
 import smtplib          
 
-from django.http import FileResponse, HttpResponse, HttpResponseForbidden
+from rest_framework.parsers import FileUploadParser
+from django.http import  HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from rest_framework import generics, status
-from .serializers import AnalysisReportSerializer, HashTagSerializer, SubScriptionSerializer, UserHistorySerializer, UserProfileSerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
-from .models import AnalysisReport, History, SubScription, User, HashTag, HashTagStats, UserProfile
+from .serializers import AnalysisReportSerializer, HashTagSerializer, SubScriptionSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
+from .models import AnalysisReport, History, SubScription, User, HashTag, HashTagStats
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
@@ -35,6 +37,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from django.shortcuts import get_object_or_404
+
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -63,18 +67,6 @@ from rest_framework.authtoken.models import Token
 #         else:
 #             # Handle invalid serializer data
 #             return render(request, self.template_name, {'user_profile': user_profile, 'serializer': serializer})
-class UserProfilePhotoView(APIView):
-    def post(self, request, *args, **kwargs):
-        user_profile = UserProfile.objects.get(user=request.user)
-
-        # Assuming you have 'profile_photo_url' in the request data
-        profile_photo_url = request.data.get('profile_photo_url')
-
-        user_profile.profile_photo_url = profile_photo_url
-        user_profile.save()
-
-        serializer = UserProfileSerializer(user_profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserView(generics.ListAPIView):
     queryset = User.objects.all()
@@ -188,22 +180,69 @@ class CreateUserView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserProfilePhotoView(APIView):
+    parser_classes = [FileUploadParser]
 
+    def post(self, request, *args, **kwargs):
+        # Assuming user_id is available in request.user
+        user_id = request.user.id
 
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        profile_photo = request.data.get('profile_photo')
+
+        # Save the base64-encoded photo to the user's profile_photo field
+        user.save_base64_image(profile_photo)
+
+        return Response({"detail": "Profile photo updated successfully"}, status=status.HTTP_200_OK)
+
+# class GetUser(APIView):
+#     serializer_class = UserSerializer
+#     lookup_url_kwarg = 'user_id'
+#     def get(self,request,format=None):
+#         userID = request.GET.get(self.lookup_url_kwarg)
+#         if userID != None:
+#             user = User.objects.filter(user_id=userID)
+#             if len(user)>0:
+#                 data = UserSerializer(user[0]).data
+#                 data['is_logged_in'] = True
+#                 return Response(data,status=status.HTTP_200_OK)
+#             return Response({'Bad Request':'Invalid code'},status=status.HTTP_404_NOT_FOUND)
+#         return Response({'Bad Request':'Code not found in request'},status=status.HTTP_400_BAD_REQUEST)
 class GetUser(APIView):
     serializer_class = UserSerializer
     lookup_url_kwarg = 'user_id'
-    def get(self,request,format=None):
-        userID = request.GET.get(self.lookup_url_kwarg)
-        if userID != None:
-            user = User.objects.filter(user_id=userID)
-            if len(user)>0:
-                data = UserSerializer(user[0]).data
-                data['is_logged_in'] = True
-                return Response(data,status=status.HTTP_200_OK)
-            return Response({'Bad Request':'Invalid code'},status=status.HTTP_404_NOT_FOUND)
-        return Response({'Bad Request':'Code not found in request'},status=status.HTTP_400_BAD_REQUEST)
-    
+
+    def get(self, request, format=None):
+        user_id = request.GET.get(self.lookup_url_kwarg)
+        print("user id inside the get user ::::::::::::::::::::::::::::::::::::: ",user_id)
+        if user_id is not None:
+            try:
+                user = User.objects.get(user_id=user_id)
+                print("after the user fetched :::::: ")
+            except User.DoesNotExist:
+                return Response({'Bad Request': 'Invalid user_id'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Include the URL of the profile photo in the user data
+            data = UserSerializer(user).data
+            print("data ============================================================ ",data)
+            data['is_logged_in'] = True
+            profile_photo_url = user.get_image_url()
+
+            # Add the profile photo URL to the response data
+            if profile_photo_url:
+                # Fetch and encode the profile photo
+                with open(user.profile_photo.path, "rb") as photo_file:
+                    encoded_image = base64.b64encode(photo_file.read()).decode("utf-8")
+                data['profile_photo'] = encoded_image
+            print("After getting the response")
+            # print("getting the profile photo =++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ",data['profile_photo'],"profile photo")
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response({'Bad Request': 'user_id not found in request'}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateHashTag(APIView):
     print("inside the post request : ::::::::::::::::::::::::::::")
@@ -331,27 +370,27 @@ class SearchFromChrome(APIView):
         driver.get('https://commentpicker.com/youtube-channel-id.php')
         time.sleep(2)
         
-        inputUrl = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
+        inputUrl = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
         inputUrl.send_keys(youTuberName)
         time.sleep(5)
         
-        number1 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
-        number2 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
+        number1 = WebDriverWait(driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
+        number2 = WebDriverWait(driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
         sum=int(number1.text) +int( number2.text)
         time.sleep(2)
         
-        input_answer = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
+        input_answer = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
         input_answer.send_keys(sum)
         time.sleep(20)
         
         print("Before the error point ___________________________")
-        getButton = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
+        getButton = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
         getButton.click()
         time.sleep(5)
         print("After the error point ___________________________")
 
         print("Before the error point 2 ___________________________")
-        channel_ID = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
+        channel_ID = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
         print("After the error point 2___________________________")        
         time.sleep(5)
     
@@ -641,6 +680,39 @@ class CreateUserHistory(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
+class UserProfilePhotoView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.get('user_id')
+        user = User.objects.get(user_id=user_id)
+        profile_photo = request.data.get('profile_photo')
+
+        if profile_photo:
+            # Read the content of the uploaded file and encode it to base64
+            base64_encoded_image = base64.b64encode(profile_photo.read()).decode('utf-8')
+
+            # Save the base64-encoded image to the user's profile_photo field
+            # user.save_base64_image(profile_photo)
+            user.save_base64_image(base64_encoded_image)
+
+            return Response({"detail": "Profile photo updated successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "No profile photo provided"}, status=status.HTTP_400_BAD_REQUEST)
+class GetUserProfilePhoto(APIView):
+    
+    def get(self, request, user_id, png_id):
+        print("inside the user profile photo")
+        print("Getting the user profile photo")
+        user = get_object_or_404(User, user_id=user_id)
+
+        if user.profile_photo:
+                filename = f"{user_id}/profile_photos/{png_id}"
+                photo_url = user.get_image_url(filename)
+                if photo_url:
+                    return Response({"profile_photo_url": photo_url}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"detail": "User has no profile photo"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+               return Response({"detail": "User has no profile photo"}, status=status.HTTP_404_NOT_FOUND)
 
 class GetUserHistoryByID(APIView):
     

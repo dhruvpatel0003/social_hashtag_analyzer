@@ -79,12 +79,10 @@ const SignUpPage = () => {
         const userId = data.user_id;
         document.cookie = `user_id=${userId}`;
         console.log("document coookiee ::::::: ", document.cookie);
-        // navigate('/dashboard');
-        navigate("/search");
+        navigate("/login");
       }
-      // navigate(`/user-profile/${data.user_id}`);
     } catch (error) {
-    //   setErrorMessage(error);
+      setErrorMessage(error);
       console.error("Error creating user:", error);
     }
   };

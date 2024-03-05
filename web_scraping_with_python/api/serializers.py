@@ -1,13 +1,7 @@
 from datetime  import datetime
 from rest_framework import serializers
-from .models import AnalysisReport, HashTag, History, InstagramProfile, SubScription, TwitterProfile, User, HashTagStats, UserProfile, YouTubeProfile, YouTubeStats, InstagramStats, TwitterStats, Comment
+from .models import AnalysisReport, HashTag, History, InstagramProfile, SubScription, TwitterProfile, User, HashTagStats, YouTubeProfile, YouTubeStats, InstagramStats, TwitterStats, Comment
 
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields =  ['user_id','profile_photo_url']
 
 class AnalysisReportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['user_id', 'email', 'password', 'phone_number', 'subscription_status']
+        fields = ['user_id', 'email', 'password', 'phone_number', 'subscription_status','profile_photo']
 
 class CreateUserSerializer(serializers.ModelSerializer):
     subscription_status = SubScriptionSerializer(many=True, allow_empty=True, required=False)

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ExcelJS from 'exceljs';
+import ExcelJS from "exceljs";
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -242,8 +242,8 @@ const SearchPage = () => {
   };
 
   const handleOnTwitterHashtagSearch = () => {
-    fetch(`/api/twitter/search?key=bjp`, {
-    // fetch(`/api/twitter/search?key=${searchTerm}`, {
+    fetch(`/api/twitter/search?key=carryminati`, {
+      // fetch(`/api/twitter/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -264,8 +264,8 @@ const SearchPage = () => {
       });
   };
 
-  const handleOnDownloadTxTFile = () => {
-    const jsonString = JSON.stringify(hashtagIncludeData, null, 2);
+  const handleOnDownloadTxTFile = (data) => {
+    const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
     const downloadLink = document.createElement("a");
     downloadLink.href = window.URL.createObjectURL(blob);
@@ -276,76 +276,87 @@ const SearchPage = () => {
   };
 
   ////////////////////////////////////////////////////// Download Excel File ////////////////////////////////////////
- 
-  const handleOnDownloadExcelFile = ()=>{
+
+  const handleOnDownloadExcelFile = () => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('SocialAnalyzer_HashTagIncludeData');
-  
+    const sheet = workbook.addWorksheet("SocialAnalyzer_HashTagIncludeData");
+
     const headerRow = sheet.getRow(1);
-    headerRow.getCell(1).value = 'Title';
-    headerRow.getCell(2).value = 'Text';
-    headerRow.getCell(3).value = 'URL';
-  
+    headerRow.getCell(1).value = "Title";
+    headerRow.getCell(2).value = "Text";
+    headerRow.getCell(3).value = "URL";
+
     hashtagIncludeData.data.forEach((entry, index) => {
       const row = sheet.getRow(index + 2);
       row.getCell(1).value = entry.title;
       row.getCell(2).value = entry.text;
       row.getCell(3).value = entry.url;
     });
-  
+
     workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const link = document.createElement('a');
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
-      link.download = 'hashtag_data.xlsx';
+      link.download = "hashtag_data.xlsx";
       link.click();
     });
-  }
+  };
 
   ////////////////////////////////////////////////////// Download Excel File with Analysis ////////////////////////////////////////
 
   const handleOnDownloadExcelAnalysisFile = () => {
     // Create a new workbook and add a worksheet
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('HashtagData');
-  
+    const sheet = workbook.addWorksheet("HashtagData");
+
     // Add headers to the worksheet
-    sheet.addRow(['Title', 'Text', 'URL', 'Date', 'Followers', 'Quotes', 'Posts']);
-  
+    sheet.addRow([
+      "Title",
+      "Text",
+      "URL",
+      "Date",
+      "Followers",
+      "Quotes",
+      "Posts",
+    ]);
+
     // Iterate through each entry in hashtagIncludeData
-    hashtagIncludeData.data.forEach(entry => {
+    hashtagIncludeData.data.forEach((entry) => {
       // Parse the text field to extract additional information
       const { date, followers, quotes, posts } = parseText(entry.text);
-  
+
       // Add a new row to the worksheet with the extracted information
       sheet.addRow([
         entry.title,
         entry.text,
         entry.url,
-        date !== undefined ? date : 'NA',
-        followers !== undefined ? followers : 'NA',
-        quotes !== undefined ? quotes : 'NA',
-        posts !== undefined ? posts : 'NA',
+        date !== undefined ? date : "NA",
+        followers !== undefined ? followers : "NA",
+        quotes !== undefined ? quotes : "NA",
+        posts !== undefined ? posts : "NA",
       ]);
     });
-  
+
     // Save the workbook to a file
     workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const link = document.createElement('a');
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
-      link.download = 'SocialAnalyzer-HashTagIncludeData.xlsx';
+      link.download = "SocialAnalyzer-HashTagIncludeData.xlsx";
       link.click();
     });
   };
-  
-  const parseText = (text) => {
 
+  const parseText = (text) => {
     const dateMatch = text.match(/(\b\w+ \d{1,2}, \d{4}\b)/);
     const followersMatch = text.match(/(\d+) followers/);
     const quotesMatch = text.match(/(\d+) quotes/);
     const postsMatch = text.match(/(\d+) posts/);
-  
+
     return {
       date: dateMatch ? dateMatch[0] : undefined,
       followers: followersMatch ? followersMatch[1] : undefined,
@@ -353,19 +364,16 @@ const SearchPage = () => {
       posts: postsMatch ? postsMatch[1] : undefined,
     };
   };
-  
 
   const handleSearchClick = () => {
-
-    console.log("Starting of the handle Search loading status ",loading);
-
+    console.log("Starting of the handle Search loading status ", loading);
 
     setHashtagData(null);
     if (document.cookie.length < 1) {
       navigate("/login/");
     }
     setLoading(true);
-    console.log("After setting up the loading status : loading : ",loading);
+    console.log("After setting up the loading status : loading : ", loading);
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -375,7 +383,10 @@ const SearchPage = () => {
       "----------------------------------------- user Id ------------------------------",
       document.cookie.split(" ")[0].split("=")[1]
     );
-    console.log("----------------------------------------- user Id ------------------------------", document.cookie.split(" ")[0].split("=")[1]);
+    console.log(
+      "----------------------------------------- user Id ------------------------------",
+      document.cookie.split(" ")[0].split("=")[1]
+    );
 
     //////////////////////////////////////////////////////////////////////////
     if (searchTerm.length < 1) {
@@ -470,7 +481,7 @@ const SearchPage = () => {
   };
 
   const handleOnUserProfile = () => {
-    navigate("/user-profile/");
+    navigate("/user-profile");
   };
 
   const handleOnSignOut = () => {
@@ -485,27 +496,15 @@ const SearchPage = () => {
     console.log("Category search", category);
   };
 
-  // const handleOnHashtagClick = (hashtag) => {
-  //     console.log('Hashtag search', hashtag);
-  //     fetch(`/api/get-hashtag?hashtag=${hashtag}`, { method: 'GET' })
-  //         .then(response => {
-  //             if (!response.ok) {
-  //                 throw new Error(`Network response was not ok, status: ${response.status}`);
-  //             }
-  //             return response.json();
-  //         })
-  //         .then(data => setHashtagData(data))
-  //         .catch(error => console.error('Error during fetch:', error));
-  // };
-
   const handleOnHashtagClick = (hashtag) => {
     navigate(`/search-hashtag/${hashtag}`);
   };
 
   const handleOnHistoryClick = () => {
-    // console.log(document.cookie.split(" ")[3].split("=")[1]);
-    fetch(`/api/my-history/Np5ZqaNWgXbxFpmqmSkLiyjLtupnydWL`, {
-    // fetch(`/api/history/${document.cookie.split(" ")[3].split("=")[1]}`, {
+    console.log("inside history ",document.cookie.split(";")[0].split("=")[1]);
+    const user_id = document.cookie.split(";")[0].split("=")[1];
+    fetch(`/api/my-history/${user_id}`, {
+      // fetch(`/api/history/${document.cookie.split(" ")[3].split("=")[1]}`, {
       method: "GET",
     })
       .then((response) => {
@@ -546,10 +545,10 @@ const SearchPage = () => {
           <button onClick={() => handleOnHashtagClick("carryminati")}>
             #Carryminati
           </button>
-          <button onClick={() => handleOnHashtagClick("BJP")}>
-            #BJP
-          </button>
-          <button onClick={handleOnAddPredefineHashtag}>Add More Hashtags</button>
+          <button onClick={() => handleOnHashtagClick("BJP")}>#BJP</button>
+          {/* <button onClick={handleOnAddPredefineHashtag}>
+            Add More Hashtags
+          </button> */}
           {/* Add more predefined hashtags here */}
         </div>
       </div>
@@ -594,6 +593,9 @@ const SearchPage = () => {
         <div>
           <h3>Hashtag Data:</h3>
           <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
+          <button onClick={() => handleOnDownloadTxTFile(hashtagData)}>
+            Download TxT
+          </button>
           <button onClick={handleOnClickStastatic}>Stastatic</button>
         </div>
       )}
@@ -602,11 +604,19 @@ const SearchPage = () => {
           <h3>Hashtag Include Data:</h3>
           <pre>{JSON.stringify(hashtagIncludeData, null, 2)}</pre>
           {downloadOption && (
-           <div>
-            <button onClick={handleOnDownloadTxTFile}>Download TxT</button>
-            <button onClick={handleOnDownloadExcelFile}>Download Excel</button>
-            <button onClick={handleOnDownloadExcelAnalysisFile}>Download Analysis Excel</button>
-           </div>
+            <div>
+              <button
+                onClick={() => handleOnDownloadTxTFile(hashtagIncludeData)}
+              >
+                Download TxT
+              </button>
+              <button onClick={handleOnDownloadExcelFile}>
+                Download Excel
+              </button>
+              <button onClick={handleOnDownloadExcelAnalysisFile}>
+                Download Analysis Excel
+              </button>
+            </div>
           )}
         </div>
       )}

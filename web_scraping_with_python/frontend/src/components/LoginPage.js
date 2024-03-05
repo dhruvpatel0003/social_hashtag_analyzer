@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
@@ -7,6 +7,25 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [selectedTab, setSelectedTab] = useState("login");
+  const [number1, setNumber1] = useState(0);
+  const [number2, setNumber2] = useState(0);
+  const [sumAnswer, setSumAnswer] = useState("");
+
+  useEffect(() => {
+    () => handleOnRefreshNumbers;
+  }, []);
+
+  const handleSumChange = (e) => {
+    setSumAnswer(e.target.value);
+  };
+
+  const handleOnRefreshNumbers = () => {
+    const randomNumber1 = Math.floor(Math.random() * 10);
+    const randomNumber2 = Math.floor(Math.random() * 10);
+
+    setNumber1(randomNumber1);
+    setNumber2(randomNumber2);
+  };
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -17,6 +36,13 @@ const LoginPage = () => {
   };
 
   const handleLogin = () => {
+    const isSumCorrect = parseInt(sumAnswer) === number1 + number2;
+
+    if (!isSumCorrect) {
+      setError("Sum is incorrect. Please try again.");
+      return;
+    }
+
     console.log("before validating the user");
 
     const credentials = {
@@ -66,9 +92,7 @@ const LoginPage = () => {
 
   const handleOnClickForgotPassword = () => {
     navigate("/forgot-password");
-  }
-
-
+  };
 
   const handleTabClick = (tab) => {
     setSelectedTab(tab);
@@ -119,28 +143,48 @@ const LoginPage = () => {
             <div>
               {/* Input Fields */}
               <div>
-                <input  type="text"
-                placeholder="Username"
-                value={username}
-                onChange={handleUsernameChange} />
-                <input  type="password"
-                placeholder="Password"
-                value={password}
-                onChange={handlePasswordChange}/>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={handleUsernameChange}
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                />
               </div>
               {/* Forgot Password */}
               <div>
-                <button onClick={handleOnClickForgotPassword}>Forgot Password</button>
-              </div>  
+                <button onClick={handleOnClickForgotPassword}>
+                  Forgot Password
+                </button>
+              </div>
+              <div>
+                <p>
+                  Solve the sum: {number1} + {number2}
+                </p>
+                <div>
+                  <button onClick={handleOnRefreshNumbers}>Refresh</button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter the sum"
+                  value={sumAnswer}
+                  onChange={handleSumChange}
+                />
+              </div>
               {/* Login Button */}
               <button
                 onClick={handleLogin}
                 style={{ backgroundColor: "#0A0C4A", color: "white" }}
               >
                 Login
-              </button><button onClick={handleSignUp}>
-                Sign Up
               </button>
+              <button onClick={handleSignUp}>Sign Up</button>
+              {error && <p>{error}</p>}
               {/* Horizontal Line */}
               <hr />
               {/* Sign in with Text */}

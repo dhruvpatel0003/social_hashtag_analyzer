@@ -1,14 +1,11 @@
+import base64
 from django.utils import timezone
 import uuid
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 
-User = get_user_model()
-
-class UserProfile(models.Model):
-    user_id = models.CharField(max_length=100,null=True)
-    profile_photo_url = models.URLField(null=True, blank=True)
 
 class AnalysisReport(models.Model):
     user = models.CharField(max_length=100,null=False)
@@ -24,16 +21,51 @@ class SubScription(models.Model):
     subscription_date = models.CharField(max_length=100,null=True)
     subscription_expires_date = models.CharField(max_length=100,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+def generate_filename(instance, filename):
+    extension = filename.split('.')[-1]
+    unique_filename = f"{uuid.uuid4()}.{extension}"
+    return f"profile_photos/{unique_filename}"
+
+# class User(models.Model):
+
+#     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+#     email=models.EmailField(max_length=100,unique=True)
+#     password = models.CharField(max_length=100)
+#     phone_number= models.CharField(max_length=10,unique=True)
+#     subscription_status = models.ManyToManyField(SubScription, related_name='subscription_status')
+#     profile_photo = models.TextField(null=True, blank=True)
     
+#     def save_base64_image(self, base64_image):
+#         self.profile_photo = base64_image
+#         self.save()
+
+#     def get_base64_image(self):
+#         return self.profile_photo
+
 class User(models.Model):
-
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    email=models.EmailField(max_length=100,unique=True)
+    email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
-    phone_number= models.CharField(max_length=10,unique=True)
+    phone_number = models.CharField(max_length=10, unique=True)
     subscription_status = models.ManyToManyField(SubScription, related_name='subscription_status')
+    profile_photo = models.FileField(upload_to=generate_filename, null=True, blank=True)
 
-        
+    def save_base64_image(self, base64_image):
+        # Decode the base64 image string
+        decoded_image = base64.b64decode(base64_image)
+
+        # Save the decoded image content to the FileField
+        self.profile_photo.save(self.generate_unique_filename(), ContentFile(decoded_image), save=False)
+        self.save()
+
+    def generate_unique_filename(self):
+        extension = "png"  # You can adjust the extension based on the image type
+        return f"{uuid.uuid4()}.{extension}"
+
+    def get_image_url(self):
+        return self.profile_photo.url if self.profile_photo else None
+    
 class YouTubeProfile(models.Model):
     current_date = models.CharField(max_length=100,null=True)
     views_count = models.IntegerField(default=0,null=True)
