@@ -12,7 +12,8 @@ const LoginPage = () => {
   const [sumAnswer, setSumAnswer] = useState("");
 
   useEffect(() => {
-    () => handleOnRefreshNumbers;
+    setNumber1(Math.floor(Math.random() * 10));
+    setNumber2(Math.floor(Math.random() * 10));
   }, []);
 
   const handleSumChange = (e) => {

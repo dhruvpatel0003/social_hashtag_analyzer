@@ -39,6 +39,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from django.core.signing import TimestampSigner, BadSignature
 from django.shortcuts import get_object_or_404
+from urllib.parse import quote
+
 
 
 from selenium import webdriver
@@ -757,12 +759,14 @@ class ForgotPassword(View):
         
         signer = TimestampSigner()
         token = signer.sign_object({'email': user_email})
+        # token = str(signer.sign(user_email))
+        print("Token >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ",token)
         # expiration_time = datetime.now() + timedelta(hours=1)  # Set the expiration time (adjust as needed)
-        expiration_time = datetime.now() + timedelta(minutes=1)  # Set the expiration time (adjust as needed)
+        expiration_time = datetime.now() + timedelta(minutes=30)  # Set the expiration time (adjust as needed)
         print("The expiration time :::::::::::::::::::::::::::::::))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) ",expiration_time)
         token_with_expiration = f"{token}.{expiration_time.timestamp()}"
 
-        reset_password_link = f'http://127.0.0.1:8000/reset-password/{token_with_expiration}'
+        reset_password_link = f'http://127.0.0.1:8000/reset-password/{quote(user_email)}/{quote(token_with_expiration)}'
 
         subject = 'Password Reset'
         message = f'Dear {user.user_id},\n\nOpen the following URL in the browser: {reset_password_link}'
@@ -875,7 +879,7 @@ class TokenExpirationChecker(View):
             timestamp = int(parts[1])
 
             # Check if the token is expired (e.g., expires in 1 hour)
-            expiration_time = datetime.utcfromtimestamp(timestamp) + timedelta(minutes=1)
+            expiration_time = datetime.utcfromtimestamp(timestamp) + timedelta(minutes=30)
             print("After checking the expiration time ",expiration_time)
             current_time = datetime.utcnow()
             print(current_time)
@@ -906,7 +910,7 @@ class PasswordResetHandler(TokenExpirationChecker):
 
                 timestamp = int(parts[1])
 
-                expiration_time = datetime.utcfromtimestamp(timestamp) + timedelta(minutes=1)
+                expiration_time = datetime.utcfromtimestamp(timestamp) + timedelta(minutes=30)
                 current_time = datetime.utcnow()
                 print("The expiration time ",expiration_time,"current time ",current_time)
                 print(current_time > expiration_time)

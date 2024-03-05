@@ -6,8 +6,7 @@ const saltRounds = 10;
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  const { token } = useParams();
-  const [email, setEmail] = useState("");
+  const { email, token } = useParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -37,12 +36,12 @@ const ResetPasswordPage = () => {
   const handleOnResetPassword = async (e) => {
     e.preventDefault();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const domainRegex = /@gmail\.com$/;
-    if (!emailRegex.test(email) || !domainRegex.test(email)) {
-      setErrorMessage("Please enter a valid Gmail address");
-      return;
-    }
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const domainRegex = /@gmail\.com$/;
+    // if (!emailRegex.test(email) || !domainRegex.test(email)) {
+    //   setErrorMessage("Please enter a valid Gmail address");
+    //   return;
+    // }
 
     const passwordRegex = /^(?=.*[@#])(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$/;
     if (!passwordRegex.test(password)) {
@@ -109,12 +108,9 @@ const ResetPasswordPage = () => {
           <div>
             <button onClick={handleOnLogin}>Login</button>
           </div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <div>
+            <p>Email Address: {email}</p>
+          </div>
           <input
             type="password"
             placeholder="Password (must contain @ or # symbol, numbers, at least 8 characters)"

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
+
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
@@ -28,9 +31,18 @@ const ForgotPassword = () => {
     });
   };
 
+  const handleOnLogin = () => {
+    navigate('/login');
+  }
+
+
+
   return (
     <React.Fragment>
-      {message && <p>{message}</p>}
+      {message && <div>
+        <p>{message}</p>
+        <button onClick={handleOnLogin}>Login</button>
+        </div>}
       {!message && (
         <div>
           <h2>Forgot Password</h2>

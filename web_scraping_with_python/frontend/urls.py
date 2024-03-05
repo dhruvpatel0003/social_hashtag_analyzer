@@ -11,5 +11,5 @@ urlpatterns = [
    path('search-hashtag/<str:hashtag>',index),
    path('analysis',index),
    path('forgot-password',index),
-   path('reset-password/<str:token>',index)
+   path('reset-password/<str:email>/<str:token>',index)
 ]
