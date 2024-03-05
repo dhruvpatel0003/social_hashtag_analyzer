@@ -29,7 +29,7 @@ from .models import AnalysisReport, History, SubScription, User, HashTag, HashTa
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import JsonResponse
 from openpyxl import Workbook
 from django.utils.decorators import method_decorator
@@ -37,6 +37,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from django.core.signing import TimestampSigner, BadSignature
 from django.shortcuts import get_object_or_404
 
 
@@ -754,18 +755,24 @@ class ForgotPassword(View):
         except User.DoesNotExist:
             return HttpResponse("This email address is not registered.", status=404)
         
-        subject = 'Password Reset'
-        message = f'Dear {user.user_id},\n\nOpen the following URL in the browser: http://127.0.0.1:8000/reset-password'
+        signer = TimestampSigner()
+        token = signer.sign_object({'email': user_email})
+        # expiration_time = datetime.now() + timedelta(hours=1)  # Set the expiration time (adjust as needed)
+        expiration_time = datetime.now() + timedelta(minutes=1)  # Set the expiration time (adjust as needed)
+        print("The expiration time :::::::::::::::::::::::::::::::))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) ",expiration_time)
+        token_with_expiration = f"{token}.{expiration_time.timestamp()}"
 
+        reset_password_link = f'http://127.0.0.1:8000/reset-password/{token_with_expiration}'
+
+        subject = 'Password Reset'
+        message = f'Dear {user.user_id},\n\nOpen the following URL in the browser: {reset_password_link}'
         msg = MIMEMultipart()
         msg.attach(MIMEText(message, 'plain'))
 
-        # Setup the parameters of the message
         msg['From'] = EMAIL
         msg['To'] = user_email
         msg['Subject'] = subject
         print("before sending mail ",EMAIL,"password : ",EMAIL_PASSWORD)
-        # Connect to the SMTP server, send the email, and close the connection
         with smtplib.SMTP('smtp.gmail.com', 587) as conn:
             conn.starttls()
             conn.login(user=EMAIL, password=EMAIL_PASSWORD)
@@ -779,34 +786,157 @@ class ForgotPassword(View):
         return HttpResponse(f"Error sending password reset email: {str(e)}", status=500)
     
 
-@method_decorator(csrf_exempt, name='dispatch')
-class ResetPassword(View):
+# @method_decorator(csrf_exempt, name='dispatch')
+# class ResetPassword(View):
+
     
-    def post(self, request, *args, **kwargs):
+#     def post(self, request, *args, **kwargs):
       
-        print("inside the reset password")
-        request_data = json.loads(request.body.decode('utf-8'))
+#         print("inside the reset password")
+#         request_data = json.loads(request.body.decode('utf-8'))
 
-            # Access the 'email' field
-        user_email = request_data.get('email')
-        user_password = request_data.get('password')
+#             # Access the 'email' field
+#         user_email = request_data.get('email')
+#         user_password = request_data.get('password')
         
-        print("email ",user_email,"password ",user_password)
+#         print("email ",user_email,"password ",user_password)
         
         
+#         try:
+#             user = User.objects.get(email=user_email)
+#         except User.DoesNotExist:
+#             print("User not find")
+#             return JsonResponse({"message": "This email address is not registered."}, status=404)        
+#         if(user):
+#             print("old password ",user.password)
+#             user.password = user_password
+#             print("New password ",user.password)
+#             print("after the user password")
+#             user.save()  
+#             print("after the save")    
+#             return HttpResponse("Password reset successfully!",status=200)
+        
+#         return HttpResponse("This email address is not registered.")
+# @method_decorator(csrf_exempt, name='dispatch')
+# class ResetPassword(View):
+#     def post(self, request, token, *args, **kwargs):
+#         print("inside the reset password")
+
+#         try:
+#             signer = TimestampSigner()
+#             try:
+#                 user_email = signer.unsign(token, max_age=3600)  # 1 hour expiration time
+#             except BadSignature:
+#                 return JsonResponse({"message": "Invalid or expired token."}, status=400)
+
+#             request_data = json.loads(request.body.decode('utf-8'))
+
+#             # Access the 'password' field
+#             user_password = request_data.get('password')
+
+#             print("email ", user_email, "password ", user_password)
+
+#             try:
+#                 user = User.objects.get(email=user_email)
+#             except User.DoesNotExist:
+#                 print("User not found")
+#                 return JsonResponse({"message": "This email address is not registered."}, status=404)
+
+#             if user:
+#                 print("old password ", user.password)
+#                 user.password = user_password  # Use set_password to handle password hashing
+#                 print("New password ", user.password)
+#                 print("after the user password")
+#                 user.save()
+#                 print("after the save")
+#                 return HttpResponse("Password reset successfully!", status=200)
+
+#             return JsonResponse({"message": "This email address is not registered."}, status=404)
+
+#         except Exception as e:
+#             print(e)
+#             return JsonResponse({"message": f"Error resetting password: {str(e)}"}, status=500)
+class TokenExpirationChecker(View):
+    def dispatch(self, *args, **kwargs):
+        print("inside the dispatch")
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request, token, *args, **kwargs):
+        # logger.info("checking the expiration checks")
+        print("inside the get method ::::::::::::::::::::::::: ")
         try:
-            user = User.objects.get(email=user_email)
-        except User.DoesNotExist:
-            print("User not find")
-            return JsonResponse({"message": "This email address is not registered."}, status=404)        
-        if(user):
-            print("old password ",user.password)
-            user.password = user_password
-            print("New password ",user.password)
-            print("after the user password")
-            user.save()  
-            print("after the save")    
-            return HttpResponse("Password reset successfully!",status=200)
-        
-        return HttpResponse("This email address is not registered.")
+            # Extract the email and timestamp from the token
+            parts = token.split('.')
+            if len(parts) != 3:
+                raise ValueError("Invalid token format")
+                
+            user_email = parts[0]
+            print("user_email ||||||||||||||||||||||||||||||||||||||||||||||||| ",user_email)
+            timestamp = int(parts[1])
 
+            # Check if the token is expired (e.g., expires in 1 hour)
+            expiration_time = datetime.utcfromtimestamp(timestamp) + timedelta(minutes=1)
+            print("After checking the expiration time ",expiration_time)
+            current_time = datetime.utcnow()
+            print(current_time)
+            print(expiration_time)
+            print(current_time>expiration_time)
+            if current_time > expiration_time:
+                print("inside tokenchecker token expired")
+                return JsonResponse({"message": "Invalid or expired token."}, status=400)
+
+            # Render your reset password page or redirect as needed
+            print("above the return statement &&&&&&&&&&&&&&&&&&&&&&&&&& ")
+            return JsonResponse({"message": f"Reset password page for {user_email}"})
+
+        except Exception as e:
+            print("inside the exception :::::::::::::::::::: ")
+            return JsonResponse({"message": f"Error resetting password: {str(e)}"}, status=500)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class PasswordResetHandler(TokenExpirationChecker):
+    def post(self, request, token, *args, **kwargs):
+
+        try:
+            signer = TimestampSigner()
+            try:
+                parts = token.split('.')
+                if len(parts) != 3:
+                    raise ValueError("Invalid token format")
+
+                timestamp = int(parts[1])
+
+                expiration_time = datetime.utcfromtimestamp(timestamp) + timedelta(minutes=1)
+                current_time = datetime.utcnow()
+                print("The expiration time ",expiration_time,"current time ",current_time)
+                print(current_time > expiration_time)
+                if current_time > expiration_time:
+                    print("Token expired >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ")
+                    return JsonResponse({"message": "Token has expired."}, status=400)
+
+            except (ValueError, BadSignature) as error:
+                print("Token invalid >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ")
+                return JsonResponse({"message": "Invalid token."}, status=400)
+
+            print("above the request_data------------------------------------------")
+            request_data = json.loads(request.body.decode('utf-8'))
+            print('after the request_data ++++++++++++++++++++++++++++++++++++ ',request_data)
+            user_password = request_data.get('password')
+            print('user_password ',user_password)
+            user_email = request_data.get('email')
+            try:
+                print('before getting the user ',user_email)
+                user = User.objects.get(email=user_email)
+                print('after getting the user')
+            except User.DoesNotExist:
+                return JsonResponse({"message": "This email address is not registered."}, status=404)
+
+            if user:
+                user.password = (user_password)  # Use set_password to handle password hashing
+                user.save()
+                return JsonResponse({"message": "Password reset successfully!"}, status=200)
+
+            return JsonResponse({"message": "This email address is not registered."}, status=404)
+
+        except Exception as e:
+            return JsonResponse({"message": f"Error resetting password: {str(e)}"}, status=500)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import AnalysisReportListCreateView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteHistory, DeleteUser, ForgotPassword, GetAnalysisReport, GetHashTagData, GetUser, GetUserHistoryByID, GetUserProfilePhoto, HashTagListView, HashTagTwitterSearch, HistoryView, ResetPassword, UserLogin, UserProfilePhotoView, UserView, SearchFromChrome
+from .views import AnalysisReportListCreateView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteHistory, DeleteUser, ForgotPassword, GetAnalysisReport, GetHashTagData, GetUser, GetUserHistoryByID, GetUserProfilePhoto, HashTagListView, HashTagTwitterSearch, HistoryView, PasswordResetHandler, TokenExpirationChecker, UserLogin, UserProfilePhotoView, UserView, SearchFromChrome
 
 urlpatterns = [
     path('user',UserView.as_view()),
@@ -22,7 +22,8 @@ urlpatterns = [
     path('get-analysis-reports',GetAnalysisReport.as_view()),
     # path('user-profile-photo/', UserProfilePhotoView.as_view()),
     path('forgot-password',ForgotPassword.as_view()),
-    path('reset-password',ResetPassword.as_view()),
+    path('check-token-expiration/<str:token>',TokenExpirationChecker.as_view()),
+    path('reset-password/<str:token>',PasswordResetHandler.as_view()),
     # path('my-reports/<str:user_id>',GetDocumentURLView.as_view())
     path('user-profile-photo',UserProfilePhotoView.as_view()),
     path('api/get-user-profile-photo/<str:user_id>/profile_photos/<str:png_id>/', GetUserProfilePhoto.as_view()),
