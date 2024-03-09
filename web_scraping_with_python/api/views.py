@@ -80,43 +80,81 @@ class HashTagListView(generics.ListAPIView):
     queryset = HashTag.objects.all()
     serializer_class = HashTagSerializer
 
-class AnalysisReportListCreateView(generics.CreateAPIView):
+# class AnalysisReportListCreateView(generics.CreateAPIView):
+#     serializer_class = AnalysisReportSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create(serializer)
+#         print("inside the analysis report")
+#         print(request.data)
+#         user_id = serializer.validated_data['user']
+#         url = serializer.validated_data['url']
+
+#         # Create the directory if it doesn't exist
+#         directory = 'api/excel_reports'
+#         os.makedirs(directory, exist_ok=True)
+
+#         # Use the user_id as the file name
+#         file_name = f'{user_id}_report.xlsx'
+#         file_path = os.path.join(directory, file_name)
+
+#         # Update the URL field in the serializer with the file path
+#         serializer.validated_data['url'] = file_path
+#         serializer.save()
+
+#         # Generate your Excel file content here, for example using pandas
+#         # This is just an example, adjust it based on your data structure
+#         data = {'url': [url]}
+#         df = pd.DataFrame(data)
+#         df.to_excel(file_path, index=False)
+
+#         headers = self.get_success_headers(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class AnalysisReportListCreateView(generics.ListCreateAPIView):
+    queryset = AnalysisReport.objects.all()
     serializer_class = AnalysisReportSerializer
+    print("after the serializer")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        
-        user_id = serializer.validated_data['user']
-        url = serializer.validated_data['url']
 
-        # Create the directory if it doesn't exist
-        directory = 'api/excel_reports'
-        os.makedirs(directory, exist_ok=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        # Use the user_id as the file name
-        file_name = f'{user_id}_report.xlsx'
-        file_path = os.path.join(directory, file_name)
 
-        # Update the URL field in the serializer with the file path
-        serializer.validated_data['url'] = file_path
-        serializer.save()
-
-        # Generate your Excel file content here, for example using pandas
-        # This is just an example, adjust it based on your data structure
-        data = {'url': [url]}
-        df = pd.DataFrame(data)
-        df.to_excel(file_path, index=False)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
 class GetAnalysisReport(generics.ListAPIView):
-    queryset = AnalysisReport.objects.all()
+    
     serializer_class = AnalysisReportSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']  # Get the user_id from the URL parameter
+
+        # Query the database to get analysis reports for the specified user_id
+        queryset = AnalysisReport.objects.filter(user_id=user_id)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Serialize the queryset data
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Return the serialized data as a response
+        return Response(serializer.data)
+class GetAllAnalysisReport(generics.ListAPIView):
     
-    
+    serializer_class = AnalysisReportSerializer 
+    queryset = AnalysisReport.objects.all()
+
+class DeleteAnalysisReport(APIView):
+    def delete(self, request, format=None):
+        AnalysisReport.objects.all().delete()
+        return Response({"message": "Analysis reports deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
 ################################################################################## TO-DO ###########################################################
 
 # class GetDocumentURLView(generics.RetrieveAPIView):
@@ -624,7 +662,7 @@ class HashTagTwitterSearch(APIView):
         
         hashtag_data = []   
         hashtagName = request.GET.get(self.lookup_url_kwarg)
-        number_of_tweets = 25
+        number_of_tweets = 100
         payload = {
             'api_key': TWITTER_API_KEY,
             'query' : hashtagName,
@@ -790,76 +828,6 @@ class ForgotPassword(View):
         return HttpResponse(f"Error sending password reset email: {str(e)}", status=500)
     
 
-# @method_decorator(csrf_exempt, name='dispatch')
-# class ResetPassword(View):
-
-    
-#     def post(self, request, *args, **kwargs):
-      
-#         print("inside the reset password")
-#         request_data = json.loads(request.body.decode('utf-8'))
-
-#             # Access the 'email' field
-#         user_email = request_data.get('email')
-#         user_password = request_data.get('password')
-        
-#         print("email ",user_email,"password ",user_password)
-        
-        
-#         try:
-#             user = User.objects.get(email=user_email)
-#         except User.DoesNotExist:
-#             print("User not find")
-#             return JsonResponse({"message": "This email address is not registered."}, status=404)        
-#         if(user):
-#             print("old password ",user.password)
-#             user.password = user_password
-#             print("New password ",user.password)
-#             print("after the user password")
-#             user.save()  
-#             print("after the save")    
-#             return HttpResponse("Password reset successfully!",status=200)
-        
-#         return HttpResponse("This email address is not registered.")
-# @method_decorator(csrf_exempt, name='dispatch')
-# class ResetPassword(View):
-#     def post(self, request, token, *args, **kwargs):
-#         print("inside the reset password")
-
-#         try:
-#             signer = TimestampSigner()
-#             try:
-#                 user_email = signer.unsign(token, max_age=3600)  # 1 hour expiration time
-#             except BadSignature:
-#                 return JsonResponse({"message": "Invalid or expired token."}, status=400)
-
-#             request_data = json.loads(request.body.decode('utf-8'))
-
-#             # Access the 'password' field
-#             user_password = request_data.get('password')
-
-#             print("email ", user_email, "password ", user_password)
-
-#             try:
-#                 user = User.objects.get(email=user_email)
-#             except User.DoesNotExist:
-#                 print("User not found")
-#                 return JsonResponse({"message": "This email address is not registered."}, status=404)
-
-#             if user:
-#                 print("old password ", user.password)
-#                 user.password = user_password  # Use set_password to handle password hashing
-#                 print("New password ", user.password)
-#                 print("after the user password")
-#                 user.save()
-#                 print("after the save")
-#                 return HttpResponse("Password reset successfully!", status=200)
-
-#             return JsonResponse({"message": "This email address is not registered."}, status=404)
-
-#         except Exception as e:
-#             print(e)
-#             return JsonResponse({"message": f"Error resetting password: {str(e)}"}, status=500)
 class TokenExpirationChecker(View):
     def dispatch(self, *args, **kwargs):
         print("inside the dispatch")

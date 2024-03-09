@@ -242,7 +242,7 @@ const SearchPage = () => {
   };
 
   const handleOnTwitterHashtagSearch = () => {
-    fetch(`/api/twitter/search?key=carryminati`, {
+    fetch(`/api/twitter/search?key=congress`, {
       // fetch(`/api/twitter/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
@@ -366,6 +366,7 @@ const SearchPage = () => {
   };
 
   const handleSearchClick = () => {
+    setHistoryData(null);
     console.log("Starting of the handle Search loading status ", loading);
 
     setHashtagData(null);
@@ -395,7 +396,7 @@ const SearchPage = () => {
       return;
     }
     setShowMessage(false);
-
+    setLoading(false);
     // fetch(`/api/search?key=${searchTerm}`, {
     //   method: "GET",
     //   headers: {
@@ -501,9 +502,10 @@ const SearchPage = () => {
   };
 
   const handleOnHistoryClick = () => {
-    console.log("inside history ",document.cookie.split(";")[0].split("=")[1]);
+    console.log("inside history ", document.cookie.split(";")[0].split("=")[1]);
     const user_id = document.cookie.split(";")[0].split("=")[1];
-    fetch(`/api/my-history/${user_id}`, {
+    fetch(`/api/my-history/0ad4dd77-ae35-40c9-ae89-06a396a8ae33`, {
+      // fetch(`/api/my-history/${user_id}`, {
       // fetch(`/api/history/${document.cookie.split(" ")[3].split("=")[1]}`, {
       method: "GET",
     })
@@ -581,6 +583,7 @@ const SearchPage = () => {
         </ul>
         <button onClick={handleOnUserProfile}>Profile</button>
         <button onClick={handleOnHistoryClick}>History</button>
+        <button onClick={()=>navigate('/view-reports')}>My Reports</button>
         {historyData && (
           <div>
             <h3>My History</h3>
@@ -589,7 +592,7 @@ const SearchPage = () => {
         )}
       </div>
 
-      {!hashtagIncludeData && hashtagData && (
+      {!hashtagIncludeData && hashtagData && !historyData && (
         <div>
           <h3>Hashtag Data:</h3>
           <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
@@ -601,8 +604,6 @@ const SearchPage = () => {
       )}
       {hashtagIncludeData && (
         <div>
-          <h3>Hashtag Include Data:</h3>
-          <pre>{JSON.stringify(hashtagIncludeData, null, 2)}</pre>
           {downloadOption && (
             <div>
               <button
@@ -618,6 +619,8 @@ const SearchPage = () => {
               </button>
             </div>
           )}
+          <h3>Hashtag Include Data:</h3>
+          <pre>{JSON.stringify(hashtagIncludeData, null, 2)}</pre>
         </div>
       )}
     </div>

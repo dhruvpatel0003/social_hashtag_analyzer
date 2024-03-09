@@ -7,14 +7,14 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 
 
-class AnalysisReport(models.Model):
-    user = models.CharField(max_length=100,null=False)
-    url = models.URLField()
-    created_at = models.DateTimeField(auto_now_add=True)
+# class AnalysisReport(models.Model):
+#     user = models.CharField(max_length=100,null=False)
+#     url = models.URLField()
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f'{self.user.user_id} - {self.url}'
-
+#     def __str__(self):
+#         return f'{self.user.user_id} - {self.url}'
+   
 class SubScription(models.Model):
     subscription_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     subscription_amount = models.CharField(max_length=100,null=True)
@@ -130,4 +130,29 @@ class HashTagStats(models.Model):
 class HashTag(models.Model):
     hashtag = models.CharField(max_length=100, blank=True, null=True)
     hashtag_stats = models.ManyToManyField(HashTagStats, related_name='hashtags')
+
+class ReportData(models.Model):
+    # report_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    hashtag = models.CharField(max_length=255)
+    hashtag_stats = models.ManyToManyField(HashTagStats, related_name='hashtag_stat')
+    def __str__(self):
+        return f'ReportData - Hashtag: {self.hashtag}'
+    
+# class AnalysisReport(models.Model):
+#     user_id = models.CharField(max_length=100)
+#     report_data = models.ManyToManyField(ReportData, related_name='analysis_reports')
+
+#     def __str__(self):
+#         return f'AnalysisReport for User ID: {self.user_id}'
+
+class AnalysisReport(models.Model):
+    user_id = models.CharField(max_length=100)
+    report_data = models.ManyToManyField(ReportData, related_name='analysis_reports')
+    
+    def __str__(self):
+        return f'AnalysisReport for User ID: {self.user_id}'
+
+    # def add_report_data(self, report_data):
+    #     self.report_data.add(report_data)
+    #     return self
 

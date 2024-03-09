@@ -10,6 +10,7 @@ import Dashboard from "./components/Dashboard";
 import Analysis from "./components/Analysis";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPasswordPage from "./components/ResetPasswordPage";
+import ViewReport from "./components/ViewReport";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
     // path:'/reset-password/:token',
     path:'/reset-password/:email/:token',
     element:<ResetPasswordPage />
+  },
+  {
+    path:'/view-reports',
+    element:<ViewReport />
   }
 ]);
 

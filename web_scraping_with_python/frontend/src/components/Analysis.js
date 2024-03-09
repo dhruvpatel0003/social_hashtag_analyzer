@@ -20,18 +20,257 @@ let workbook;
 
 const Analysis = () => {
   const navigate = useNavigate();
+  const userId = document.cookie.split(";")[0].split("=")[1]; // Replace with the actual user ID
 
-  const data = {
+  // const savingData = {
+  //   user_id: userId,
+  //   report_data: [
+  //     {
+  //       hashtag: "carryminati",
+  //       hashtag_stats: [
+  //         {
+  //           user: userId,
+  //           youtube_stats: {
+  //             name: "YouTubeUser",
+  //             current_status: [
+  //               {
+  //                 current_date: "2022-01-22",
+  //                 views_count: 1500,
+  //                 subscriber_count: 197,
+  //                 video_count: 50,
+  //               },
+  //               {
+  //                 current_date: "2022-01-21",
+  //                 views_count: 999,
+  //                 subscriber_count: 200,
+  //                 video_count: 51,
+  //               },
+  //               {
+  //                 current_date: "2022-01-20",
+  //                 views_count: 1000,
+  //                 subscriber_count: 345,
+  //                 video_count: 49,
+  //               },
+  //               {
+  //                 current_date: "2022-01-19",
+  //                 views_count: 1000,
+  //                 subscriber_count: 299,
+  //                 video_count: 47,
+  //               },
+  //               {
+  //                 current_date: "2022-01-18",
+  //                 views_count: 1000,
+  //                 subscriber_count: 293,
+  //                 video_count: 45,
+  //               },
+  //               {
+  //                 current_date: "2022-01-17",
+  //                 views_count: 1000,
+  //                 subscriber_count: 400,
+  //                 video_count: 60,
+  //               },
+  //             ],
+  //           },
+  //           instagram_stats: {
+  //             current_status: [
+  //               {
+  //                 current_date: "2022-01-22",
+  //                 followers: "139 M",
+  //                 followings: "231 K",
+  //                 posts: 193,
+  //               },
+  //               {
+  //                 current_date: "2022-01-21",
+  //                 followers: "911 M",
+  //                 followings: "201 K",
+  //                 posts: 183,
+  //               },
+  //               {
+  //                 current_date: "2022-01-20",
+  //                 followers: "191 M",
+  //                 followings: "201 K",
+  //                 posts: 143,
+  //               },
+  //               {
+  //                 current_date: "2022-01-19",
+  //                 followers: "113 M",
+  //                 followings: "999 K",
+  //                 posts: 123,
+  //               },
+  //               {
+  //                 current_date: "2022-01-18",
+  //                 followers: "111 M",
+  //                 followings: "221 K",
+  //                 posts: 123,
+  //               },
+  //             ],
+  //           },
+  //           twitter_stats: {
+  //             current_status: [
+  //               {
+  //                 current_date: "2022-01-19",
+  //                 followers: "200 M",
+  //                 followings: "100 K",
+  //               },
+  //               {
+  //                 current_date: "2022-01-18",
+  //                 followers: "333 M",
+  //                 followings: "222 K",
+  //               },
+  //               {
+  //                 current_date: "2022-01-17",
+  //                 followers: "345 M",
+  //                 followings: "111 K",
+  //               },
+  //               {
+  //                 current_date: "2022-01-16",
+  //                 followers: "222 M",
+  //                 followings: "999 K",
+  //               },
+  //               {
+  //                 current_date: "2022-01-15",
+  //                 followers: "203 M",
+  //                 followings: "134 K",
+  //               },
+  //               {
+  //                 current_date: "2022-01-14",
+  //                 followers: "220 M",
+  //                 followings: "104 K",
+  //               },
+  //             ],
+  //             joining_date: "2020-01-1",
+  //             comments: [
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "120",
+  //                 likes: 2350,
+  //                 retweets: 101,
+  //                 comment_date: "2023-12-16",
+  //               },
+  //               {
+  //                 text: "Random number se what's app pe part job ke liye message aah rahe hai, bhenchod inhe kaise pata paise khatam ho rahe hai",
+  //                 url: "https://twitter.com/CarryMinati/status/1754787110949679380#m",
+  //                 comments: "195",
+  //                 likes: 3464,
+  //                 retweets: 103,
+  //                 comment_date: "2024-02-17",
+  //               },
+  //               {
+  //                 text: "Itne bade hogye ho abhi bhee there aur their mein confuse ho jate ho",
+  //                 url: "https://twitter.com/CarryMinati/status/1754485778913071614#m",
+  //                 comments: "202",
+  //                 likes: 4097,
+  //                 retweets: 212,
+  //                 comment_date: "2024-02-18",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "120",
+  //                 likes: 2351,
+  //                 retweets: 901,
+  //                 comment_date: "2024-02-19",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "111",
+  //                 likes: 2334,
+  //                 retweets: 701,
+  //                 comment_date: "2024-02-20",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "269",
+  //                 likes: 2321,
+  //                 retweets: 901,
+  //                 comment_date: "2024-02-21",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "568",
+  //                 likes: 2311,
+  //                 retweets: 401,
+  //                 comment_date: "2024-02-22",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "110",
+  //                 likes: 1223,
+  //                 retweets: 801,
+  //                 comment_date: "2024-02-23",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "100",
+  //                 likes: 1232,
+  //                 retweets: 701,
+  //                 comment_date: "2024-02-24",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "124",
+  //                 likes: 2322,
+  //                 retweets: 601,
+  //                 comment_date: "2024-02-25",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "900",
+  //                 likes: 2222,
+  //                 retweets: 301,
+  //                 comment_date: "2024-02-26",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "123",
+  //                 likes: 3490,
+  //                 retweets: 131,
+  //                 comment_date: "2024-02-27",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "232",
+  //                 likes: 2310,
+  //                 retweets: 201,
+  //                 comment_date: "2024-02-28",
+  //               },
+  //               {
+  //                 text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+  //                 url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+  //                 comments: "234",
+  //                 likes: 2300,
+  //                 retweets: 102,
+  //                 comment_date: "2024-02-29",
+  //               },
+  //             ],
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // };
+  const dict = {
+    user_id:userId,
     hashtag: "carryminati",
     hashtag_stats: [
       {
-        user: "xyxj0vdUu6mBfMDI8UtDJrH9oW1BKvIZ;",
+        user: userId,
         youtube_stats: {
           name: "YouTubeUser",
           current_status: [
             {
               current_date: "2022-01-22",
-              views_count: 1002,
+              views_count: 1042,
               subscriber_count: 197,
               video_count: 50,
             },
@@ -254,9 +493,59 @@ const Analysis = () => {
     ],
   };
 
+  const savingData = {
+    user_id: dict.user_id,
+    report_data: dict.hashtag_stats.map(hashtagStat => ({
+      hashtag: dict.hashtag,
+      hashtag_stats: [
+        {
+          user: hashtagStat.user,
+          youtube_stats: {
+            name: hashtagStat.youtube_stats.name,
+            current_status: hashtagStat.youtube_stats.current_status.map(status => ({
+              current_date: status.current_date,
+              views_count: status.views_count,
+              subscriber_count: status.subscriber_count,
+              video_count: status.video_count,
+            })),
+          },
+          instagram_stats: {
+            current_status: hashtagStat.instagram_stats.current_status.map(status => ({
+              current_date: status.current_date,
+              followers: status.followers,
+              followings: status.followings,
+              posts: status.posts,
+            })),
+          },
+          twitter_stats: {
+            current_status: hashtagStat.twitter_stats.current_status.map(status => ({
+              current_date: status.current_date,
+              followers: status.followers,
+              followings: status.followings,
+            })),
+            joining_date: hashtagStat.twitter_stats.joining_date,
+            comments: hashtagStat.twitter_stats.comments.map(comment => ({
+              text: comment.text,
+              url: comment.url,
+              comments: comment.comments,
+              likes: comment.likes,
+              retweets: comment.retweets,
+              comment_date: comment.comment_date,
+            })),
+          },
+        },
+      ],
+    })),
+  };
+  
+  const handleOnViewReport = () => {
+    navigate('/view-reports');
+  }
+
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const transformedData_graph1 =
-    data.hashtag_stats[0].twitter_stats.comments.map((comment) => ({
+    dict.hashtag_stats[0].twitter_stats.comments.map((comment) => ({
       name: comment.comment_date,
       likes: parseInt(comment.likes, 10),
       retweets: parseInt(comment.retweets, 10),
@@ -278,7 +567,7 @@ const Analysis = () => {
 
   // Additional graph for Instagram
   const transformedData_graph_instagram =
-    data.hashtag_stats[0].instagram_stats.current_status.map((status) => ({
+    dict.hashtag_stats[0].instagram_stats.current_status.map((status) => ({
       name: status.current_date,
       followers: parseInstagramFollowers(status.followers),
       followings: parseInt(status.followings, 10),
@@ -287,7 +576,7 @@ const Analysis = () => {
 
   // Additional graph for YouTube
   const transformedData_graph_youtube =
-    data.hashtag_stats[0].youtube_stats.current_status.map((status) => ({
+    dict.hashtag_stats[0].youtube_stats.current_status.map((status) => ({
       name: status.current_date,
       video_count: parseInt(status.video_count, 10),
       subscriber_count: parseInt(status.subscriber_count, 10),
@@ -321,7 +610,7 @@ const Analysis = () => {
   };
 
   const transformedData_graph_twitter =
-    data.hashtag_stats[0].twitter_stats.current_status.map((status) => ({
+    dict.hashtag_stats[0].twitter_stats.current_status.map((status) => ({
       name: status.current_date,
       followers: parseTwitterFollowers(status.followers),
       followings: parseTwitterFollowings(status.followings),
@@ -345,39 +634,6 @@ const Analysis = () => {
 
   /////////////////////////////////////////////// Download Analysis Page ///////////////////////////////////////////////////////////////////////
 
-  // const downloadPageData = () => {
-  //   const workbook = XLSX.utils.book_new();
-
-  //   // Add Twitter Comments Graph
-  //   XLSX.utils.book_append_sheet(
-  //     workbook,
-  //     XLSX.utils.json_to_sheet(transformedData_graph1),
-  //     "Twitter_Comments_Table"
-  //   );
-
-  //   // Add Twitter Profile Table
-  //   XLSX.utils.book_append_sheet(
-  //     workbook,
-  //     XLSX.utils.json_to_sheet(transformedData_graph_twitter),
-  //     "Twitter_Profile_Table"
-  //   );
-
-  //   // Add Instagram Profile Table
-  //   XLSX.utils.book_append_sheet(
-  //     workbook,
-  //     XLSX.utils.json_to_sheet(transformedData_graph_instagram),
-  //     "Instagram_Profile_Table"
-  //   );
-
-  //   // Add YouTube Profile Table
-  //   XLSX.utils.book_append_sheet(
-  //     workbook,
-  //     XLSX.utils.json_to_sheet(transformedData_graph_youtube),
-  //     "YouTube_Profile_Table"
-  //   );
-
-  //   XLSX.writeFile(workbook, "SocialMediaAnalysisData.xlsx");
-  // };
   const captureAndConvertToBase64 = async (selector) => {
     const element = document.querySelector(selector);
     const canvas = await html2canvas(element);
@@ -471,32 +727,17 @@ const Analysis = () => {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const handleOnSaveReport = () => {
-    // console.log(document.cookie.split(" ")[]);
-    console.log(
-      "inside the report save functionality : ",
-      document.cookie.split(" ")[1].split("=")[1]
-    );
-    const userId = document.cookie.split(" ")[1].split("=")[1]; // Replace with the actual user ID
-    // const basePath = "http://your-backend-base-url"; // Replace with your backend base URL
-    // const relativePath = "/analysis"; // Replace with the actual path you want to save
-    const url = window.location.href;
-    const reportData = {
-      user: userId,
-      url: url,
-      // url: basePath + relativePath,
-    };
-
-    saveReport(reportData);
+    saveReport();
   };
 
-  const saveReport = (reportData) => {
-    console.log(document.cookie);
+  const saveReport = () => {
+    console.log(JSON.stringify(savingData));
     fetch("/api/save-analysis-reports", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(reportData),
+      body: JSON.stringify(savingData),
     })
       .then((response) => {
         if (response.ok) {
@@ -531,7 +772,7 @@ const Analysis = () => {
   //     }
   //   })
   //   .catch(error => console.error('Error fetching document:', error));
-      
+
   // };
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -799,6 +1040,7 @@ const Analysis = () => {
       </div>
       <button onClick={downloadPageData}>Download Page Data</button>
       <button onClick={handleOnSaveReport}>Save Report</button>
+      <button onClick={handleOnViewReport}>View Reports</button>
       {/* <button onClick={handleOnFetchDocument}>View Report</button> */}
     </div>
   );
