@@ -11,6 +11,7 @@ const SearchPage = () => {
   const [showMessage, setShowMessage] = useState(false);
   const [downloadOption, setDownloadOption] = useState(false);
   const [historyData, setHistoryData] = useState("");
+  const [searchHashtagName, setSearchHashtagName] = useState();
 
   const handleOnAddPredefineHashtag = () => {
     const months = {
@@ -242,7 +243,10 @@ const SearchPage = () => {
   };
 
   const handleOnTwitterHashtagSearch = () => {
-    fetch(`/api/twitter/search?key=congress`, {
+    const tempVariable = "IndianPolitics";
+    console.log("temp variable :::::::::::::::::::::::::::::::::::: ",tempVariable);
+    setSearchHashtagName(tempVariable);
+    fetch(`/api/twitter/search?key=${tempVariable}`, {
       // fetch(`/api/twitter/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
@@ -584,12 +588,14 @@ const SearchPage = () => {
         <button onClick={handleOnUserProfile}>Profile</button>
         <button onClick={handleOnHistoryClick}>History</button>
         <button onClick={()=>navigate('/view-reports')}>My Reports</button>
+        <button onClick={()=>navigate('/upload-file-to-analysis')}>Upload File</button>
         {historyData && (
           <div>
             <h3>My History</h3>
             <pre>{JSON.stringify(historyData, null, 2)}</pre>
           </div>
         )}
+        {searchHashtagName && <p>{searchHashtagName}</p>}
       </div>
 
       {!hashtagIncludeData && hashtagData && !historyData && (
