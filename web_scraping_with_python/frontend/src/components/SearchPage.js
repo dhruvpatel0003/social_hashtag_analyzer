@@ -11,25 +11,240 @@ const SearchPage = () => {
   const [showMessage, setShowMessage] = useState(false);
   const [downloadOption, setDownloadOption] = useState(false);
   const [historyData, setHistoryData] = useState("");
+  const [searchHashtagName, setSearchHashtagName] = useState();
 
-  const handleOnAddPredefineHashtag = () => {
-    const months = {
-      Jan: 0,
-      Feb: 1,
-      Mar: 2,
-      Apr: 3,
-      May: 4,
-      Jun: 5,
-      Jul: 6,
-      Aug: 7,
-      Sep: 8,
-      Oct: 9,
-      Nov: 10,
-      Dec: 11,
-    };
+  // const handleOnAddPredefineHashtag = () => {
+  //   const months = {
+  //     Jan: 0,
+  //     Feb: 1,
+  //     Mar: 2,
+  //     Apr: 3,
+  //     May: 4,
+  //     Jun: 5,
+  //     Jul: 6,
+  //     Aug: 7,
+  //     Sep: 8,
+  //     Oct: 9,
+  //     Nov: 10,
+  //     Dec: 11,
+  //   };
 
+  //   const dict = hashtagData.data;
+
+  //   fetch("/api/create-hashtag", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       hashtag: dict["hashtag"],
+  //       hashtag_stats: [
+  //         {
+  //           youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
+  //             ? {
+  //                 current_status: [
+  //                   {
+  //                     current_date:
+  //                       dict["hashtag_stats"][0]["youtube_stats"][
+  //                         "current_status"
+  //                       ][0]["current_date"],
+  //                     views_count:
+  //                       dict["hashtag_stats"][0]["youtube_stats"][
+  //                         "current_status"
+  //                       ][0]["views_count"],
+  //                     subscription_count:
+  //                       dict["hashtag_stats"][0]["youtube_stats"][
+  //                         "current_status"
+  //                       ][0]["subscription_count"],
+  //                     video_count:
+  //                       dict["hashtag_stats"][0]["youtube_stats"][
+  //                         "current_status"
+  //                       ][0]["video_count"],
+  //                   },
+  //                 ],
+  //               }
+  //             : {},
+  //           instagram_stats: {
+  //             current_status: [
+  //               {
+  //                 current_date:
+  //                   dict["hashtag_stats"][0]["instagram_stats"][
+  //                     "current_status"
+  //                   ][0]["current_date"],
+  //                 followers:
+  //                   dict["hashtag_stats"][0]["instagram_stats"][
+  //                     "current_status"
+  //                   ][0]["followers"],
+  //                 followings:
+  //                   dict["hashtag_stats"][0]["instagram_stats"][
+  //                     "current_status"
+  //                   ][0]["followings"],
+  //                 posts:
+  //                   dict["hashtag_stats"][0]["instagram_stats"][
+  //                     "current_status"
+  //                   ][0]["posts"],
+  //               },
+  //             ],
+  //           },
+  //           twitter_stats: {
+  //             current_status: [
+  //               {
+  //                 current_date:
+  //                   dict["hashtag_stats"][0]["twitter_stats"][
+  //                     "current_status"
+  //                   ][0]["current_date"],
+  //                 followers:
+  //                   dict["hashtag_stats"][0]["twitter_stats"][
+  //                     "current_status"
+  //                   ][0]["followers"],
+  //                 followings:
+  //                   dict["hashtag_stats"][0]["twitter_stats"][
+  //                     "current_status"
+  //                   ][0]["followings"],
+  //               },
+  //             ],
+  //             joining_date:
+  //               dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
+  //             comments: dict["hashtag_stats"][0]["twitter_stats"][
+  //               "comments"
+  //             ].map((comment) => ({
+  //               text: comment.text,
+  //               comments: comment.comments,
+  //               url: comment.url,
+  //               likes: comment.likes,
+  //               retweets: comment.retweets,
+  //               comment_date: comment.comment_date,
+  //             })),
+  //           },
+  //         },
+  //       ],
+  //     }),
+
+  //     // body: JSON.stringify({
+  //     //   hashtag: dict["hashtag"],
+  //     //   hashtag_stats: [
+  //     //     {
+  //     //       youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
+  //     //         ? {
+  //     //             name: dict["hashtag_stats"][0]["youtube_stats"]["name"],
+  //     //             current_status: [
+  //     //               {
+  //     //                 current_date:
+  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
+  //     //                     "current_status"
+  //     //                   ][0]["current_date"],
+  //     //                 views_count:
+  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
+  //     //                     "current_status"
+  //     //                   ][0]["views_count"],
+  //     //                 subscription_count:
+  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
+  //     //                     "current_status"
+  //     //                   ][0]["subscription_count"],
+  //     //                 video_count:
+  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
+  //     //                     "current_status"
+  //     //                   ][0]["video_count"],
+  //     //               },
+  //     //             ],
+  //     //           }
+  //     //         : // ? dict["hashtag_stats"][0]["youtube_stats"]
+  //     //           {},
+  //     //       // instagram_stats: {
+  //     //       //   followers:
+  //     //       //     dict["hashtag_stats"][0]["instagram_stats"]["followers"],
+  //     //       //   followings:
+  //     //       //     dict["hashtag_stats"][0]["instagram_stats"]["followings"],
+  //     //       //   posts: dict["hashtag_stats"][0]["instagram_stats"]["posts"],
+  //     //       // },
+  //     //       instagram_stats: {
+  //     //         current_status: [
+  //     //           {
+  //     //             current_date:
+  //     //               dict["hashtag_stats"][0]["instagram_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["current_date"],
+  //     //             followers:
+  //     //               dict["hashtag_stats"][0]["instagram_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["followers"],
+  //     //             followings:
+  //     //               dict["hashtag_stats"][0]["instagram_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["followings"],
+  //     //             posts:
+  //     //               dict["hashtag_stats"][0]["instagram_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["posts"],
+  //     //           },
+  //     //         ],
+  //     //       },
+  //     //       twitter_stats: {
+  //     //         // followers: dict["hashtag_stats"][0]["twitter_stats"]["followers"],
+  //     //         // followings:
+  //     //         //   dict["hashtag_stats"][0]["twitter_stats"]["followings"],
+  //     //         current_status: [
+  //     //           {
+  //     //             current_date:
+  //     //               dict["hashtag_stats"][0]["twitter_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["current_date"],
+  //     //             followers:
+  //     //               dict["hashtag_stats"][0]["twitter_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["followers"],
+  //     //             followings:
+  //     //               dict["hashtag_stats"][0]["twitter_stats"][
+  //     //                 "current_status"
+  //     //               ][0]["followings"],
+  //     //           },
+  //     //         ],
+  //     //         joining_date:
+  //     //           dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
+  //     //         comments: dict["hashtag_stats"][0]["twitter_stats"][
+  //     //           "comments"
+  //     //         ].map((comment) => ({
+  //     //           text: comment.text,
+  //     //           comments: comment.comments,
+  //     //           url: comment.url,
+  //     //           likes: comment.likes,
+  //     //           retweets: comment.retweets,
+  //     //           comment_date : comment.date
+  //     //           // comment_date: new Date(
+  //     //           //   parseInt(
+  //     //           //     comment.comment_date.split(" · ")[0].split(",")[1],
+  //     //           //     10
+  //     //           //   ),
+  //     //           //   months[
+  //     //           //     comment.comment_date
+  //     //           //       .split(" · ")[0]
+  //     //           //       .split(",")[0]
+  //     //           //       .split(" ")[0]
+  //     //           //   ],
+  //     //           //   parseInt(
+  //     //           //     comment.comment_date
+  //     //           //       .split(" · ")[0]
+  //     //           //       .split(",")[0]
+  //     //           //       .split(" ")[1],
+  //     //           //     10
+  //     //           //   )
+  //     //           // )
+  //     //             // .toISOString()
+  //     //             // .split("T")[0],
+  //     //         })),
+  //     //       },
+  //     //     },
+  //     //   ],
+  //     // }),
+  //   })
+  //     .then((response) => console.log(response))
+  //     .catch((error) => console.log(error));
+  // };
+
+  const handleOnApify = () => {
     const dict = hashtagData.data;
-
+    console.log(dict["hashtag_stats"][0]['youtube_stats']['current_status'].length == 0);
+    console.log("frontend - hashtagData ", dict,(dict.hashtag_stats[0].youtube_stats),(dict.hashtag_stats[0].instagram_stats),(dict.hashtag_stats[0].twitter_stats));
     fetch("/api/create-hashtag", {
       method: "POST",
       headers: {
@@ -39,9 +254,8 @@ const SearchPage = () => {
         hashtag: dict["hashtag"],
         hashtag_stats: [
           {
-            youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
+            youtube_stats: (dict.hashtag_stats[0]['youtube_stats']['current_status'].length != 0)
               ? {
-                  name: dict["hashtag_stats"][0]["youtube_stats"]["name"],
                   current_status: [
                     {
                       current_date:
@@ -64,7 +278,7 @@ const SearchPage = () => {
                   ],
                 }
               : {},
-            instagram_stats: {
+            instagram_stats: (dict.hashtag_stats[0]['instagram_stats']['current_status'].length != 0) ? {
               current_status: [
                 {
                   current_date:
@@ -85,8 +299,8 @@ const SearchPage = () => {
                     ][0]["posts"],
                 },
               ],
-            },
-            twitter_stats: {
+            } : {},
+            twitter_stats: (dict.hashtag_stats[0]['twitter_stats']['current_status'].length != 0) ? {
               current_status: [
                 {
                   current_date:
@@ -115,134 +329,20 @@ const SearchPage = () => {
                 retweets: comment.retweets,
                 comment_date: comment.comment_date,
               })),
-            },
+            } : {},
           },
         ],
       }),
-
-      // body: JSON.stringify({
-      //   hashtag: dict["hashtag"],
-      //   hashtag_stats: [
-      //     {
-      //       youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
-      //         ? {
-      //             name: dict["hashtag_stats"][0]["youtube_stats"]["name"],
-      //             current_status: [
-      //               {
-      //                 current_date:
-      //                   dict["hashtag_stats"][0]["youtube_stats"][
-      //                     "current_status"
-      //                   ][0]["current_date"],
-      //                 views_count:
-      //                   dict["hashtag_stats"][0]["youtube_stats"][
-      //                     "current_status"
-      //                   ][0]["views_count"],
-      //                 subscription_count:
-      //                   dict["hashtag_stats"][0]["youtube_stats"][
-      //                     "current_status"
-      //                   ][0]["subscription_count"],
-      //                 video_count:
-      //                   dict["hashtag_stats"][0]["youtube_stats"][
-      //                     "current_status"
-      //                   ][0]["video_count"],
-      //               },
-      //             ],
-      //           }
-      //         : // ? dict["hashtag_stats"][0]["youtube_stats"]
-      //           {},
-      //       // instagram_stats: {
-      //       //   followers:
-      //       //     dict["hashtag_stats"][0]["instagram_stats"]["followers"],
-      //       //   followings:
-      //       //     dict["hashtag_stats"][0]["instagram_stats"]["followings"],
-      //       //   posts: dict["hashtag_stats"][0]["instagram_stats"]["posts"],
-      //       // },
-      //       instagram_stats: {
-      //         current_status: [
-      //           {
-      //             current_date:
-      //               dict["hashtag_stats"][0]["instagram_stats"][
-      //                 "current_status"
-      //               ][0]["current_date"],
-      //             followers:
-      //               dict["hashtag_stats"][0]["instagram_stats"][
-      //                 "current_status"
-      //               ][0]["followers"],
-      //             followings:
-      //               dict["hashtag_stats"][0]["instagram_stats"][
-      //                 "current_status"
-      //               ][0]["followings"],
-      //             posts:
-      //               dict["hashtag_stats"][0]["instagram_stats"][
-      //                 "current_status"
-      //               ][0]["posts"],
-      //           },
-      //         ],
-      //       },
-      //       twitter_stats: {
-      //         // followers: dict["hashtag_stats"][0]["twitter_stats"]["followers"],
-      //         // followings:
-      //         //   dict["hashtag_stats"][0]["twitter_stats"]["followings"],
-      //         current_status: [
-      //           {
-      //             current_date:
-      //               dict["hashtag_stats"][0]["twitter_stats"][
-      //                 "current_status"
-      //               ][0]["current_date"],
-      //             followers:
-      //               dict["hashtag_stats"][0]["twitter_stats"][
-      //                 "current_status"
-      //               ][0]["followers"],
-      //             followings:
-      //               dict["hashtag_stats"][0]["twitter_stats"][
-      //                 "current_status"
-      //               ][0]["followings"],
-      //           },
-      //         ],
-      //         joining_date:
-      //           dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-      //         comments: dict["hashtag_stats"][0]["twitter_stats"][
-      //           "comments"
-      //         ].map((comment) => ({
-      //           text: comment.text,
-      //           comments: comment.comments,
-      //           url: comment.url,
-      //           likes: comment.likes,
-      //           retweets: comment.retweets,
-      //           comment_date : comment.date
-      //           // comment_date: new Date(
-      //           //   parseInt(
-      //           //     comment.comment_date.split(" · ")[0].split(",")[1],
-      //           //     10
-      //           //   ),
-      //           //   months[
-      //           //     comment.comment_date
-      //           //       .split(" · ")[0]
-      //           //       .split(",")[0]
-      //           //       .split(" ")[0]
-      //           //   ],
-      //           //   parseInt(
-      //           //     comment.comment_date
-      //           //       .split(" · ")[0]
-      //           //       .split(",")[0]
-      //           //       .split(" ")[1],
-      //           //     10
-      //           //   )
-      //           // )
-      //             // .toISOString()
-      //             // .split("T")[0],
-      //         })),
-      //       },
-      //     },
-      //   ],
-      // }),
-    })
-      .then((response) => console.log(response))
-      .catch((error) => console.log(error));
+    });
   };
-
   const handleOnTwitterHashtagSearch = () => {
-    fetch(`/api/twitter/search?key=congress`, {
+    const tempVariable = "IndianPolitics";
+    console.log(
+      "temp variable :::::::::::::::::::::::::::::::::::: ",
+      tempVariable
+    );
+    setSearchHashtagName(tempVariable);
+    fetch(`/api/twitter/search?key=${tempVariable}`, {
       // fetch(`/api/twitter/search?key=${searchTerm}`, {
       method: "GET",
       headers: {
@@ -397,88 +497,87 @@ const SearchPage = () => {
     }
     setShowMessage(false);
     setLoading(false);
-    // fetch(`/api/search?key=${searchTerm}`, {
-    //   method: "GET",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "Authorization": `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
-    //   },
-    // })
-    //   .then((response) => {
-    //     if (!response.ok) {
-    //       throw new Error(
-    //         `Network response was not ok, status: ${response.status}`
-    //       );
-    //     }
-    //     return response.json();
-    //   })
-    //   .then((data) => {
-    //     setLoading(false);
-    //     setHashtagData(data);
-    //   })
-    //   .catch((error) => console.error("Error during fetch:", error));
-
-    setHashtagData({
-      data: {
-        hashtag: "carryminati",
-        hashtag_stats: [
-          {
-            youtube_stats: {
-              name: "YouTubeUser",
-              current_status: [
-                {
-                  current_date: "2022-01-22",
-                  views_count: 1002,
-                  subscription_count: 197,
-                  video_count: 50,
-                },
-              ],
-            },
-            instagram_stats: {
-              current_status: [
-                {
-                  current_date: "2022-01-22",
-                  followers: "139 M",
-                  followings: "231 K",
-                  posts: 193,
-                },
-                {
-                  current_date: "2022-01-21",
-                  followers: "911 M",
-                  followings: "201 K",
-                  posts: 183,
-                },
-              ],
-            },
-            twitter_stats: {
-              current_status: [
-                {
-                  current_date: "2022-01-19",
-                  followers: "200 M",
-                  followings: "100 K",
-                },
-                {
-                  current_date: "2022-01-18",
-                  followers: "333 M",
-                  followings: "222 K",
-                },
-              ],
-              joining_date: "2020-01-1",
-              comments: [
-                {
-                  text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
-                  url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
-                  comments: "120",
-                  likes: 2350,
-                  retweets: 101,
-                  comment_date: "2023-12-23",
-                },
-              ],
-            },
-          },
-        ],
+    fetch(`/api/search?key=${searchTerm}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
       },
-    });
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok, status: ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setLoading(false);
+        setHashtagData(data);
+      })
+      .catch((error) => console.error("Error during fetch:", error));
+
+    // setHashtagData({
+    //   data: {
+    //     hashtag: "carryminati",
+    //     hashtag_stats: [
+    //       {
+    //         youtube_stats: {
+    //           current_status: [
+    //             {
+    //               current_date: "2022-01-22",
+    //               views_count: 1002,
+    //               subscription_count: 197,
+    //               video_count: 50,
+    //             },
+    //           ],
+    //         },
+    //         instagram_stats: {
+    //           current_status: [
+    //             {
+    //               current_date: "2022-01-22",
+    //               followers: "139 M",
+    //               followings: "231 K",
+    //               posts: 193,
+    //             },
+    //             {
+    //               current_date: "2022-01-21",
+    //               followers: "911 M",
+    //               followings: "201 K",
+    //               posts: 183,
+    //             },
+    //           ],
+    //         },
+    //         twitter_stats: {
+    //           current_status: [
+    //             {
+    //               current_date: "2022-01-19",
+    //               followers: "200 M",
+    //               followings: "100 K",
+    //             },
+    //             {
+    //               current_date: "2022-01-18",
+    //               followers: "333 M",
+    //               followings: "222 K",
+    //             },
+    //           ],
+    //           joining_date: "2020-01-1",
+    //           comments: [
+    //             {
+    //               text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+    //               url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+    //               comments: "120",
+    //               likes: 2350,
+    //               retweets: 101,
+    //               comment_date: "2023-12-23",
+    //             },
+    //           ],
+    //         },
+    //       },
+    //     ],
+    //   },
+    // });
   };
 
   const handleOnUserProfile = () => {
@@ -548,10 +647,7 @@ const SearchPage = () => {
             #Carryminati
           </button>
           <button onClick={() => handleOnHashtagClick("BJP")}>#BJP</button>
-          {/* <button onClick={handleOnAddPredefineHashtag}>
-            Add More Hashtags
-          </button> */}
-          {/* Add more predefined hashtags here */}
+          <button onClick={handleOnApify}>RunApify</button>
         </div>
       </div>
       <div>
@@ -583,13 +679,17 @@ const SearchPage = () => {
         </ul>
         <button onClick={handleOnUserProfile}>Profile</button>
         <button onClick={handleOnHistoryClick}>History</button>
-        <button onClick={()=>navigate('/view-reports')}>My Reports</button>
+        <button onClick={() => navigate("/view-reports")}>My Reports</button>
+        <button onClick={() => navigate("/upload-file-to-analysis")}>
+          Upload File
+        </button>
         {historyData && (
           <div>
             <h3>My History</h3>
             <pre>{JSON.stringify(historyData, null, 2)}</pre>
           </div>
         )}
+        {searchHashtagName && <p>{searchHashtagName}</p>}
       </div>
 
       {!hashtagIncludeData && hashtagData && !historyData && (

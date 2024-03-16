@@ -1,9 +1,23 @@
 import base64
+from collections import Counter
 import json
 import os
+import re
+import nltk
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+from nltk.tokenize import word_tokenize
+# from nltk.corpus import stopwords
+# nltk.download('stopwords')
+from nltk.corpus import stopwords 
 from django.views import View
+
 from dotenv import load_dotenv
 load_dotenv()
+
 
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
@@ -11,6 +25,8 @@ DEVELOPER_KEY = os.getenv('DEVELOPER_KEY')
 TWITTER_API_KEY = os.getenv('API_KEY')
 EMAIL = os.getenv("EMAIL")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+APIFY_CLIENT_API_KEY = os.getenv("APIFY_CLIENT_API_KEY")
+CLIENT_ACTOR = os.getenv("CLIENT_ACTOR")
 
 import requests
 import googleapiclient.discovery
@@ -40,7 +56,9 @@ from email.mime.multipart import MIMEMultipart
 from django.core.signing import TimestampSigner, BadSignature
 from django.shortcuts import get_object_or_404
 from urllib.parse import quote
-
+from rest_framework.parsers import JSONParser
+from rest_framework.parsers import MultiPartParser
+from apify_client import ApifyClient
 
 
 from selenium import webdriver
@@ -53,24 +71,6 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 
 
-# class UserProfileView(View):
-#     template_name = 'profile.html'
-
-#     def get(self, request, *args, **kwargs):
-#         user_profile = UserProfile.objects.get(user=request.user)
-#         return render(request, self.template_name, {'user_profile': user_profile})
-
-#     def post(self, request, *args, **kwargs):
-#         user_profile = UserProfile.objects.get(user=request.user)
-#         serializer = UserProfileSerializer(user_profile, data=request.POST, files=request.FILES)
-        
-#         if serializer.is_valid():
-#             serializer.save()
-#             return redirect('user_profile')
-#         else:
-#             # Handle invalid serializer data
-#             return render(request, self.template_name, {'user_profile': user_profile, 'serializer': serializer})
-
 class UserView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -79,39 +79,6 @@ class UserView(generics.ListAPIView):
 class HashTagListView(generics.ListAPIView):
     queryset = HashTag.objects.all()
     serializer_class = HashTagSerializer
-
-# class AnalysisReportListCreateView(generics.CreateAPIView):
-#     serializer_class = AnalysisReportSerializer
-
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create(serializer)
-#         print("inside the analysis report")
-#         print(request.data)
-#         user_id = serializer.validated_data['user']
-#         url = serializer.validated_data['url']
-
-#         # Create the directory if it doesn't exist
-#         directory = 'api/excel_reports'
-#         os.makedirs(directory, exist_ok=True)
-
-#         # Use the user_id as the file name
-#         file_name = f'{user_id}_report.xlsx'
-#         file_path = os.path.join(directory, file_name)
-
-#         # Update the URL field in the serializer with the file path
-#         serializer.validated_data['url'] = file_path
-#         serializer.save()
-
-#         # Generate your Excel file content here, for example using pandas
-#         # This is just an example, adjust it based on your data structure
-#         data = {'url': [url]}
-#         df = pd.DataFrame(data)
-#         df.to_excel(file_path, index=False)
-
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class AnalysisReportListCreateView(generics.ListCreateAPIView):
     queryset = AnalysisReport.objects.all()
@@ -154,42 +121,6 @@ class DeleteAnalysisReport(APIView):
     def delete(self, request, format=None):
         AnalysisReport.objects.all().delete()
         return Response({"message": "Analysis reports deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-
-################################################################################## TO-DO ###########################################################
-
-# class GetDocumentURLView(generics.RetrieveAPIView):
-#     serializer_class = AnalysisReportSerializer
-
-#     def get(self, request, *args, **kwargs):
-#         user_id = kwargs.get('user_id', None)
-
-#         if not user_id:
-#             return Response({'error': 'User ID is required.'}, status=400)
-
-#         try:
-#             analysis_report = AnalysisReport.objects.get(user=user_id)
-#             serializer = self.get_serializer(analysis_report)
-#             document_url = serializer.data['url']
-
-#             # Check if the file exists
-#             if os.path.exists(document_url):
-#                 # Open the file and return it as a response
-#                 with open(document_url, 'rb') as file:
-#                     response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-#                     # Set the Content-Disposition header
-#                     response['Content-Disposition'] = f'inline; filename="{os.path.basename(document_url)}"'
-
-#                     return response
-#             else:
-#                 return Response({'error': 'File not found.'}, status=404)
-
-#         except AnalysisReport.DoesNotExist:
-#             return Response({'error': 'Analysis report not found for the user.'}, status=404)
-#         except Exception as e:
-#             return Response({'error': str(e)}, status=500)
-
-######################################################################################################################################################  
 
 class CreateUserView(APIView):
     serializer_class = CreateUserSerializer
@@ -240,19 +171,6 @@ class UserProfilePhotoView(APIView):
 
         return Response({"detail": "Profile photo updated successfully"}, status=status.HTTP_200_OK)
 
-# class GetUser(APIView):
-#     serializer_class = UserSerializer
-#     lookup_url_kwarg = 'user_id'
-#     def get(self,request,format=None):
-#         userID = request.GET.get(self.lookup_url_kwarg)
-#         if userID != None:
-#             user = User.objects.filter(user_id=userID)
-#             if len(user)>0:
-#                 data = UserSerializer(user[0]).data
-#                 data['is_logged_in'] = True
-#                 return Response(data,status=status.HTTP_200_OK)
-#             return Response({'Bad Request':'Invalid code'},status=status.HTTP_404_NOT_FOUND)
-#         return Response({'Bad Request':'Code not found in request'},status=status.HTTP_400_BAD_REQUEST)
 class GetUser(APIView):
     serializer_class = UserSerializer
     lookup_url_kwarg = 'user_id'
@@ -351,7 +269,6 @@ class DeleteAllHashTag(APIView):
             except Exception as e:
                 return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        
 class SearchFromChrome(APIView):
     
     lookup_url_kwarg = 'key'
@@ -380,242 +297,47 @@ class SearchFromChrome(APIView):
         }
         }
         create_user_history.post(create_user_history.request)
-
-        
-        ##############################################################################
-        
-    ############################################################### YouTube ###############################################################
-    
-        hashtag_data = {}
-        
-        driver = webdriver.Chrome()
-        # # chrome_options = webdriver.ChromeOptions()
-        # # chrome_options.add_argument("--headless")
-        # # chrome_options.add_argument('--ignore-certificate-errors')
-        # # driver = webdriver.Chrome(options=chrome_options)
-        
-        enteredName = hashtagName
-        
         
         hashtag_data = {}
-        hashtag_data['hashtag'] = enteredName
+        hashtag_data['hashtag'] = hashtagName
         hashtag_data['hashtag_stats'] = [{}]
         # hashtag_data['hashtag_stats'][0]['user'] = 17
-        hashtag_data['hashtag_stats'][0]['user'] = user_id
         hashtag_data['hashtag_stats'][0]['youtube_stats'] = {}
+        hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status'] = []
         hashtag_data['hashtag_stats'][0]['instagram_stats'] = {}
-        hashtag_data['hashtag_stats'][0]['twitter_stats'] = {}
+        hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status'] = []
         
         
-        youTuberName = "https://youtube.com/@"+enteredName
-        driver.get('https://commentpicker.com/youtube-channel-id.php')
-        time.sleep(2)
+        hashtag_data['hashtag_stats'][0]['twitter_stats'] = {} 
+        hashtag_data['hashtag_stats'][0]['twitter_stats']['current_status'] = []
+        hashtag_data['hashtag_stats'][0]['twitter_stats']['comments'] = []
         
-        inputUrl = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-youtube-link"]')))
-        inputUrl.send_keys(youTuberName)
-        time.sleep(5)
         
-        number1 = WebDriverWait(driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-x"]')))
-        number2 = WebDriverWait(driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha-y"]')))
-        sum=int(number1.text) +int( number2.text)
-        time.sleep(2)
-        
-        input_answer = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="captcha"]')))
-        input_answer.send_keys(sum)
-        time.sleep(20)
-        
-        print("Before the error point ___________________________")
-        getButton = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-start-button"]')))
-        getButton.click()
-        time.sleep(5)
-        print("After the error point ___________________________")
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  APIFY - INSTAGRAM <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+         
 
-        print("Before the error point 2 ___________________________")
-        channel_ID = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="js-results-id"]')))
-        print("After the error point 2___________________________")        
-        time.sleep(5)
-    
-        # channel_ID = "UC61Y04JVLkByFRv1K3V-KGQ"
-        
-        api_service_name = "youtube"
-        api_version = "v3"
-        
-        youtube = googleapiclient.discovery.build(
-            api_service_name, api_version, developerKey=DEVELOPER_KEY)
+        # client = ApifyClient(APIFY_CLIENT_API_KEY)
 
-        
-        request = youtube.channels().list(
-            part="snippet,contentDetails,statistics",
-            id=channel_ID.text,
-            # id=channel_ID,
-            maxResults=10
-        )
-        response = request.execute()
-        # print(response)
-        data=[]
-        for i in range(1):
-            finalinfo = dict(Name=response['items'][i]['snippet']['title'],
-                            views_count=response['items'][i]['statistics']['viewCount'],
-                            subscriber_count=response['items'][i]['statistics']['subscriberCount'],video_count=response['items'][i]['statistics']['videoCount'])
-            data.append(finalinfo)
-        # print(data)
+        # run_input = { "usernames": ["humansofny"] }
+        insta_user_data = []
+        # run = client.actor(CLIENT_ACTOR).call(run_input=run_input)
+        temp_data = [{'profilePic': 'https://instagram.fosu2-1.fna.fbcdn.net/v/t51.2885-19/118982623_353024589077161_7490638455124782637_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.fosu2-1.fna.fbcdn.net&_nc_cat=1&_nc_ohc=5Cc6cpDlPpMAX-X3Poo&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfDW2dxFcha-cjTY8ZYwzjjHrYMgxPLsfOC8I2cgSW7mTQ&oe=65F769E8&_nc_sid=8b3546', 'userName': 'humansofny', 'followersCount': 12939915, 'followsCount': 400, 'timestamp': '2024-03-14 - 13:22', 'userUrl': 'https://www.instagram.com/humansofny', 'userFullName': 'Humans of New York', 'userId': '242598499'}]
 
-        hashtag_data['hashtag_stats'][0]['youtube_stats']['name']=data[0]['Name']
-        hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status']=[]
-        hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status'].append({
-            "current_date" : "2022-01-22",
-            "views_count" : data[0]['views_count'],
-            "subscriber_count" : data[0]['subscriber_count'],
-            "video_count" : data[0]['video_count']
-        })
-        driver.quit()
-        
-        
-        
-        # # ############################################################### Instagram ###############################################################
+        # Fetch and print Actor results from the run's dataset (if there are any)
+        # for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        #     insta_user_data.append(item)
 
+        # print("instagram user data ::::::::::::::::::: ",insta_user_data)
         
-        driver = webdriver.Chrome()
-        
-        
-        #                                                                         # # chrome_options = webdriver.ChromeOptions()
-        #                                                                         # # chrome_options.add_argument("--headless")
-        #                                                                         # # driver = webdriver.Chrome(options=chrome_options)
-        
-        url = 'https://www.instagram.com/'
-        driver.get(url)
-        time.sleep(10)
-        username = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'username')))
-        username.send_keys("codestarted01")
-        time.sleep(10)
-        password = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,'password')))
-        password.send_keys("UnknownCoder")
-        time.sleep(10)
-        login = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="loginForm"]/div/div[3]/button')))
-        login.click()
-        
-        time.sleep(5)
-        driver.get(url+enteredName)
-        time.sleep(10)
-        ul = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.TAG_NAME,'ul')))
-        items = ul.find_elements(By.TAG_NAME,'li')
-        numeric_part = ''.join(c for c in items[0].text if c.isdigit())
-
-        posts_value = int(numeric_part)  
-        
-        hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status']=[] 
         hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status'].append({
-                "current_date":"2022-01-11",
-                "followers" : items[1].text,
-                "followings" : items[2].text,
-                "posts" : posts_value
-            })
-
-        driver.quit()
-        
-        ############################################################### Twitter ###############################################################
-
-        driver = webdriver.Chrome()
-        
-        driver.get("https://twitter.com/"+enteredName)
-        
-        ############################################### ####### ################### ########################
-        
-        # driver.get('https://twitter.com/i/flow/login?redirect_after_login=%2Fsearch%3Fq%3Dbjp%26src%3Dtyped_query%26f%3Dlist')
-        
-        # time.sleep(10)
-        
-        # username = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div/main/div/div/div/div[2]/div[2]/div/div[5]/label/div/div[2]/div/input')))
-        # username.send_keys("@DhruvPa15607876")
-        
-        # time.sleep(10)
-        
-        # password =  WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input')))
-        # password.send_keys("Dhruv$$152002")
-        # time.sleep(10)
-        
-        
-        # driver.get(f'https://twitter.com/search?q={enteredName}&src=typed_query&f=list')
-        
-        # time.sleep(5)
-
-        # for _ in range(3):
-        #     driver.find_element_by_tag_name('body').send_keys(Keys.END)
-        #     time.sleep(2)
-
-        # results = driver.find_elements_by_css_selector(".css-1qaijid, .r-bcqeeo, .r-qvutc0")
-
-        # for result in results:
-        #     print(result.text)
-        
-        # ####################### ################## #################################### ###################
-        
-        time.sleep(10)
-        following = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[1]/a/span[1]/span')))
-        followers = WebDriverWait(driver,100).until(EC.presence_of_element_located((By.XPATH,'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[2]/a/span[1]/span')))
-        time.sleep(10)
-
-        print("Following ",following.text,"Followers ",followers.text)
-        hashtag_data['hashtag_stats'][0]['twitter_stats'] = {
-        "current_status":[],
-        "joining_date" : '2020-01-11', 
-        "comments" : []
-        }
-        
-        hashtag_data['hashtag_stats'][0]['twitter_stats']['current_status'].append({
             "current_date" : "2022-02-11",
-            "followers" : followers.text,
-            "followings" : following.text,
+            "followers" : temp_data[0]['followersCount'],
+            "followings" : temp_data[0]['followsCount'],
         })
-        
-    
-        driver.quit()
-
-        # scraper = Nitter(0)
-        # print("before tweets -------------------------------------------------------------- ")
-        # tweets = scraper.get_tweets(enteredName, mode = 'hashtag', number=10)  
-
-        # # tweets = scraper.get_tweets(enteredName, mode = 'user', number=10)  
-        # print("After tweets -------------------------------------------------------------- ")
-        # print("tweets -------------------------------------------------------------- ",tweets)
-        # final_tweets = []
-        # for x in tweets['tweets']:
-        # #     print(x)
-        # #     print('------------------------')
-        #     data = [x['link'], x['text'],x['date'],x['stats']['likes'],x['stats']['comments'],x['stats']['retweets']]
-        #     # data = [x['stats']['likes'],x['stats']['comments']]
-        #     final_tweets.append(data)
-        #     # print(x['text'],x['stats']['likes'])
-        # # # print("final_tweets -------------------------------------------------------------- ",final_tweets)
-
-    
-
-        # if(tweets['tweets']):
-        #     for i in range(0,3):
-        #         hashtag_data['hashtag_stats'][0]['twitter_stats']["comments"].append({
-        #                         "text":final_tweets[i][1],
-        #                         "url":final_tweets[i][0],
-        #                         "likes":final_tweets[i][3],
-        #                         "retweets": final_tweets[i][5],
-        #                         "comments":final_tweets[i][4],
-        #                         "comment_date": final_tweets[i][2]
-        #     })
-
-
-
-    ####################################################################################################################################################################
-
-        
-        
-        ##########################################################
-        # execute the code by the command line
-        # create .bat 
-        # task schedular
-        # for the instagram and youtube
-        ##########################################################        
-        
+        print("returning from the search from chrom")
         return Response({'data': hashtag_data})
-    
+
+   
     
 class DeleteUser(APIView):
     def delete(self, request, format=None):
@@ -662,7 +384,8 @@ class HashTagTwitterSearch(APIView):
         
         hashtag_data = []   
         hashtagName = request.GET.get(self.lookup_url_kwarg)
-        number_of_tweets = 100
+        number_of_tweets = 5
+        print("number of tweets ::::::::::::::::::::::::::::::::::::::::::::: ",number_of_tweets)
         payload = {
             'api_key': TWITTER_API_KEY,
             'query' : hashtagName,
@@ -912,3 +635,113 @@ class PasswordResetHandler(TokenExpirationChecker):
 
         except Exception as e:
             return JsonResponse({"message": f"Error resetting password: {str(e)}"}, status=500)
+        
+        
+class AnalizeText(APIView):
+    
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, format=None):
+        print("inside the analize text view------------------------------------- ")
+
+        uploaded_file = request.FILES.get('file')
+        user_id = request.data.get('user_id', '')
+        
+        if not uploaded_file or not user_id:
+            return Response({'error': 'Missing file or user_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        file_content = uploaded_file.read().decode('utf-8')
+        # print("file content :::::::::::::::::::::::::::::::::::::::::::::::::::::::: ",file_content)
+        print("after the file printed!")
+        # Perform text preprocessing
+        
+        # text_field = self.extract_text_field(file_content)
+
+        # cleaned_text = self.preprocess_text(text_field)
+        cleaned_text = self.preprocess_text(file_content)
+        
+        
+        search_names = ['bjp','congress']
+        
+        
+        frequency_of_words = self.word_frequency(cleaned_text,search_names)
+        print(list(frequency_of_words))
+    
+        response_data = {
+            'cleaned_text': cleaned_text,
+            'identified_politicians': ['Politician1', 'Politician2', 'Politician3'],
+            'keywords': frequency_of_words,
+            'sentiment': 'Positive',
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    def preprocess_text(self, text):
+        stop_words = set(stopwords.words('english'))
+        cleaned_text = re.sub(r'\b(url|data|title|text|https)\b', '', text, flags=re.IGNORECASE)
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        # print("cleaned text ::::::::::::::::::::::::::::::::::: ",cleaned_text)
+        tokens = word_tokenize(cleaned_text)
+        cleaned_tokens = [word.lower() for word in tokens if word.isalpha() and word.lower() not in stop_words]
+        cleaned_text = ' '.join(cleaned_tokens)
+        # print("cleaned text :::::::::::::::::::::::::::::::::::::::::::::: >>>>>>>>>>>> ",cleaned_text)
+        return cleaned_text
+    
+    # def get_frequent_keywords(self, cleaned_text):
+
+    #     frequently_used_keywords = {}
+    
+    #     for word in cleaned_text:
+    #         frequently_used_keywords[word] = frequently_used_keywords.get(word, 0) + 1
+
+    #     # Convert the dictionary to a list of tuples
+    #     keyword_list = list(frequently_used_keywords.items())
+
+    #     # Sort words by frequency in descending order
+    #     sorted_keywords = sorted(keyword_list, key=lambda x: x[1], reverse=True)
+
+    #     return sorted_keywords
+    
+    def word_frequency(self,text, word_list):
+    # Remove unwanted characters and split the text into words
+        words = re.findall(r'\b\w+\b', text.lower())
+        
+        # Count the occurrences of each word
+        word_counts = Counter(words)
+        
+        # Extract frequencies for specified words
+        frequencies = {word: word_counts[word] for word in word_list}
+        print(frequencies)
+        return frequencies
+
+# Example usage
+
+
+    
+    lookup_url_kwarg = 'hashtag'
+    
+    def get(self, request, *args, **kwargs):
+        
+        hashtag_data = []   
+        hashtagName = request.GET.get(self.lookup_url_kwarg)
+        number_of_tweets = 5
+        print("number of tweets ::::::::::::::::::::::::::::::::::::::::::::: ",number_of_tweets)
+        payload = {
+            'api_key': TWITTER_API_KEY,
+            'query' : hashtagName,
+            'num' : number_of_tweets
+        }
+
+    
+        response = requests.get('https://api.scraperapi.com/structured/twitter/search',params = payload)
+        search_result = response.json()['organic_results']
+        print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++",search_result[0])
+        for i in range(0,number_of_tweets-1):
+            hashtag_data.append({
+                        "title":search_result[i]['title'],
+                        "text":search_result[i]['snippet'],
+                        "url":search_result[i]['link']
+        })
+        print('hashtag_data ---------------------------',hashtag_data)
+        return Response({'data': hashtag_data})
+    

@@ -6,15 +6,6 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 
-
-# class AnalysisReport(models.Model):
-#     user = models.CharField(max_length=100,null=False)
-#     url = models.URLField()
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f'{self.user.user_id} - {self.url}'
-   
 class SubScription(models.Model):
     subscription_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     subscription_amount = models.CharField(max_length=100,null=True)
@@ -26,23 +17,6 @@ def generate_filename(instance, filename):
     extension = filename.split('.')[-1]
     unique_filename = f"{uuid.uuid4()}.{extension}"
     return f"profile_photos/{unique_filename}"
-
-# class User(models.Model):
-
-#     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-#     email=models.EmailField(max_length=100,unique=True)
-#     password = models.CharField(max_length=100)
-#     phone_number= models.CharField(max_length=10,unique=True)
-#     subscription_status = models.ManyToManyField(SubScription, related_name='subscription_status')
-#     profile_photo = models.TextField(null=True, blank=True)
-    
-#     def save_base64_image(self, base64_image):
-#         self.profile_photo = base64_image
-#         self.save()
-
-#     def get_base64_image(self):
-#         return self.profile_photo
-
 class User(models.Model):
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email = models.EmailField(max_length=100, unique=True)
@@ -73,7 +47,6 @@ class YouTubeProfile(models.Model):
     video_count = models.IntegerField(default=0,null=True)
     
 class YouTubeStats(models.Model):
-    name = models.CharField(max_length=50,null=True)
     current_status = models.ManyToManyField(YouTubeProfile, related_name='youtube_profile')
     
 class InstagramProfile(models.Model):
@@ -132,19 +105,10 @@ class HashTag(models.Model):
     hashtag_stats = models.ManyToManyField(HashTagStats, related_name='hashtags')
 
 class ReportData(models.Model):
-    # report_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     hashtag = models.CharField(max_length=255)
     hashtag_stats = models.ManyToManyField(HashTagStats, related_name='hashtag_stat')
     def __str__(self):
         return f'ReportData - Hashtag: {self.hashtag}'
-    
-# class AnalysisReport(models.Model):
-#     user_id = models.CharField(max_length=100)
-#     report_data = models.ManyToManyField(ReportData, related_name='analysis_reports')
-
-#     def __str__(self):
-#         return f'AnalysisReport for User ID: {self.user_id}'
-
 class AnalysisReport(models.Model):
     user_id = models.CharField(max_length=100)
     report_data = models.ManyToManyField(ReportData, related_name='analysis_reports')
