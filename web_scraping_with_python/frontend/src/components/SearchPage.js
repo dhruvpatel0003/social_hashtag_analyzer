@@ -13,238 +13,18 @@ const SearchPage = () => {
   const [historyData, setHistoryData] = useState("");
   const [searchHashtagName, setSearchHashtagName] = useState();
 
-  // const handleOnAddPredefineHashtag = () => {
-  //   const months = {
-  //     Jan: 0,
-  //     Feb: 1,
-  //     Mar: 2,
-  //     Apr: 3,
-  //     May: 4,
-  //     Jun: 5,
-  //     Jul: 6,
-  //     Aug: 7,
-  //     Sep: 8,
-  //     Oct: 9,
-  //     Nov: 10,
-  //     Dec: 11,
-  //   };
-
-  //   const dict = hashtagData.data;
-
-  //   fetch("/api/create-hashtag", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       hashtag: dict["hashtag"],
-  //       hashtag_stats: [
-  //         {
-  //           youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
-  //             ? {
-  //                 current_status: [
-  //                   {
-  //                     current_date:
-  //                       dict["hashtag_stats"][0]["youtube_stats"][
-  //                         "current_status"
-  //                       ][0]["current_date"],
-  //                     views_count:
-  //                       dict["hashtag_stats"][0]["youtube_stats"][
-  //                         "current_status"
-  //                       ][0]["views_count"],
-  //                     subscription_count:
-  //                       dict["hashtag_stats"][0]["youtube_stats"][
-  //                         "current_status"
-  //                       ][0]["subscription_count"],
-  //                     video_count:
-  //                       dict["hashtag_stats"][0]["youtube_stats"][
-  //                         "current_status"
-  //                       ][0]["video_count"],
-  //                   },
-  //                 ],
-  //               }
-  //             : {},
-  //           instagram_stats: {
-  //             current_status: [
-  //               {
-  //                 current_date:
-  //                   dict["hashtag_stats"][0]["instagram_stats"][
-  //                     "current_status"
-  //                   ][0]["current_date"],
-  //                 followers:
-  //                   dict["hashtag_stats"][0]["instagram_stats"][
-  //                     "current_status"
-  //                   ][0]["followers"],
-  //                 followings:
-  //                   dict["hashtag_stats"][0]["instagram_stats"][
-  //                     "current_status"
-  //                   ][0]["followings"],
-  //                 posts:
-  //                   dict["hashtag_stats"][0]["instagram_stats"][
-  //                     "current_status"
-  //                   ][0]["posts"],
-  //               },
-  //             ],
-  //           },
-  //           twitter_stats: {
-  //             current_status: [
-  //               {
-  //                 current_date:
-  //                   dict["hashtag_stats"][0]["twitter_stats"][
-  //                     "current_status"
-  //                   ][0]["current_date"],
-  //                 followers:
-  //                   dict["hashtag_stats"][0]["twitter_stats"][
-  //                     "current_status"
-  //                   ][0]["followers"],
-  //                 followings:
-  //                   dict["hashtag_stats"][0]["twitter_stats"][
-  //                     "current_status"
-  //                   ][0]["followings"],
-  //               },
-  //             ],
-  //             joining_date:
-  //               dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-  //             comments: dict["hashtag_stats"][0]["twitter_stats"][
-  //               "comments"
-  //             ].map((comment) => ({
-  //               text: comment.text,
-  //               comments: comment.comments,
-  //               url: comment.url,
-  //               likes: comment.likes,
-  //               retweets: comment.retweets,
-  //               comment_date: comment.comment_date,
-  //             })),
-  //           },
-  //         },
-  //       ],
-  //     }),
-
-  //     // body: JSON.stringify({
-  //     //   hashtag: dict["hashtag"],
-  //     //   hashtag_stats: [
-  //     //     {
-  //     //       youtube_stats: dict["hashtag_stats"][0]["youtube_stats"]
-  //     //         ? {
-  //     //             name: dict["hashtag_stats"][0]["youtube_stats"]["name"],
-  //     //             current_status: [
-  //     //               {
-  //     //                 current_date:
-  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
-  //     //                     "current_status"
-  //     //                   ][0]["current_date"],
-  //     //                 views_count:
-  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
-  //     //                     "current_status"
-  //     //                   ][0]["views_count"],
-  //     //                 subscription_count:
-  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
-  //     //                     "current_status"
-  //     //                   ][0]["subscription_count"],
-  //     //                 video_count:
-  //     //                   dict["hashtag_stats"][0]["youtube_stats"][
-  //     //                     "current_status"
-  //     //                   ][0]["video_count"],
-  //     //               },
-  //     //             ],
-  //     //           }
-  //     //         : // ? dict["hashtag_stats"][0]["youtube_stats"]
-  //     //           {},
-  //     //       // instagram_stats: {
-  //     //       //   followers:
-  //     //       //     dict["hashtag_stats"][0]["instagram_stats"]["followers"],
-  //     //       //   followings:
-  //     //       //     dict["hashtag_stats"][0]["instagram_stats"]["followings"],
-  //     //       //   posts: dict["hashtag_stats"][0]["instagram_stats"]["posts"],
-  //     //       // },
-  //     //       instagram_stats: {
-  //     //         current_status: [
-  //     //           {
-  //     //             current_date:
-  //     //               dict["hashtag_stats"][0]["instagram_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["current_date"],
-  //     //             followers:
-  //     //               dict["hashtag_stats"][0]["instagram_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["followers"],
-  //     //             followings:
-  //     //               dict["hashtag_stats"][0]["instagram_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["followings"],
-  //     //             posts:
-  //     //               dict["hashtag_stats"][0]["instagram_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["posts"],
-  //     //           },
-  //     //         ],
-  //     //       },
-  //     //       twitter_stats: {
-  //     //         // followers: dict["hashtag_stats"][0]["twitter_stats"]["followers"],
-  //     //         // followings:
-  //     //         //   dict["hashtag_stats"][0]["twitter_stats"]["followings"],
-  //     //         current_status: [
-  //     //           {
-  //     //             current_date:
-  //     //               dict["hashtag_stats"][0]["twitter_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["current_date"],
-  //     //             followers:
-  //     //               dict["hashtag_stats"][0]["twitter_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["followers"],
-  //     //             followings:
-  //     //               dict["hashtag_stats"][0]["twitter_stats"][
-  //     //                 "current_status"
-  //     //               ][0]["followings"],
-  //     //           },
-  //     //         ],
-  //     //         joining_date:
-  //     //           dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-  //     //         comments: dict["hashtag_stats"][0]["twitter_stats"][
-  //     //           "comments"
-  //     //         ].map((comment) => ({
-  //     //           text: comment.text,
-  //     //           comments: comment.comments,
-  //     //           url: comment.url,
-  //     //           likes: comment.likes,
-  //     //           retweets: comment.retweets,
-  //     //           comment_date : comment.date
-  //     //           // comment_date: new Date(
-  //     //           //   parseInt(
-  //     //           //     comment.comment_date.split(" · ")[0].split(",")[1],
-  //     //           //     10
-  //     //           //   ),
-  //     //           //   months[
-  //     //           //     comment.comment_date
-  //     //           //       .split(" · ")[0]
-  //     //           //       .split(",")[0]
-  //     //           //       .split(" ")[0]
-  //     //           //   ],
-  //     //           //   parseInt(
-  //     //           //     comment.comment_date
-  //     //           //       .split(" · ")[0]
-  //     //           //       .split(",")[0]
-  //     //           //       .split(" ")[1],
-  //     //           //     10
-  //     //           //   )
-  //     //           // )
-  //     //             // .toISOString()
-  //     //             // .split("T")[0],
-  //     //         })),
-  //     //       },
-  //     //     },
-  //     //   ],
-  //     // }),
-  //   })
-  //     .then((response) => console.log(response))
-  //     .catch((error) => console.log(error));
-  // };
-
   const handleOnApify = () => {
     const dict = hashtagData.data;
-    console.log(dict["hashtag_stats"][0]['youtube_stats']['current_status'].length == 0);
-    console.log("frontend - hashtagData ", dict,(dict.hashtag_stats[0].youtube_stats),(dict.hashtag_stats[0].instagram_stats),(dict.hashtag_stats[0].twitter_stats));
+    console.log(
+      dict["hashtag_stats"][0]["youtube_stats"]["current_status"].length == 0
+    );
+    console.log(
+      "frontend - hashtagData ",
+      dict,
+      dict.hashtag_stats[0].youtube_stats,
+      dict.hashtag_stats[0].instagram_stats,
+      dict.hashtag_stats[0].twitter_stats
+    );
     fetch("/api/create-hashtag", {
       method: "POST",
       headers: {
@@ -254,82 +34,92 @@ const SearchPage = () => {
         hashtag: dict["hashtag"],
         hashtag_stats: [
           {
-            youtube_stats: (dict.hashtag_stats[0]['youtube_stats']['current_status'].length != 0)
-              ? {
-                  current_status: [
-                    {
-                      current_date:
-                        dict["hashtag_stats"][0]["youtube_stats"][
-                          "current_status"
-                        ][0]["current_date"],
-                      views_count:
-                        dict["hashtag_stats"][0]["youtube_stats"][
-                          "current_status"
-                        ][0]["views_count"],
-                      subscription_count:
-                        dict["hashtag_stats"][0]["youtube_stats"][
-                          "current_status"
-                        ][0]["subscription_count"],
-                      video_count:
-                        dict["hashtag_stats"][0]["youtube_stats"][
-                          "current_status"
-                        ][0]["video_count"],
-                    },
-                  ],
-                }
-              : {},
-            instagram_stats: (dict.hashtag_stats[0]['instagram_stats']['current_status'].length != 0) ? {
-              current_status: [
-                {
-                  current_date:
-                    dict["hashtag_stats"][0]["instagram_stats"][
-                      "current_status"
-                    ][0]["current_date"],
-                  followers:
-                    dict["hashtag_stats"][0]["instagram_stats"][
-                      "current_status"
-                    ][0]["followers"],
-                  followings:
-                    dict["hashtag_stats"][0]["instagram_stats"][
-                      "current_status"
-                    ][0]["followings"],
-                  posts:
-                    dict["hashtag_stats"][0]["instagram_stats"][
-                      "current_status"
-                    ][0]["posts"],
-                },
-              ],
-            } : {},
-            twitter_stats: (dict.hashtag_stats[0]['twitter_stats']['current_status'].length != 0) ? {
-              current_status: [
-                {
-                  current_date:
-                    dict["hashtag_stats"][0]["twitter_stats"][
-                      "current_status"
-                    ][0]["current_date"],
-                  followers:
-                    dict["hashtag_stats"][0]["twitter_stats"][
-                      "current_status"
-                    ][0]["followers"],
-                  followings:
-                    dict["hashtag_stats"][0]["twitter_stats"][
-                      "current_status"
-                    ][0]["followings"],
-                },
-              ],
-              joining_date:
-                dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-              comments: dict["hashtag_stats"][0]["twitter_stats"][
-                "comments"
-              ].map((comment) => ({
-                text: comment.text,
-                comments: comment.comments,
-                url: comment.url,
-                likes: comment.likes,
-                retweets: comment.retweets,
-                comment_date: comment.comment_date,
-              })),
-            } : {},
+            youtube_stats:
+              dict.hashtag_stats[0]["youtube_stats"]["current_status"].length !=
+              0
+                ? {
+                    current_status: [
+                      {
+                        current_date:
+                          dict["hashtag_stats"][0]["youtube_stats"][
+                            "current_status"
+                          ][0]["current_date"],
+                        views_count:
+                          dict["hashtag_stats"][0]["youtube_stats"][
+                            "current_status"
+                          ][0]["views_count"],
+                        subscription_count:
+                          dict["hashtag_stats"][0]["youtube_stats"][
+                            "current_status"
+                          ][0]["subscription_count"],
+                        video_count:
+                          dict["hashtag_stats"][0]["youtube_stats"][
+                            "current_status"
+                          ][0]["video_count"],
+                      },
+                    ],
+                  }
+                : {},
+            instagram_stats:
+              dict.hashtag_stats[0]["instagram_stats"]["current_status"]
+                .length != 0
+                ? {
+                    current_status: [
+                      {
+                        current_date:
+                          dict["hashtag_stats"][0]["instagram_stats"][
+                            "current_status"
+                          ][0]["current_date"],
+                        followers:
+                          dict["hashtag_stats"][0]["instagram_stats"][
+                            "current_status"
+                          ][0]["followers"],
+                        followings:
+                          dict["hashtag_stats"][0]["instagram_stats"][
+                            "current_status"
+                          ][0]["followings"],
+                        posts:
+                          dict["hashtag_stats"][0]["instagram_stats"][
+                            "current_status"
+                          ][0]["posts"],
+                      },
+                    ],
+                  }
+                : {},
+            twitter_stats:
+              (dict.hashtag_stats[0]["twitter_stats"]["current_status"].length !=
+              0)
+                ? {
+                    current_status: [
+                      {
+                        current_date:
+                          dict["hashtag_stats"][0]["twitter_stats"][
+                            "current_status"
+                          ][0]["current_date"],
+                        followers:
+                          dict["hashtag_stats"][0]["twitter_stats"][
+                            "current_status"
+                          ][0]["followers"],
+                        followings:
+                          dict["hashtag_stats"][0]["twitter_stats"][
+                            "current_status"
+                          ][0]["followings"],
+                      },
+                    ],
+                    joining_date:
+                      dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
+                    comments: dict["hashtag_stats"][0]["twitter_stats"][
+                      "comments"
+                    ].map((comment) => ({
+                      text: comment.text,
+                      comments: comment.comments,
+                      url: comment.url,
+                      likes: comment.likes,
+                      retweets: comment.retweets,
+                      comment_date: comment.comment_date,
+                    })),
+                  }
+                : {},
           },
         ],
       }),
@@ -603,9 +393,7 @@ const SearchPage = () => {
   const handleOnHistoryClick = () => {
     console.log("inside history ", document.cookie.split(";")[0].split("=")[1]);
     const user_id = document.cookie.split(";")[0].split("=")[1];
-    fetch(`/api/my-history/0ad4dd77-ae35-40c9-ae89-06a396a8ae33`, {
-      // fetch(`/api/my-history/${user_id}`, {
-      // fetch(`/api/history/${document.cookie.split(" ")[3].split("=")[1]}`, {
+    fetch(`/api/my-history/${user_id}`, {
       method: "GET",
     })
       .then((response) => {
@@ -620,7 +408,7 @@ const SearchPage = () => {
   };
 
   const handleOnClickStastatic = () => {
-    navigate("/analysis");
+    navigate(`/analysis/${searchTerm}`);
   };
 
   return (

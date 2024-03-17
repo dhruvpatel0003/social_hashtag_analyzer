@@ -43,7 +43,7 @@ const router = createBrowserRouter([
     element: <Dashboard />,
   },
   {
-    path: "/analysis",
+    path: "/analysis/:hashtag",
     element: <Analysis />,
   },
   {

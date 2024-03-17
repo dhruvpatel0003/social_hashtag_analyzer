@@ -25,7 +25,6 @@ class YouTubeSerializer(serializers.ModelSerializer):
         model = YouTubeProfile
         fields = ['current_date','views_count', 'subscription_count', 'video_count']
 
-
 class YouTubeStatsSerializer(serializers.ModelSerializer):
     
     current_status = YouTubeSerializer(many=True,allow_empty=True, required=False)
@@ -33,13 +32,10 @@ class YouTubeStatsSerializer(serializers.ModelSerializer):
         model = YouTubeStats
         fields = ['current_status']
 
-
-
 class InstagramSerializer(serializers.ModelSerializer):
     class Meta:
         model=InstagramProfile
         fields = ['current_date','followers','followings','posts']
-
 
 class InstagramStatsSerializer(serializers.ModelSerializer):
     current_status = InstagramSerializer(many=True,allow_empty=True, required=False)
@@ -57,14 +53,12 @@ class TwitterSerializer(serializers.ModelSerializer):
         model = TwitterProfile
         fields = ['current_date','followers', 'followings'] 
 
-
 class TwitterStatsSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True,allow_empty=True, required=False) 
     current_status = TwitterSerializer(many=True,allow_empty=True, required=False)
     class Meta:
         model = TwitterStats
         fields = ['current_status','joining_date', 'comments']
-
 
 class HashTagStatsSerializer(serializers.ModelSerializer):
     youtube_stats = YouTubeStatsSerializer()
@@ -75,7 +69,6 @@ class HashTagStatsSerializer(serializers.ModelSerializer):
         model = HashTagStats
         fields = ['youtube_stats', 'instagram_stats', 'twitter_stats']
         
-
 class HashTagSerializer(serializers.ModelSerializer):
     
     hashtag_stats = HashTagStatsSerializer(many=True, read_only=True)  # Set read_only to True
@@ -84,92 +77,6 @@ class HashTagSerializer(serializers.ModelSerializer):
         model = HashTag
         fields = ['hashtag','hashtag_stats']
 
-# class CreateHashtagSerializer(serializers.ModelSerializer):
-    
-#     hashtag_stats = HashTagStatsSerializer(many=True)
-
-#     class Meta:
-#         model = HashTag
-#         fields = ['hashtag', 'hashtag_stats']
-
-#     def create(self, validated_data):
-#         hashtag, _ = HashTag.objects.get_or_create(hashtag=validated_data['hashtag'])
-#         hashtag_stats_data = validated_data.get('hashtag_stats', [])
-        
-#         for stats_data in hashtag_stats_data:
-#             youtube_stats_data = stats_data.get('youtube_stats', {})
-#             instagram_stats_data = stats_data.get('instagram_stats', {})
-#             twitter_stats_data = stats_data.get('twitter_stats', {})
-#             comments_data = twitter_stats_data.get('comments', [])
-
-#             # Create YouTubeStats instance
-#             youtube_stats_instance = YouTubeStats.objects.create(name=youtube_stats_data.get('name', ''))
-#             youtube_profile_instances = []
-#             # Create and associate YouTubeProfile instances
-#             for profile_data in youtube_stats_data.get('current_status', []):
-#                 youtube_profile = YouTubeProfile.objects.create(
-#                     current_date=profile_data.get('current_date', ''),
-#                     views_count=profile_data.get('views_count', 0),
-#                     subscription_count=profile_data.get('subscription_count', 0),
-#                     video_count=profile_data.get('video_count', 0),
-#                 )
-#                 youtube_profile_instances.append(youtube_profile)
-#             youtube_stats_instance.current_status.set(youtube_profile_instances)
-
-#             # Create InstagramStats instance
-#             instagram_stats_instance = InstagramStats.objects.create()
-#             instagram_profile_instances = []
-#             # Create and associate InstagramProfile instances
-#             for profile_data in instagram_stats_data.get('current_status', []):
-#                 instagram_profile = InstagramProfile.objects.create(
-#                     current_date=profile_data.get('current_date', ''),
-#                     followers=profile_data.get('followers', ''),
-#                     followings=profile_data.get('followings', ''),
-#                     posts=profile_data.get('posts', 0),
-#                 )
-#                 instagram_profile_instances.append(instagram_profile)
-#             instagram_stats_instance.current_status.set(instagram_profile_instances)
-
-#             # Create TwitterStats instance
-#             twitter_stats_instance = TwitterStats.objects.create(joining_date=twitter_stats_data.get('joining_date', ''))
-#             twitter_profile_instances = []
-#             # Create and associate TwitterProfile instances
-#             for profile_data in twitter_stats_data.get('current_status', []):
-#                 twitter_profile = TwitterProfile.objects.create(
-#                     current_date=profile_data.get('current_date', ''),
-#                     followers=profile_data.get('followers', ''),
-#                     followings=profile_data.get('followings', ''),
-#                 )
-#                 twitter_profile_instances.append(twitter_profile)
-#             twitter_stats_instance.current_status.set(twitter_profile_instances)
-            
-#             # Create and associate Comment instances
-#             comments_instances = []
-#             for comment_data in comments_data:
-#                 comment = Comment.objects.create(
-#                     text=comment_data.get('text', ''),
-#                     url=comment_data.get('url', ''),
-#                     likes=comment_data.get('likes', 0),
-#                     retweets=comment_data.get('retweets', 0),
-#                     comments=comment_data.get('comments', 0),
-#                     comment_date=comment_data.get('comment_date', None),
-#                 )
-#                 comments_instances.append(comment)
-
-#             # Associate comments with TwitterStats
-#             twitter_stats_instance.comments.set(comments_instances)
-
-#             # Create HashTagStats instance and associate all related instances
-#             stats = HashTagStats.objects.create(
-#                 youtube_stats=youtube_stats_instance,
-#                 instagram_stats=instagram_stats_instance,
-#                 twitter_stats=twitter_stats_instance,
-#             )
-
-#             # Associate HashTagStats with HashTag
-#             hashtag.hashtag_stats.add(stats)
-
-#         return hashtag
 class CreateHashtagSerializer(serializers.ModelSerializer):
     
     hashtag_stats = HashTagStatsSerializer(many=True)
@@ -315,7 +222,6 @@ class CreateHashtagSerializer(serializers.ModelSerializer):
 
         return hashtag
 
-
 class UserHistorySerializer(serializers.ModelSerializer):
     
     user = serializers.CharField(max_length=255)
@@ -369,7 +275,7 @@ class AnalysisReportSerializer(serializers.ModelSerializer):
                 twitter_stats_data = stats_data.get('twitter_stats', {})
 
                 # Create new instances for YouTubeStats, InstagramStats, TwitterStats
-                youtube_stats_instance = YouTubeStats.objects.create(name=youtube_stats_data.get('name', ''))
+                youtube_stats_instance = YouTubeStats.objects.create()
                 youtube_profile_instances = [
                     YouTubeProfile.objects.create(
                         current_date=profile_data.get('current_date', ''),

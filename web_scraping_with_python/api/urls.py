@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import AnalizeText, AnalysisReportListCreateView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteAnalysisReport, DeleteHistory, DeleteUser, ForgotPassword, GetAllAnalysisReport, GetAnalysisReport, GetHashTagData, GetUser, GetUserHistoryByID, GetUserProfilePhoto, HashTagListView, HashTagTwitterSearch, HistoryView, PasswordResetHandler, TokenExpirationChecker, UserLogin, UserProfilePhotoView, UserView, SearchFromChrome
+from .views import AnalizeText, AnalysisReportListCreateView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteAnalysisReport, DeleteHistory, DeleteUser, ForgotPassword, GetAllAnalysisReport, GetAnalysisReport, GetHashTagData, GetStoreApifyHashtag, GetUser, GetUserHistoryByID, GetUserProfilePhoto, HashTagListView, HashTagTwitterSearch, HistoryView, PasswordResetHandler, TokenExpirationChecker, UserLogin, UserProfilePhotoView, UserView, SearchFromChrome
 
 urlpatterns = [
     path('user',UserView.as_view()),
@@ -29,6 +29,7 @@ urlpatterns = [
     # path('my-reports/<str:user_id>',GetDocumentURLView.as_view())
     path('user-profile-photo',UserProfilePhotoView.as_view()),
     path('get-user-profile-photo/<str:user_id>/profile_photos/<str:png_id>', GetUserProfilePhoto.as_view()),
-    path('analize-text',AnalizeText.as_view())
+    path('analize-text',AnalizeText.as_view()),
+    path('get-stored-apify-hashtag/<str:hashtag>',GetStoreApifyHashtag.as_view())
 ]
     

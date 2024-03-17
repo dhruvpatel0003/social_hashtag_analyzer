@@ -1,6 +1,14 @@
+
+from dotenv import load_dotenv
+
+import requests
+import bcrypt
+import os
+import smtplib   
 import base64
 from collections import Counter
 import json
+import googleapiclient.discovery
 import os
 import re
 import nltk
@@ -9,15 +17,8 @@ try:
 except LookupError:
     nltk.download('punkt')
 
-from nltk.tokenize import word_tokenize
-# from nltk.corpus import stopwords
-# nltk.download('stopwords')
-from nltk.corpus import stopwords 
-from django.views import View
 
-from dotenv import load_dotenv
 load_dotenv()
-
 
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
@@ -27,20 +28,15 @@ EMAIL = os.getenv("EMAIL")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 APIFY_CLIENT_API_KEY = os.getenv("APIFY_CLIENT_API_KEY")
 CLIENT_ACTOR = os.getenv("CLIENT_ACTOR")
-
-import requests
-import googleapiclient.discovery
-import time
-import bcrypt
-import pandas as pd
-import os
-import smtplib          
+api_service_name = "youtube"
+api_version = "v3"
+                
 
 from rest_framework.parsers import FileUploadParser
 from django.http import  HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from rest_framework import generics, status
-from .serializers import AnalysisReportSerializer, HashTagSerializer, SubScriptionSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer, YouTubeStatsSerializer
+from .serializers import AnalysisReportSerializer, HashTagSerializer, UserHistorySerializer, UserSerializer, CreateUserSerializer, CreateHashtagSerializer
 from .models import AnalysisReport, History, SubScription, User, HashTag, HashTagStats
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -59,7 +55,11 @@ from urllib.parse import quote
 from rest_framework.parsers import JSONParser
 from rest_framework.parsers import MultiPartParser
 from apify_client import ApifyClient
-
+from nltk.tokenize import word_tokenize
+# from nltk.corpus import stopwords
+# nltk.download('stopwords')
+from nltk.corpus import stopwords 
+from django.views import View
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -70,17 +70,16 @@ from tqdm import tqdm
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 
-
 class UserView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
 
 class HashTagListView(generics.ListAPIView):
     queryset = HashTag.objects.all()
     serializer_class = HashTagSerializer
 
 class AnalysisReportListCreateView(generics.ListCreateAPIView):
+    
     queryset = AnalysisReport.objects.all()
     serializer_class = AnalysisReportSerializer
     print("after the serializer")
@@ -91,10 +90,8 @@ class AnalysisReportListCreateView(generics.ListCreateAPIView):
         self.perform_create(serializer)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 class GetAnalysisReport(generics.ListAPIView):
-    
+     
     serializer_class = AnalysisReportSerializer
 
     def get_queryset(self):
@@ -223,7 +220,6 @@ class CreateHashTag(APIView):
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    
 class GetHashTagData(APIView):
     serializer_class = HashTagSerializer
     lookup_url_kwarg = 'hashtag'
@@ -256,8 +252,7 @@ class GetHashTagData(APIView):
             return Response({'Bad Request': 'Hashtag not found'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({'Bad Request': 'Hashtag not provided in request'}, status=status.HTTP_400_BAD_REQUEST)
-
-    
+  
 class DeleteAllHashTag(APIView):
 
     def delete(self, request, format=None):
@@ -313,31 +308,117 @@ class SearchFromChrome(APIView):
         hashtag_data['hashtag_stats'][0]['twitter_stats']['comments'] = []
         
         
-        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  APIFY - INSTAGRAM <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-         
+        # # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  APIFY - INSTAGRAM <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        # client = ApifyClient('apify_api_ibwHpHdghefqM2o9AdbkKCQ33I7mJ52RZOxE')
 
-        # client = ApifyClient(APIFY_CLIENT_API_KEY)
+        # run_input = { "usernames": [hashtagName] }
+        # insta_user_data = []
+        # run = client.actor('7RQ4RlfRihUhflQtJ').call(run_input=run_input)
+        # # temp_insta_data = [{'profilePic': 'https://instagram.fosu2-1.fna.fbcdn.net/v/t51.2885-19/118982623_353024589077161_7490638455124782637_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.fosu2-1.fna.fbcdn.net&_nc_cat=1&_nc_ohc=5Cc6cpDlPpMAX-X3Poo&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfDW2dxFcha-cjTY8ZYwzjjHrYMgxPLsfOC8I2cgSW7mTQ&oe=65F769E8&_nc_sid=8b3546', 'userName': 'humansofny', 'followersCount': 12939915, 'followsCount': 400, 'timestamp': '2024-03-14 - 13:22', 'userUrl': 'https://www.instagram.com/humansofny', 'userFullName': 'Humans of New York', 'userId': '242598499'}]
 
-        # run_input = { "usernames": ["humansofny"] }
-        insta_user_data = []
-        # run = client.actor(CLIENT_ACTOR).call(run_input=run_input)
-        temp_data = [{'profilePic': 'https://instagram.fosu2-1.fna.fbcdn.net/v/t51.2885-19/118982623_353024589077161_7490638455124782637_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.fosu2-1.fna.fbcdn.net&_nc_cat=1&_nc_ohc=5Cc6cpDlPpMAX-X3Poo&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfDW2dxFcha-cjTY8ZYwzjjHrYMgxPLsfOC8I2cgSW7mTQ&oe=65F769E8&_nc_sid=8b3546', 'userName': 'humansofny', 'followersCount': 12939915, 'followsCount': 400, 'timestamp': '2024-03-14 - 13:22', 'userUrl': 'https://www.instagram.com/humansofny', 'userFullName': 'Humans of New York', 'userId': '242598499'}]
-
-        # Fetch and print Actor results from the run's dataset (if there are any)
         # for item in client.dataset(run["defaultDatasetId"]).iterate_items():
         #     insta_user_data.append(item)
 
         # print("instagram user data ::::::::::::::::::: ",insta_user_data)
         
-        hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status'].append({
-            "current_date" : "2022-02-11",
-            "followers" : temp_data[0]['followersCount'],
-            "followings" : temp_data[0]['followsCount'],
-        })
-        print("returning from the search from chrom")
-        return Response({'data': hashtag_data})
+        # hashtag_data['hashtag_stats'][0]['instagram_stats']['current_status'].append({
+        #     "current_date" : f"{insta_user_data[0]['timestamp'].split("-")[0]}-{insta_user_data[0]['timestamp'].split("-")[1]}-{insta_user_data[0]['timestamp'].split("-")[2]}".split(' ')[0],
+        #     "followers" : insta_user_data[0]['followersCount'],
+        #     "followings" : insta_user_data[0]['followsCount'],
+        # })
+        
+        
+        # #>>>>>>>>>>>>>>>>>>>>>>>>>>>> Apify - YouTube <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        # client = ApifyClient('apify_api_ibwHpHdghefqM2o9AdbkKCQ33I7mJ52RZOxE')
+        
+        # run_input = {
+        #     "searchKeywords": hashtagName,
+        #     "maxResults": 1,
+        #     "maxResultsShorts": None,
+        #     "maxResultStreams": None,
+        #     "startUrls": [],
+        #     "subtitlesLanguage": "en",
+        #     "subtitlesFormat": "srt",
+        # }
+        # run = client.actor("h7sDV53CddomktSi5").call(run_input=run_input)
+        # # temp_youtube_data = [{'title': 'MOTIVATIONAL SPEAKER PARODY | CARRYMINATI', 'id': 'P8P_S1Fjl_Q', 'url': 'https://www.youtube.com/watch?v=P8P_S1Fjl_Q', 'thumbnailUrl': 'https://i.ytimg.com/vi/P8P_S1Fjl_Q/maxresdefault.jpg', 'viewCount': 42006063, 'date': '2023-11-23T07:00:32.000Z', 'likes': 3300000, 'location': None, 'channelName': 'CarryMinati', 'channelUrl': 'http://www.youtube.com/@CarryMinati', 'channelId': 'UCj22tfcQrWG7EMEKS0qLeEg', 'numberOfSubscribers': 41500000, 'duration': '00:14:09', 'commentsCount': 123213,}]
+        # youtube_user_data = []
+        # # Fetch and print Actor results from the run's dataset (if there are any)
+        # for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        #     youtube_user_data.append(item)
+        
+        # channel_id = youtube_user_data[0]['channelId']
 
-   
+        # youtube = googleapiclient.discovery.build(
+        #     api_service_name, api_version, developerKey=DEVELOPER_KEY)
+
+        # request = youtube.channels().list(
+        #     part="snippet,contentDetails,statistics",
+        #     id=channel_id,
+        #     maxResults=1
+        # )
+        
+        # response = request.execute()
+        # video_count = response['items'][0]['statistics']['videoCount']
+        
+        # print("youtube user data ",youtube_user_data[0])
+        
+        # hashtag_data['hashtag_stats'][0]['youtube_stats']['current_status'].append({
+        #     "current_date" : f"{youtube_user_data[0]['date'].split("T")[0]}",
+        #     "subscription_count" : youtube_user_data[0]['numberOfSubscribers'],
+        #     "views_count" : youtube_user_data[0]['viewCount'],
+        #     "video_count":int(video_count),
+        # })  
+        
+        # print("returning from the search from chrom")
+        
+        # #>>>>>>>>>>>>>>>>>>>>>>>>>>>> Apify - Twitter <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        # client = ApifyClient('apify_api_ibwHpHdghefqM2o9AdbkKCQ33I7mJ52RZOxE')
+
+        # run_input = {
+        #     "handles": [hashtagName],
+        #     "tweetsDesired": 1,
+        #     "addUserInfo": True,
+        #     "startUrls": [],
+        #     "proxyConfig": { "useApifyProxy": True },
+        # }
+
+        # run = client.actor("u6ppkMWAx2E2MpEuF").call(run_input=run_input)
+        # # temp_twitter_data = [{'user': {'created_at': '2014-11-02T05:36:04.000Z', 'default_profile_image': False, 'description': 'Dumb Things', 'fast_followers_count': 0, 'favourites_count': 8309, 'followers_count': 3114523, 'friends_count': 51, 'has_custom_timelines': False, 'is_translator': False, 'listed_count': 301, 'location': 'India', 'media_count': 1720, 'name': 'Ajey Nagar', 'normal_followers_count': 3114523, 'possibly_sensitive': False, 'profile_banner_url': 'https://pbs.twimg.com/profile_banners/2887051970/1525699713', 'profile_image_url_https': 'https://pbs.twimg.com/profile_images/1372690745971204097/yWF3yPPj_normal.jpg', 'screen_name': 'CarryMinati', 'statuses_count': 8934, 'translator_type': 'none', 'url': 'https://t.co/AmnmmtgRX5', 'verified': True, 'withheld_in_countries': [], 'id_str': '2887051970'}, 'id': '1768889023224025256', 'conversation_id': '1768889023224025256', 'full_text': 'NEW ROAST VIDEO OUT NOW \nDADDY DAUGHTER LOVE STORY \n https://t.co/iqJKt54xCE\nFatafat jaao aur dekho! https://t.co/7AaQlhOc4J', 'reply_count': 72, 'retweet_count': 107, 'favorite_count': 2157, 'hashtags': [], 'symbols': [], 'user_mentions': [], 'urls': [{'url': 'https://t.co/iqJKt54xCE', 'expanded_url': 'https://opener.one/yt/3rvoc2', 'display_url': 'opener.one/yt/3rvoc2'}], 'media': [{'media_url': 'https://pbs.twimg.com/media/GIxbL_TXUAA_-X5.jpg', 'type': 'photo'}], 'url': 'https://twitter.com/CarryMinati/status/1768889023224025256', 'created_at': '2024-03-16T06:36:22.000Z', '#sort_index': '1769039815866580992', 'view_count': 58451, 'quote_count': 11, 'is_quote_tweet': False, 'is_retweet': False, 'is_pinned': True, 'is_truncated': False, 'startUrl': 'https://twitter.com/carryminati/with_replies'},
+        # #                     {'user': {'created_at': '2014-11-02T05:36:04.000Z', 'default_profile_image': False, 'description': 'Dumb Things', 'fast_followers_count': 0, 'favourites_count': 8309, 'followers_count': 3114523, 'friends_count': 51, 'has_custom_timelines': False, 'is_translator': False, 'listed_count': 301, 'location': 'India', 'media_count': 1720, 'name': 'Ajey Nagar', 'normal_followers_count': 3114523, 'possibly_sensitive': False, 'profile_banner_url': 'https://pbs.twimg.com/profile_banners/2887051970/1525699713', 'profile_image_url_https': 'https://pbs.twimg.com/profile_images/1372690745971204097/yWF3yPPj_normal.jpg', 'screen_name': 'CarryMinati', 'statuses_count': 8934, 'translator_type': 'none', 'url': 'https://t.co/AmnmmtgRX5', 'verified': True, 'withheld_in_countries': [], 'id_str': '2887051970'}, 'id': '1261370754777530375', 'conversation_id': '1261370754777530375', 'full_text': 'https://t.co/WQUCh0Z7HB', 'reply_count': 17254, 'retweet_count': 36678, 'favorite_count': 226818, 'hashtags': [], 'symbols': [], 'user_mentions': [], 'urls': [], 'media': [{'media_url': 'https://pbs.twimg.com/media/EYFKAQaVAAAqlIe.jpg', 'type': 'photo'}], 'url': 'https://twitter.com/CarryMinati/status/1261370754777530375', 'created_at': '2020-05-15T18:59:57.000Z', '#sort_index': '1769039815866580991', 'quote_count': 5473, 'is_quote_tweet': False, 'is_retweet': False, 'is_pinned': False, 'is_truncated': False, 'startUrl': 'https://twitter.com/carryminati/with_replies'},
+        # #                     {'user': {'created_at': '2014-11-02T05:36:04.000Z', 'default_profile_image': False, 'description': 'Dumb Things', 'fast_followers_count': 0, 'favourites_count': 8309, 'followers_count': 3114523, 'friends_count': 51, 'has_custom_timelines': False, 'is_translator': False, 'listed_count': 301, 'location': 'India', 'media_count': 1720, 'name': 'Ajey Nagar', 'normal_followers_count': 3114523, 'possibly_sensitive': False, 'profile_banner_url': 'https://pbs.twimg.com/profile_banners/2887051970/1525699713', 'profile_image_url_https': 'https://pbs.twimg.com/profile_images/1372690745971204097/yWF3yPPj_normal.jpg', 'screen_name': 'CarryMinati', 'statuses_count': 8934, 'translator_type': 'none', 'url': 'https://t.co/AmnmmtgRX5', 'verified': True, 'withheld_in_countries': [], 'id_str': '2887051970'}, 'id': '1268492175853191169', 'conversation_id': '1268492175853191169', 'full_text': 'YALGAAR IS COMING!! \nAre you ready 😈 https://t.co/KWxCGS3358', 'reply_count': 10867, 'retweet_count': 17130, 'favorite_count': 170242, 'hashtags': [], 'symbols': [], 'user_mentions': [], 'urls': [], 'media': [{'media_url': 'https://pbs.twimg.com/media/EZqW5KYU4AE_n_6.jpg', 'type': 'photo'}], 'url': 'https://twitter.com/CarryMinati/status/1268492175853191169', 'created_at': '2020-06-04T10:37:56.000Z', '#sort_index': '1769039815866580990', 'quote_count': 2384, 'is_quote_tweet': False, 'is_retweet': False, 'is_pinned': False, 'is_truncated': False, 'startUrl': 'https://twitter.com/carryminati/with_replies'},
+        # #                     {'user': {'created_at': '2014-11-02T05:36:04.000Z', 'default_profile_image': False, 'description': 'Dumb Things', 'fast_followers_count': 0, 'favourites_count': 8309, 'followers_count': 3114523, 'friends_count': 51, 'has_custom_timelines': False, 'is_translator': False, 'listed_count': 301, 'location': 'India', 'media_count': 1720, 'name': 'Ajey Nagar', 'normal_followers_count': 3114523, 'possibly_sensitive': False, 'profile_banner_url': 'https://pbs.twimg.com/profile_banners/2887051970/1525699713', 'profile_image_url_https': 'https://pbs.twimg.com/profile_images/1372690745971204097/yWF3yPPj_normal.jpg', 'screen_name': 'CarryMinati', 'statuses_count': 8934, 'translator_type': 'none', 'url': 'https://t.co/AmnmmtgRX5', 'verified': True, 'withheld_in_countries': [], 'id_str': '2887051970'}, 'id': '1306113002899300352', 'conversation_id': '1306113002899300352', 'full_text': "I am not going in Bigg Boss! \nDon't believe in everything you read. 😐", 'reply_count': 5803, 'retweet_count': 10387, 'favorite_count': 154252, 'hashtags': [], 'symbols': [], 'user_mentions': [], 'urls': [], 'media': [], 'url': 'https://twitter.com/CarryMinati/status/1306113002899300352', 'created_at': '2020-09-16T06:09:40.000Z', '#sort_index': '1769039815866580989', 'quote_count': 1170, 'is_quote_tweet': False, 'is_retweet': False, 'is_pinned': False, 'is_truncated': False, 'startUrl': 'https://twitter.com/carryminati/with_replies'},
+        # #                     {'user': {'created_at': '2014-11-02T05:36:04.000Z', 'default_profile_image': False, 'description': 'Dumb Things', 'fast_followers_count': 0, 'favourites_count': 8309, 'followers_count': 3114523, 'friends_count': 51, 'has_custom_timelines': False, 'is_translator': False, 'listed_count': 301, 'location': 'India', 'media_count': 1720, 'name': 'Ajey Nagar', 'normal_followers_count': 3114523, 'possibly_sensitive': False, 'profile_banner_url': 'https://pbs.twimg.com/profile_banners/2887051970/1525699713', 'profile_image_url_https': 'https://pbs.twimg.com/profile_images/1372690745971204097/yWF3yPPj_normal.jpg', 'screen_name': 'CarryMinati', 'statuses_count': 8934, 'translator_type': 'none', 'url': 'https://t.co/AmnmmtgRX5', 'verified': True, 'withheld_in_countries': [], 'id_str': '2887051970'}, 'id': '1268951561163563008', 'conversation_id': '1268951561163563008', 'full_text': "It's Out!! \nYALGAAR - CARRYMINATI X Wily Frenzy #carrykajawaab \nhttps://t.co/Yf3f9RAIEX", 'reply_count': 7644, 'retweet_count': 18035, 'favorite_count': 132626, 'hashtags': ['carrykajawaab'], 'symbols': [], 'user_mentions': [], 'urls': [{'url': 'https://t.co/Yf3f9RAIEX', 'expanded_url': 'https://youtu.be/zzwRbKI2pn4', 'display_url': 'youtu.be/zzwRbKI2pn4'}], 'media': [], 'url': 'https://twitter.com/CarryMinati/status/1268951561163563008', 'created_at': '2020-06-05T17:03:22.000Z', '#sort_index': '1769039815866580988', 'quote_count': 3038, 'is_quote_tweet': False, 'is_retweet': False, 'is_pinned': False, 'is_truncated': False, 'startUrl': 'https://twitter.com/carryminati/with_replies'}]
+        # # temp_twitter_comments = [{'text': 'NEW ROAST VIDEO OUT NOW \nDADDY DAUGHTER LOVE STORY \n https://t.co/iqJKt54xCE\nFatafat jaao aur dekho! https://t.co/7AaQlhOc4J', 'url': 'https://twitter.com/CarryMinati/status/1768889023224025256', 'comments': '111', 'likes': 2177, 'retweets': 108, 'comment_data': '2024-03-16'}, {'text': 'https://t.co/WQUCh0Z7HB', 'url': 'https://twitter.com/CarryMinati/status/1261370754777530375', 'comments': '111', 'likes': 226818, 'retweets': 36676, 'comment_data': '2020-05-15'}, {'text': 'YALGAAR IS COMING!! \nAre you ready 😈 https://t.co/KWxCGS3358', 'url': 'https://twitter.com/CarryMinati/status/1268492175853191169', 'comments': '111', 'likes': 170242, 'retweets': 17130, 'comment_data': '2020-06-04'}, {'text': "I am not going in Bigg Boss! \nDon't believe in everything you read. 😐", 'url': 'https://twitter.com/CarryMinati/status/1306113002899300352', 'comments': '111', 'likes': 154252, 'retweets': 10387, 'comment_data': '2020-09-16'}, {'text': "It's Out!! \nYALGAAR - CARRYMINATI X Wily Frenzy #carrykajawaab \nhttps://t.co/Yf3f9RAIEX", 'url': 'https://twitter.com/CarryMinati/status/1268951561163563008', 'comments': '111', 'likes': 132627, 'retweets': 18035, 'comment_data': '2020-06-05'}]
+        
+        # twitter_user_data = []
+        # twitter_comments_data = []
+        # # Fetch and print Actor results from the run's dataset (if there are any)
+        # for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        #     twitter_user_data.append(item)
+        #     twitter_comments_data.append({
+        #         'text' : item['full_text'],
+        #         'url' : item['url'],
+        #         'comments' : "111",
+        #         'likes' : item['favorite_count'],
+        #         'retweets' : item['retweet_count'],
+        #         'comment_data' : item['created_at'].split('T')[0]
+        #     })
+
+        
+        # # print(temp_twitter_data[0]['user']['created_at'].split('T')[0])
+        # # print(temp_twitter_data[0]['user']['followers_count'])
+        # # print(temp_twitter_data[0]['user']['friends_count'])
+        # print("twitter data ",twitter_user_data,twitter_comments_data)
+        # hashtag_data['hashtag_stats'][0]['twitter_stats']['current_status'].append({
+        #     "current_date" : f"{youtube_user_data[0]['date'].split("T")[0]}",
+        #     "followers" : twitter_user_data[0]['user']['followers_count'],
+        #     "followings" : twitter_user_data[0]['user']['friends_count'],
+        # })  
+        # hashtag_data['hashtag_stats'][0]['twitter_stats']['joining_date']=twitter_user_data[0]['user']['created_at'].split('T')[0]
+        # hashtag_data['hashtag_stats'][0]['twitter_stats']['comments'] = twitter_comments_data
+        
+        return Response({'data': hashtag_data})
     
 class DeleteUser(APIView):
     def delete(self, request, format=None):
@@ -373,8 +454,6 @@ class UserLogin(APIView):
             return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 class HashTagTwitterSearch(APIView):
     
@@ -442,8 +521,7 @@ class CreateUserHistory(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         except : 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        
+             
 class UserProfilePhotoView(APIView):
     def post(self, request, *args, **kwargs):
         user_id = request.data.get('user_id')
@@ -498,7 +576,6 @@ class HistoryView(generics.ListAPIView):
     queryset = History.objects.all()
     serializer_class = UserHistorySerializer
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class ForgotPassword(View):
     
@@ -549,7 +626,6 @@ class ForgotPassword(View):
     except Exception as e:
         print(e)
         return HttpResponse(f"Error sending password reset email: {str(e)}", status=500)
-    
 
 class TokenExpirationChecker(View):
     def dispatch(self, *args, **kwargs):
@@ -635,8 +711,7 @@ class PasswordResetHandler(TokenExpirationChecker):
 
         except Exception as e:
             return JsonResponse({"message": f"Error resetting password: {str(e)}"}, status=500)
-        
-        
+
 class AnalizeText(APIView):
     
     parser_classes = [MultiPartParser]
@@ -714,34 +789,59 @@ class AnalizeText(APIView):
         print(frequencies)
         return frequencies
 
-# Example usage
+class GetStoreApifyHashtag(APIView):
+    serializer_class = HashTagSerializer
 
+    def get(self, request, hashtag):
+        try:
+            hashtag_obj = HashTag.objects.get(hashtag=hashtag)
+            hashtag_stats_data = []
 
-    
-    lookup_url_kwarg = 'hashtag'
-    
-    def get(self, request, *args, **kwargs):
-        
-        hashtag_data = []   
-        hashtagName = request.GET.get(self.lookup_url_kwarg)
-        number_of_tweets = 5
-        print("number of tweets ::::::::::::::::::::::::::::::::::::::::::::: ",number_of_tweets)
-        payload = {
-            'api_key': TWITTER_API_KEY,
-            'query' : hashtagName,
-            'num' : number_of_tweets
-        }
+            for hashtag_stats in hashtag_obj.hashtag_stats.all():
+                youtube_stats_data = []
+                for youtube_stat in hashtag_stats.youtube_stats.current_status.all():
+                    youtube_stats_data.append({
+                        'current_date': youtube_stat.current_date,
+                        'views_count': youtube_stat.views_count,
+                        'subscription_count': youtube_stat.subscription_count,
+                        'video_count': youtube_stat.video_count
+                    })
 
-    
-        response = requests.get('https://api.scraperapi.com/structured/twitter/search',params = payload)
-        search_result = response.json()['organic_results']
-        print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++",search_result[0])
-        for i in range(0,number_of_tweets-1):
-            hashtag_data.append({
-                        "title":search_result[i]['title'],
-                        "text":search_result[i]['snippet'],
-                        "url":search_result[i]['link']
-        })
-        print('hashtag_data ---------------------------',hashtag_data)
-        return Response({'data': hashtag_data})
-    
+                instagram_stats_data = []
+                for instagram_stat in hashtag_stats.instagram_stats.current_status.all():
+                    instagram_stats_data.append({
+                        'current_date': instagram_stat.current_date,
+                        'followers': instagram_stat.followers,
+                        'followings': instagram_stat.followings,
+                        'posts': instagram_stat.posts
+                    })
+
+                twitter_stats_data = []
+                for twitter_stat in hashtag_stats.twitter_stats.current_status.all():
+                    twitter_stats_data.append({
+                        'current_date': twitter_stat.current_date,
+                        'followers': twitter_stat.followers,
+                        'followings': twitter_stat.followings
+                    })
+
+                hashtag_stats_data.append({
+                    'youtube_stats': youtube_stats_data,
+                    'instagram_stats': instagram_stats_data,
+                    'twitter_stats': twitter_stats_data,
+                    'joining_date': hashtag_stats.twitter_stats.joining_date,
+                    'comments': [
+                        {
+                            'text': comment.text,
+                            'url': comment.url,
+                            'comments': comment.comments,
+                            'likes': comment.likes,
+                            'retweets': comment.retweets,
+                            'comment_date': comment.comment_date
+                        }
+                        for comment in hashtag_stats.twitter_stats.comments.all()
+                    ]
+                })
+
+            return Response({'hashtag': hashtag_obj.hashtag, 'hashtag_stats': hashtag_stats_data}, status=status.HTTP_200_OK)
+        except HashTag.DoesNotExist:
+            return Response({"error": f"No data found for hashtag '{hashtag}'"}, status=status.HTTP_404_NOT_FOUND)
