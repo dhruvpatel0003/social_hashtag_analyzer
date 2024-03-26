@@ -13,5 +13,6 @@ urlpatterns = [
    path('forgot-password',index),
    path('reset-password/<str:email>/<str:token>',index),
    path('view-reports',index),
-   path('upload-file-to-analysis',index)
+   path('upload-file-to-analysis',index),
+   path('analysis/<str:hashtag>',index)
 ]

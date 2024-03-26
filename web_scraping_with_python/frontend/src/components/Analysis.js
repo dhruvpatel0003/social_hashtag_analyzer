@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 // import { Bar } from "react-chartjs-2";
 import "chart.js";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,12 +23,26 @@ const Analysis = () => {
   const { hashtag } = useParams();
   const userId = document.cookie.split(";")[0].split("=")[1]; // Replace with the actual user ID
   console.log("hashtag passed from searchPage ", hashtag);
+  const [dataDict, setDataDict] = useState();
+  const [showGraphData, setShowGraphData] = useState(false);
+  const followersChanging = [];
+
+  const [showInputField, setShowInputField] = useState(false);
+  const [hashtags, setHashtags] = useState([]);
+  const [newHashtag, setNewHashtag] = useState("");
 
   useEffect(() => {
     const fetchData = () => {
       fetch(`/api/get-stored-apify-hashtag/${hashtag}`, { method: "GET" })
         .then((response) => response.json())
-        .then((data) => console.log("After fetching from database : ", data));
+        .then((data) => {
+          console.log(
+            "After fetching from database using apify : ",
+            data,
+            data.hashtag_stats
+          );
+          setDataDict(data);
+        });
     };
     fetchData();
   }, []);
@@ -264,50 +278,58 @@ const Analysis = () => {
     ],
   };
 
+  // console.log("Dict data : ", dict);
+  console.log("inside the if condition, and getting the dict :");
   const savingData = {
     user_id: userId,
     report_data: dict.hashtag_stats.map((hashtagStat) => ({
       hashtag: dict.hashtag,
       hashtag_stats: [
         {
-          youtube_stats: {
-            current_status: hashtagStat.youtube_stats.current_status.map(
-              (status) => ({
-                current_date: status.current_date,
-                views_count: status.views_count,
-                subscriber_count: status.subscriber_count,
-                video_count: status.video_count,
-              })
-            ),
-          },
-          instagram_stats: {
-            current_status: hashtagStat.instagram_stats.current_status.map(
-              (status) => ({
-                current_date: status.current_date,
-                followers: status.followers,
-                followings: status.followings,
-                posts: status.posts,
-              })
-            ),
-          },
-          twitter_stats: {
-            current_status: hashtagStat.twitter_stats.current_status.map(
-              (status) => ({
-                current_date: status.current_date,
-                followers: status.followers,
-                followings: status.followings,
-              })
-            ),
-            joining_date: hashtagStat.twitter_stats.joining_date,
-            comments: hashtagStat.twitter_stats.comments.map((comment) => ({
-              text: comment.text,
-              url: comment.url,
-              comments: comment.comments,
-              likes: comment.likes,
-              retweets: comment.retweets,
-              comment_date: comment.comment_date,
-            })),
-          },
+          youtube_stats: hashtagStat.youtube_stats.current_status
+            ? {
+                current_status: hashtagStat.youtube_stats.current_status.map(
+                  (status) => ({
+                    current_date: status.current_date,
+                    views_count: status.views_count,
+                    subscriber_count: status.subscriber_count,
+                    video_count: status.video_count,
+                  })
+                ),
+              }
+            : {},
+          instagram_stats: hashtagStat.instagram_stats.current_status
+            ? {
+                current_status: hashtagStat.instagram_stats.current_status.map(
+                  (status) => ({
+                    current_date: status.current_date,
+                    followers: status.followers,
+                    followings: status.followings,
+                    posts: status.posts,
+                  })
+                ),
+              }
+            : {},
+          twitter_stats: hashtagStat.twitter_stats.current_status
+            ? {
+                current_status: hashtagStat.twitter_stats.current_status.map(
+                  (status) => ({
+                    current_date: status.current_date,
+                    followers: status.followers,
+                    followings: status.followings,
+                  })
+                ),
+                joining_date: hashtagStat.twitter_stats.joining_date,
+                comments: hashtagStat.twitter_stats.comments.map((comment) => ({
+                  text: comment.text,
+                  url: comment.url,
+                  comments: comment.comments,
+                  likes: comment.likes,
+                  retweets: comment.retweets,
+                  comment_date: comment.comment_date,
+                })),
+              }
+            : {},
         },
       ],
     })),
@@ -318,6 +340,7 @@ const Analysis = () => {
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  console.log("before the transformed data of graph1 : ", dataDict);
   const transformedData_graph1 =
     dict.hashtag_stats[0].twitter_stats.comments.map((comment) => ({
       name: comment.comment_date,
@@ -340,22 +363,47 @@ const Analysis = () => {
   };
 
   // Additional graph for Instagram
-  const transformedData_graph_instagram =
-    dict.hashtag_stats[0].instagram_stats.current_status.map((status) => ({
-      name: status.current_date,
-      followers: parseInstagramFollowers(status.followers),
-      followings: parseInt(status.followings, 10),
-      posts: parseInt(status.posts, 10),
-    }));
+  var transformedData_graph_instagram = {};
+  var transformedData_graph_youtube = {};
+  var followersChangeData = [];
 
-  // Additional graph for YouTube
-  const transformedData_graph_youtube =
-    dict.hashtag_stats[0].youtube_stats.current_status.map((status) => ({
-      name: status.current_date,
-      video_count: parseInt(status.video_count, 10),
-      subscriber_count: parseInt(status.subscriber_count, 10),
-      views_count: parseInt(status.views_count, 10),
-    }));
+  if (dataDict) {
+    console.log("inside the if statement : ", dataDict);
+    transformedData_graph_instagram =
+      dataDict.hashtag_stats[0].instagram_stats.map((status) => ({
+        name: status.current_date,
+        followers: parseFloat(status.followers), // Normalize to millions
+        followings: parseInt(status.followings, 10),
+        posts: parseInt(status.posts, 10),
+      }));
+    // processedData = transformedData_graph_instagram.map((status, index) => {
+    //   const previousStatus =
+    //     index > 0
+    //       ? transformedData_graph_instagram[index - 1]
+    //       : null;
+
+    //     followersChangeData = previousStatus
+    //     ? status.followers - previousStatus.followers
+    //     : 0;
+
+    // })
+    // transformedData_graph_instagram =
+    //   dataDict.hashtag_stats[0].instagram_stats.map((status) => ({
+    //     name: status.current_date,
+    //     followers: parseFloat(status.followers), // Normalize to millions
+    //     followings: parseInt(status.followings, 10),
+    //     posts: parseInt(status.posts, 10),
+    //   }));
+
+    // Additional graph for YouTube
+    transformedData_graph_youtube =
+      dict.hashtag_stats[0].youtube_stats.current_status.map((status) => ({
+        name: status.current_date,
+        video_count: parseInt(status.video_count, 10),
+        subscriber_count: parseInt(status.subscriber_count, 10),
+        views_count: parseInt(status.views_count, 10),
+      }));
+  }
 
   ////////////////////////////////////////////////////// twitter /////////////////////////////////////////////////////
 
@@ -523,270 +571,374 @@ const Analysis = () => {
       .catch((error) => console.error("Error saving report:", error.message));
   };
 
+  const handleOnShowGraph = () => {
+    console.log("after the show was clicked ::::::::::::::: ", dataDict);
+    setShowGraphData(true);
+  };
+
+  const handleAddHashtag = () => {
+    if (newHashtag.trim() !== "") {
+      setHashtags([...hashtags, newHashtag]);
+      setNewHashtag("");
+    }
+  };
+
+  const handleCompare = () => {
+    console.log("Comparing hashtags:", hashtags);
+  };
+
   return (
     <div>
-      <div>
-        <button onClick={handleOnBack}>Back</button>
-      </div>
+      {!showGraphData && <p>Show Graphs</p>}
+      {!showGraphData && <button onClick={handleOnShowGraph}>Show</button>}
+      {showGraphData && (
+        <div>
+          <div>
+            <button onClick={handleOnBack}>Back</button>
+          </div>
 
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div id="graph1-container">
-          <h1>Twitter Comments Graph</h1>
-          <ResponsiveContainer width={800} height={500}>
-            <LineChart
-              width={800}
-              height={500}
-              data={transformedData_graph1}
-              margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <div id="graph1-container">
+              <h1>Twitter Comments Graph</h1>
+              <ResponsiveContainer width={800} height={500}>
+                <LineChart
+                  width={800}
+                  height={500}
+                  data={transformedData_graph1}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="likes" stroke="#8884d8" />
+                  <Line type="monotone" dataKey="retweets" stroke="#82ca9d" />
+                  <Line type="monotone" dataKey="comments" stroke="#ffc658" />
+                  <Brush dataKey="name" height={30} stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div id="twitter-profile-container">
+              <h1>Twitter Profile</h1>
+              <ResponsiveContainer width={800} height={500}>
+                <LineChart
+                  width={800}
+                  height={500}
+                  data={transformedData_graph_twitter}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <XAxis dataKey="name" />
+                  <YAxis tickFormatter={formatNumber} />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="followers" stroke="#8884d8" />
+                  <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
+                  <Brush dataKey="name" height={30} stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div id="instagram-profile-container">
+              <h1>Instagram Profile</h1>
+              <ResponsiveContainer width={800} height={500}>
+                <LineChart
+                  width={800}
+                  height={500}
+                  data={transformedData_graph_instagram}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <YAxis tickFormatter={formatNumber} />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="followers" stroke="#8884d8" />
+                  <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
+                  <Line type="monotone" dataKey="posts" stroke="#ffc658" />
+                  <Brush dataKey="name" height={30} stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div id="youtube-profile-container">
+              <h1>YouTube Profile</h1>
+              <ResponsiveContainer width={800} height={500}>
+                <LineChart
+                  width={800}
+                  height={500}
+                  data={transformedData_graph_youtube}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <XAxis dataKey="name" />
+                  <YAxis tickFormatter={formatNumber} />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="video_count"
+                    stroke="#8884d8"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="subscriber_count"
+                    stroke="#82ca9d"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="views_count"
+                    stroke="#ffc658"
+                  />
+                  <Brush dataKey="name" height={30} stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <div
+              id="twitter-comments-table-container"
+              style={{ margin: "10px" }}
             >
-              <CartesianGrid stroke="#f5f5f5" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="likes" stroke="#8884d8" />
-              <Line type="monotone" dataKey="retweets" stroke="#82ca9d" />
-              <Line type="monotone" dataKey="comments" stroke="#ffc658" />
-              <Brush dataKey="name" height={30} stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div id="twitter-profile-container">
-          <h1>Twitter Profile</h1>
-          <ResponsiveContainer width={800} height={500}>
-            <LineChart
-              width={800}
-              height={500}
-              data={transformedData_graph_twitter}
-              margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+              <h1>Twitter Comments Table</h1>
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th>Comment Date</th>
+                    <th>Likes</th>
+                    <th>Retweets</th>
+                    <th>Comments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transformedData_graph1.map((comment, index) => (
+                    <tr key={index}>
+                      <td>{comment.name}</td>
+                      <td>{comment.likes}</td>
+                      <td>{comment.retweets}</td>
+                      <td>{comment.comments}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              id="twitter-profile-table-container"
+              style={{ margin: "10px" }}
             >
-              <CartesianGrid stroke="#f5f5f5" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatNumber} />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="followers" stroke="#8884d8" />
-              <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
-              <Brush dataKey="name" height={30} stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div id="instagram-profile-container">
-          <h1>Instagram Profile</h1>
-          <ResponsiveContainer width={800} height={500}>
-            <LineChart
-              width={800}
-              height={500}
-              data={transformedData_graph_instagram}
-              margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+              <h1>Twitter Profile Table</h1>
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Followers</th>
+                    <th>Followings</th>
+                    <th>Change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transformedData_graph_twitter.map((status, index) => {
+                    const previousStatus =
+                      index > 0
+                        ? transformedData_graph_twitter[index - 1]
+                        : null;
+
+                    const followersChange = previousStatus
+                      ? status.followers - previousStatus.followers
+                      : 0;
+
+                    const changeIndicator =
+                      followersChange > 0 ? (
+                        <span style={{ color: "green" }}>
+                          ↑ {formatNumber(followersChange)}
+                        </span>
+                      ) : followersChange < 0 ? (
+                        <span style={{ color: "red" }}>
+                          ↓ {formatNumber(Math.abs(followersChange))}
+                        </span>
+                      ) : (
+                        "No Change"
+                      );
+
+                    return (
+                      <tr key={index}>
+                        <td>{status.name}</td>
+                        <td>{formatNumber(status.followers)}</td>
+                        <td>{formatNumber(status.followings)}</td>
+                        <td>{changeIndicator}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div
+              id="instagram-profile-table-container"
+              style={{ margin: "10px" }}
             >
-              <CartesianGrid stroke="#f5f5f5" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatNumber} />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="followers" stroke="#8884d8" />
-              <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
-              <Line type="monotone" dataKey="posts" stroke="#ffc658" />
-              <Brush dataKey="name" height={30} stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div id="youtube-profile-container">
-          <h1>YouTube Profile</h1>
-          <ResponsiveContainer width={800} height={500}>
-            <LineChart
-              width={800}
-              height={500}
-              data={transformedData_graph_youtube}
-              margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+              <h1>Instagram Profile Table</h1>
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Followers</th>
+                    <th>Followings</th>
+                    <th>Posts</th>
+                    <th>Followers Change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transformedData_graph_instagram.map((status, index) => {
+                    const previousStatus =
+                      index > 0
+                        ? transformedData_graph_instagram[index - 1]
+                        : null;
+
+                    const followersChange = previousStatus
+                      ? status.followers - previousStatus.followers
+                      : 0;
+
+                    followersChanging.push(followersChange);
+                    console.log("followers changing : ", followersChanging);
+                    const changeIndicator =
+                      followersChange > 0 ? (
+                        <span style={{ color: "green" }}>
+                          ↑ {formatNumber(followersChange)}
+                        </span>
+                      ) : followersChange < 0 ? (
+                        <span style={{ color: "red" }}>
+                          ↓ {formatNumber(Math.abs(followersChange))}
+                        </span>
+                      ) : (
+                        "No Change"
+                      );
+
+                    return (
+                      <tr key={index}>
+                        <td>{status.name}</td>
+                        <td>{formatNumber(status.followers)}</td>
+                        <td>{formatNumber(status.followings)}</td>
+                        <td>{status.posts}</td>
+                        <td>{changeIndicator}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              id="youtube-profile-table-container"
+              style={{ margin: "10px" }}
             >
-              <CartesianGrid stroke="#f5f5f5" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatNumber} />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="video_count" stroke="#8884d8" />
-              <Line
-                type="monotone"
-                dataKey="subscriber_count"
-                stroke="#82ca9d"
-              />
-              <Line type="monotone" dataKey="views_count" stroke="#ffc658" />
-              <Brush dataKey="name" height={30} stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div id="twitter-comments-table-container" style={{ margin: "10px" }}>
-          <h1>Twitter Comments Table</h1>
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Comment Date</th>
-                <th>Likes</th>
-                <th>Retweets</th>
-                <th>Comments</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transformedData_graph1.map((comment, index) => (
-                <tr key={index}>
-                  <td>{comment.name}</td>
-                  <td>{comment.likes}</td>
-                  <td>{comment.retweets}</td>
-                  <td>{comment.comments}</td>
-                </tr>
+              <h1>YouTube Profile Table</h1>
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Video Count</th>
+                    <th>Subscriber Count</th>
+                    <th>Views Count</th>
+                    <th>Subscriber Change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transformedData_graph_youtube.map((status, index) => {
+                    const previousStatus =
+                      index > 0
+                        ? transformedData_graph_youtube[index - 1]
+                        : null;
+
+                    const subscriberChange = previousStatus
+                      ? status.subscriber_count -
+                        previousStatus.subscriber_count
+                      : 0;
+
+                    const changeIndicator =
+                      subscriberChange > 0 ? (
+                        <span style={{ color: "green" }}>
+                          ↑ {formatNumber(subscriberChange)}
+                        </span>
+                      ) : subscriberChange < 0 ? (
+                        <span style={{ color: "red" }}>
+                          ↓ {formatNumber(Math.abs(subscriberChange))}
+                        </span>
+                      ) : (
+                        "No Change"
+                      );
+
+                    return (
+                      <tr key={index}>
+                        <td>{status.name}</td>
+                        <td>{status.video_count}</td>
+                        <td>{formatNumber(status.subscriber_count)}</td>
+                        <td>{formatNumber(status.views_count)}</td>
+                        <td>{changeIndicator}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h1>Instagram Followers Changing</h1>
+            <ResponsiveContainer width={800} height={500}>
+              <LineChart
+                data={followersChanging.map((value, index) => ({
+                  name: transformedData_graph_instagram[index]["name"],
+                  followersChanging: value,
+                }))} // Transforming the array to have an object with 'name' and 'followersChanging' properties
+                margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+              >
+                <CartesianGrid stroke="#f5f5f5" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="followersChanging"
+                  stroke="#8884d8"
+                />
+                <Brush dataKey="name" height={30} stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <h1>Hashtag Comparison</h1>
+            <div>
+              Compare with
+              <button onClick={() => setShowInputField(true)}>+</button>
+              {showInputField && (
+                <input
+                  type="text"
+                  value={newHashtag}
+                  onChange={(e) => setNewHashtag(e.target.value)}
+                />
+              )}
+              {newHashtag !== "" && (
+                <button onClick={handleAddHashtag}>Add</button>
+              )}
+            </div>
+            <ul>
+              {hashtags.map((hashtag, index) => (
+                <li key={index}>{hashtag}</li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+            <div>
+              {hashtags.length > 0 && (
+                <button onClick={handleCompare}>Compare</button>
+              )}
+            </div>
+          </div>
+          <button onClick={downloadPageData}>Download Page Data</button>
+          <button onClick={handleOnSaveReport}>Save Report</button>
+          <button onClick={handleOnViewReport}>View Reports</button>
         </div>
-
-        <div id="twitter-profile-table-container" style={{ margin: "10px" }}>
-          <h1>Twitter Profile Table</h1>
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Followers</th>
-                <th>Followings</th>
-                <th>Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transformedData_graph_twitter.map((status, index) => {
-                const previousStatus =
-                  index > 0 ? transformedData_graph_twitter[index - 1] : null;
-
-                const followersChange = previousStatus
-                  ? status.followers - previousStatus.followers
-                  : 0;
-
-                const changeIndicator =
-                  followersChange > 0 ? (
-                    <span style={{ color: "green" }}>
-                      ↑ {formatNumber(followersChange)}
-                    </span>
-                  ) : followersChange < 0 ? (
-                    <span style={{ color: "red" }}>
-                      ↓ {formatNumber(Math.abs(followersChange))}
-                    </span>
-                  ) : (
-                    "No Change"
-                  );
-
-                return (
-                  <tr key={index}>
-                    <td>{status.name}</td>
-                    <td>{formatNumber(status.followers)}</td>
-                    <td>{formatNumber(status.followings)}</td>
-                    <td>{changeIndicator}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <div id="instagram-profile-table-container" style={{ margin: "10px" }}>
-          <h1>Instagram Profile Table</h1>
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Followers</th>
-                <th>Followings</th>
-                <th>Posts</th>
-                <th>Followers Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transformedData_graph_instagram.map((status, index) => {
-                const previousStatus =
-                  index > 0 ? transformedData_graph_instagram[index - 1] : null;
-
-                const followersChange = previousStatus
-                  ? status.followers - previousStatus.followers
-                  : 0;
-
-                const changeIndicator =
-                  followersChange > 0 ? (
-                    <span style={{ color: "green" }}>
-                      ↑ {formatNumber(followersChange)}
-                    </span>
-                  ) : followersChange < 0 ? (
-                    <span style={{ color: "red" }}>
-                      ↓ {formatNumber(Math.abs(followersChange))}
-                    </span>
-                  ) : (
-                    "No Change"
-                  );
-
-                return (
-                  <tr key={index}>
-                    <td>{status.name}</td>
-                    <td>{formatNumber(status.followers)}</td>
-                    <td>{formatNumber(status.followings)}</td>
-                    <td>{status.posts}</td>
-                    <td>{changeIndicator}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div id="youtube-profile-table-container" style={{ margin: "10px" }}>
-          <h1>YouTube Profile Table</h1>
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Video Count</th>
-                <th>Subscriber Count</th>
-                <th>Views Count</th>
-                <th>Subscriber Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transformedData_graph_youtube.map((status, index) => {
-                const previousStatus =
-                  index > 0 ? transformedData_graph_youtube[index - 1] : null;
-
-                const subscriberChange = previousStatus
-                  ? status.subscriber_count - previousStatus.subscriber_count
-                  : 0;
-
-                const changeIndicator =
-                  subscriberChange > 0 ? (
-                    <span style={{ color: "green" }}>
-                      ↑ {formatNumber(subscriberChange)}
-                    </span>
-                  ) : subscriberChange < 0 ? (
-                    <span style={{ color: "red" }}>
-                      ↓ {formatNumber(Math.abs(subscriberChange))}
-                    </span>
-                  ) : (
-                    "No Change"
-                  );
-
-                return (
-                  <tr key={index}>
-                    <td>{status.name}</td>
-                    <td>{status.video_count}</td>
-                    <td>{formatNumber(status.subscriber_count)}</td>
-                    <td>{formatNumber(status.views_count)}</td>
-                    <td>{changeIndicator}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <button onClick={downloadPageData}>Download Page Data</button>
-      <button onClick={handleOnSaveReport}>Save Report</button>
-      <button onClick={handleOnViewReport}>View Reports</button>
+      )}
     </div>
   );
 };

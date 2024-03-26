@@ -1,35 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Chart from "chart.js/auto";
 
 const UploadFileToAnalysis = () => {
   const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
   const [analysisResults, setAnalysisResults] = useState(null);
+  const [chart, setChart] = useState(null);
 
   console.log("document cookie :::::::::::: ", document.cookie);
   const user_id = document.cookie.split("=")[1];
+
+  useEffect(() => {
+    if (!analysisResults) return;
+
+    // Initialize and render the chart based on sentiment
+    const renderChart = () => {
+      const ctx = document.getElementById("pieChart");
+      const data = {
+        labels: analysisResults.sentiment === "Positive" ? ["Positive Sentiment"] : ["Negative Sentiment"],
+        datasets: [{
+          label: "Sentiment Analysis",
+          data: [1],
+          backgroundColor: analysisResults.sentiment === "Positive" ? ["#36A2EB"] : ["#FF6384"],
+          borderWidth: 1,
+        }],
+      };
+      const options = {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: "Sentiment Analysis",
+          },
+        },
+      };
+      const newChart = new Chart(ctx, {
+        type: "pie",
+        data: data,
+        options: options,
+      });
+      setChart(newChart);
+    };
+
+    renderChart();
+  }, [analysisResults]);
 
   const onFileChange = (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
   };
 
-  const onUpload = async (e) => {
+  const onUpload = async () => {
     if (!selectedFile || !user_id) {
       console.log("Missing file or user_id");
       return;
     }
 
-    console.log(
-      "selected file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ",
-      selectedFile
-    );
-
-    console.log(e);
     const formData = new FormData();
     formData.append("file", selectedFile);
     formData.append("user_id", user_id);
-    console.log("form Data :::::::::::::::::::::: ", formData);
 
     try {
       const response = await fetch("api/analize-text", {
@@ -39,7 +69,6 @@ const UploadFileToAnalysis = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setAnalysisResults(null);
         setAnalysisResults(result);
       } else {
         console.error("Failed to upload file:", response.statusText);
@@ -47,17 +76,6 @@ const UploadFileToAnalysis = () => {
     } catch (error) {
       console.error("Error uploading file:", error.message);
     }
-  };
-
-  const handleOnDownloadCleanText = () => {
-    const jsonString = JSON.stringify(analysisResults.cleaned_text, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const downloadLink = document.createElement("a");
-    downloadLink.href = window.URL.createObjectURL(blob);
-    downloadLink.download = "SocialAnalyzer_PlainText.txt";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
   };
 
   return (
@@ -72,16 +90,12 @@ const UploadFileToAnalysis = () => {
 
       {analysisResults && (
         <div>
-          <button onClick={handleOnDownloadCleanText}>
-            Download Clean Text
-          </button>
           <h3>Analysis Results:</h3>
           <p>Cleaned Text: {analysisResults.cleaned_text}</p>
           <p>
             Identified Politicians:{" "}
             {analysisResults.identified_politicians.join(", ")}
           </p>
-          {/* <p>Keywords: {analysisResults.keywords.join(", ")}</p> */}
           <p>
             Keywords : {analysisResults.keywords
               ? Object.entries(analysisResults.keywords)
@@ -90,6 +104,9 @@ const UploadFileToAnalysis = () => {
               : "Keywords not available"}
           </p>
           <p>Sentiment: {analysisResults.sentiment}</p>
+
+          {/* Render pie chart based on sentiment */}
+          <canvas id="pieChart" width="400" height="400"></canvas>
         </div>
       )}
     </div>
