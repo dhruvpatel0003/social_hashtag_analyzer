@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Payment from './Payment';
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 
@@ -10,6 +11,9 @@ const SignUpPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   // const [subscriptionStatus, setSubscriptionStatus] = useState(false);
+
+  const [paymentValue, setPaymentValue] = useState(0);
+
 
   const [subscriptionPlan, setSubscriptionPlan] = useState("");
   const [subscriptionExpiresDate, setSubscriptionExpiresDate] = useState("");
@@ -92,6 +96,9 @@ const SignUpPage = () => {
   };
 
   const handleOnSubscriptionPlan = (amount, duration) => {
+
+    setPaymentValue(amount);
+
     setSubscriptionPlan(amount);
     const currentDate = new Date();
     setSubScriptionDate(currentDate.toISOString().split("T")[0]);
@@ -151,6 +158,7 @@ const SignUpPage = () => {
           $936/year
         </button>
       </div>
+      {paymentValue && <Payment subscriptionAmount={paymentValue}/>}
       <button onClick={handleSubmit}>Sign Up</button>
       <button onClick={handleLogin}>Login</button>
 

@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import html2canvas from "html2canvas";
 import ExcelJS from "exceljs";
+import CompareData from "./CompareData";
 
 let workbook;
 
@@ -22,7 +23,7 @@ const Analysis = () => {
   const navigate = useNavigate();
   const { hashtag } = useParams();
   const userId = document.cookie.split(";")[0].split("=")[1]; // Replace with the actual user ID
-  console.log("hashtag passed from searchPage ", hashtag);
+  // console.log("hashtag passed from searchPage ", hashtag);
   const [dataDict, setDataDict] = useState();
   const [showGraphData, setShowGraphData] = useState(false);
   const followersChanging = [];
@@ -31,16 +32,19 @@ const Analysis = () => {
   const [hashtags, setHashtags] = useState([]);
   const [newHashtag, setNewHashtag] = useState("");
 
+  const [dataToCompare, setDataToCompare] = useState([]);
+  const [showCompareData, setShowCompareData] = useState([]);
+
   useEffect(() => {
     const fetchData = () => {
       fetch(`/api/get-stored-apify-hashtag/${hashtag}`, { method: "GET" })
         .then((response) => response.json())
         .then((data) => {
-          console.log(
-            "After fetching from database using apify : ",
-            data,
-            data.hashtag_stats
-          );
+          // console.log(
+          //   "After fetching from database using apify : ",
+          //   data,
+          //   data.hashtag_stats
+          // );
           setDataDict(data);
         });
     };
@@ -279,7 +283,7 @@ const Analysis = () => {
   };
 
   // console.log("Dict data : ", dict);
-  console.log("inside the if condition, and getting the dict :");
+  // console.log("inside the if condition, and getting the dict :");
   const savingData = {
     user_id: userId,
     report_data: dict.hashtag_stats.map((hashtagStat) => ({
@@ -340,7 +344,7 @@ const Analysis = () => {
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  console.log("before the transformed data of graph1 : ", dataDict);
+  // console.log("before the transformed data of graph1 : ", dataDict);
   const transformedData_graph1 =
     dict.hashtag_stats[0].twitter_stats.comments.map((comment) => ({
       name: comment.comment_date,
@@ -376,24 +380,6 @@ const Analysis = () => {
         followings: parseInt(status.followings, 10),
         posts: parseInt(status.posts, 10),
       }));
-    // processedData = transformedData_graph_instagram.map((status, index) => {
-    //   const previousStatus =
-    //     index > 0
-    //       ? transformedData_graph_instagram[index - 1]
-    //       : null;
-
-    //     followersChangeData = previousStatus
-    //     ? status.followers - previousStatus.followers
-    //     : 0;
-
-    // })
-    // transformedData_graph_instagram =
-    //   dataDict.hashtag_stats[0].instagram_stats.map((status) => ({
-    //     name: status.current_date,
-    //     followers: parseFloat(status.followers), // Normalize to millions
-    //     followings: parseInt(status.followings, 10),
-    //     posts: parseInt(status.posts, 10),
-    //   }));
 
     // Additional graph for YouTube
     transformedData_graph_youtube =
@@ -553,7 +539,7 @@ const Analysis = () => {
   };
 
   const saveReport = () => {
-    console.log(JSON.stringify(savingData));
+    // console.log(JSON.stringify(savingData));
     fetch("/api/save-analysis-reports", {
       method: "POST",
       headers: {
@@ -584,8 +570,59 @@ const Analysis = () => {
   };
 
   const handleCompare = () => {
-    console.log("Comparing hashtags:", hashtags);
-  };
+    console.log("inside handle to compare : ",hashtags);
+    if (hashtags.length == 1) {
+      fetch(`/api/get-stored-apify-hashtag/${hashtags[0]}`, { method: "GET" })
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log(
+          //   "Data to compare : ",
+          //   data
+          // );
+          setDataToCompare(data);
+        });
+    }else{
+      fetch('/api/get-all-stored-apify-hashtag').then((response)=>response.json()).then(data=>{
+        console.log("data to compare : ???????????????????? ",data);
+        setDataToCompare(data.filter(item => hashtags.includes(item.hashtag)));
+      });
+      // hashtags.map(hashtag => {
+      //   // console.log("more then one hashtag to compare ",hashtag);
+      //   fetch(`/api/get-stored-apify-hashtag/${hashtag}`, { method: "GET" })
+      //   .then((response) => response.json())
+      //   .then((data) => {
+      //     console.log(
+      //       "Data to compare >>>>>>>>>>>>>>>>>>>>>>> : ",
+      //       data
+      //     );
+      //     setDataToCompare([...dataToCompare,data]);
+      //   });
+      // });
+    }
+    };
+
+    const handleOnClickToShowCompareData = () => {
+      // console.log("inside handle to compare : ",hashtags);
+    if (hashtags.length == 1) {
+      fetch(`/api/get-stored-apify-hashtag/${hashtags[0]}`, { method: "GET" })
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log(
+          //   "Data to compare : ",
+          //   data
+          // );
+          setDataToCompare(data);
+        });
+    }else{
+      fetch('/api/get-all-stored-apify-hashtag').then((response)=>response.json()).then(data=>{
+        setDataToCompare(data.filter(item => hashtags.includes(item.hashtag)));
+      });
+    }
+    console.log("data to compare : ???????????????????? ",dataToCompare);
+    setShowCompareData(true);
+    }
+
+
 
   return (
     <div>
@@ -801,7 +838,7 @@ const Analysis = () => {
                       : 0;
 
                     followersChanging.push(followersChange);
-                    console.log("followers changing : ", followersChanging);
+                    // console.log("followers changing : ", followersChanging);
                     const changeIndicator =
                       followersChange > 0 ? (
                         <span style={{ color: "green" }}>
@@ -930,10 +967,11 @@ const Analysis = () => {
             </ul>
             <div>
               {hashtags.length > 0 && (
-                <button onClick={handleCompare}>Compare</button>
+                <button onClick={handleOnClickToShowCompareData}>Show Compare Data</button>
               )}
             </div>
           </div>
+          {showCompareData && <CompareData dataToCompareWith={dataToCompare} compareWithInstagramData={transformedData_graph_instagram} enteredHashtagName={hashtag}/>}
           <button onClick={downloadPageData}>Download Page Data</button>
           <button onClick={handleOnSaveReport}>Save Report</button>
           <button onClick={handleOnViewReport}>View Reports</button>

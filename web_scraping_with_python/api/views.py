@@ -841,3 +841,7 @@ class GetStoreApifyHashtag(APIView):
             return Response({'hashtag': hashtag_obj.hashtag, 'hashtag_stats': hashtag_stats_data}, status=status.HTTP_200_OK)
         except HashTag.DoesNotExist:
             return Response({"error": f"No data found for hashtag '{hashtag}'"}, status=status.HTTP_404_NOT_FOUND)
+            
+class GetAllStoredApifyData(generics.ListAPIView):    
+    queryset = HashTag.objects.all()
+    serializer_class = HashTagSerializer

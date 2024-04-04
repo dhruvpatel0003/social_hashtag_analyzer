@@ -12,6 +12,7 @@ import ForgotPassword from "./components/ForgotPassword";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import ViewReport from "./components/ViewReport";
 import UploadFileToAnalysis from "./components/UploadFileToAnalysis";
+import Payment from "./components/Payment";
 
 const router = createBrowserRouter([
   {
@@ -59,10 +60,6 @@ const router = createBrowserRouter([
     path:'/view-reports',
     element:<ViewReport />
   },
-  {
-    path:'/upload-file-to-analysis',
-    element:<UploadFileToAnalysis />
-  }
 ]);
 
 function App() {
