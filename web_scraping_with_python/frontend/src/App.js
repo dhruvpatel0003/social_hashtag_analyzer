@@ -13,6 +13,8 @@ import ResetPasswordPage from "./components/ResetPasswordPage";
 import ViewReport from "./components/ViewReport";
 import UploadFileToAnalysis from "./components/UploadFileToAnalysis";
 import Payment from "./components/Payment";
+import Success from "./components/Success";
+import Cancel from "./components/Cancel";
 
 const router = createBrowserRouter([
   {
@@ -60,6 +62,14 @@ const router = createBrowserRouter([
     path:'/view-reports',
     element:<ViewReport />
   },
+  {
+    path:'/success',
+    element:<Success />
+  },
+  {
+    path:'/cancel',
+    element: <Cancel />
+  }
 ]);
 
 function App() {

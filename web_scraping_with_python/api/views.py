@@ -12,6 +12,7 @@ import googleapiclient.discovery
 from textblob import TextBlob
 import os
 import re
+import stripe
 import nltk
 try:
     nltk.data.find('tokenizers/punkt')
@@ -845,3 +846,34 @@ class GetStoreApifyHashtag(APIView):
 class GetAllStoredApifyData(generics.ListAPIView):    
     queryset = HashTag.objects.all()
     serializer_class = HashTagSerializer
+
+class CreateCheckoutSessionView(APIView):
+    def post(self, request, *args, **kwargs):
+        subscriptionAmount = 75
+        print("inside create checkout session")
+        YOUR_DOMAIN = "http://127.0.0.1:8000"
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': subscriptionAmount,
+                        'product_data': {
+                            'name': "$78 / MONTH",
+                        },
+                    },
+                    'quantity': 1,
+                },
+            ],
+            metadata={
+                "product_id": "123"
+            },
+            mode='subscription',
+            success_url=YOUR_DOMAIN + '/success',
+            cancel_url=YOUR_DOMAIN + '/cancel',
+        )
+        
+        print("The session was created successfully : ",checkout_session)
+        
+        return Response({'id':checkout_session.id}, status=status.HTTP_200_OK)

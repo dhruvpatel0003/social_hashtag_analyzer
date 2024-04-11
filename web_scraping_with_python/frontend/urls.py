@@ -14,5 +14,7 @@ urlpatterns = [
    path('reset-password/<str:email>/<str:token>',index),
    path('view-reports',index),
    path('upload-file-to-analysis',index),
-   path('analysis/<str:hashtag>',index)
+   path('analysis/<str:hashtag>',index),
+   path('success',index),
+   path('cancel',index)
 ]

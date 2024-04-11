@@ -382,11 +382,16 @@ const Analysis = () => {
       }));
 
     // Additional graph for YouTube
+    console.log(
+      "Youtube stats : ",
+      dataDict.hashtag_stats[0].youtube_stats
+    );
+
     transformedData_graph_youtube =
-      dict.hashtag_stats[0].youtube_stats.current_status.map((status) => ({
+      dataDict.hashtag_stats[0].youtube_stats.map((status) => ({
         name: status.current_date,
         video_count: parseInt(status.video_count, 10),
-        subscriber_count: parseInt(status.subscriber_count, 10),
+        subscriber_count: parseInt(status.subscription_count, 10),
         views_count: parseInt(status.views_count, 10),
       }));
   }
@@ -570,7 +575,7 @@ const Analysis = () => {
   };
 
   const handleCompare = () => {
-    console.log("inside handle to compare : ",hashtags);
+    console.log("inside handle to compare : ", hashtags);
     if (hashtags.length == 1) {
       fetch(`/api/get-stored-apify-hashtag/${hashtags[0]}`, { method: "GET" })
         .then((response) => response.json())
@@ -581,11 +586,15 @@ const Analysis = () => {
           // );
           setDataToCompare(data);
         });
-    }else{
-      fetch('/api/get-all-stored-apify-hashtag').then((response)=>response.json()).then(data=>{
-        console.log("data to compare : ???????????????????? ",data);
-        setDataToCompare(data.filter(item => hashtags.includes(item.hashtag)));
-      });
+    } else {
+      fetch("/api/get-all-stored-apify-hashtag")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("data to compare : ???????????????????? ", data);
+          setDataToCompare(
+            data.filter((item) => hashtags.includes(item.hashtag))
+          );
+        });
       // hashtags.map(hashtag => {
       //   // console.log("more then one hashtag to compare ",hashtag);
       //   fetch(`/api/get-stored-apify-hashtag/${hashtag}`, { method: "GET" })
@@ -599,10 +608,10 @@ const Analysis = () => {
       //   });
       // });
     }
-    };
+  };
 
-    const handleOnClickToShowCompareData = () => {
-      // console.log("inside handle to compare : ",hashtags);
+  const handleOnClickToShowCompareData = () => {
+    // console.log("inside handle to compare : ",hashtags);
     if (hashtags.length == 1) {
       fetch(`/api/get-stored-apify-hashtag/${hashtags[0]}`, { method: "GET" })
         .then((response) => response.json())
@@ -613,16 +622,18 @@ const Analysis = () => {
           // );
           setDataToCompare(data);
         });
-    }else{
-      fetch('/api/get-all-stored-apify-hashtag').then((response)=>response.json()).then(data=>{
-        setDataToCompare(data.filter(item => hashtags.includes(item.hashtag)));
-      });
+    } else {
+      fetch("/api/get-all-stored-apify-hashtag")
+        .then((response) => response.json())
+        .then((data) => {
+          setDataToCompare(
+            data.filter((item) => hashtags.includes(item.hashtag))
+          );
+        });
     }
-    console.log("data to compare : ???????????????????? ",dataToCompare);
+    console.log("data to compare : ???????????????????? ", dataToCompare);
     setShowCompareData(true);
-    }
-
-
+  };
 
   return (
     <div>
@@ -920,7 +931,7 @@ const Analysis = () => {
               </table>
             </div>
           </div>
-          <div>
+          {/* <div>
             <h1>Instagram Followers Changing</h1>
             <ResponsiveContainer width={800} height={500}>
               <LineChart
@@ -943,7 +954,7 @@ const Analysis = () => {
                 <Brush dataKey="name" height={30} stroke="#8884d8" />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </div> */}
           <div>
             <h1>Hashtag Comparison</h1>
             <div>
@@ -967,11 +978,20 @@ const Analysis = () => {
             </ul>
             <div>
               {hashtags.length > 0 && (
-                <button onClick={handleOnClickToShowCompareData}>Show Compare Data</button>
+                <button onClick={handleOnClickToShowCompareData}>
+                  Show Compare Data
+                </button>
               )}
             </div>
           </div>
-          {showCompareData && <CompareData dataToCompareWith={dataToCompare} compareWithInstagramData={transformedData_graph_instagram} enteredHashtagName={hashtag}/>}
+          {showCompareData && (
+            <CompareData
+              dataToCompareWith={dataToCompare}
+              compareWithInstagramData={transformedData_graph_instagram}
+              compareWithYouTubeData={transformedData_graph_youtube}
+              enteredHashtagName={hashtag}
+            />
+          )}
           <button onClick={downloadPageData}>Download Page Data</button>
           <button onClick={handleOnSaveReport}>Save Report</button>
           <button onClick={handleOnViewReport}>View Reports</button>

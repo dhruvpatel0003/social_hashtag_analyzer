@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import AnalizeText, AnalysisReportListCreateView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteAnalysisReport, DeleteHistory, DeleteUser, ForgotPassword, GetAllAnalysisReport, GetAllStoredApifyData, GetAnalysisReport, GetHashTagData, GetStoreApifyHashtag, GetUser, GetUserHistoryByID, GetUserProfilePhoto, HashTagListView, HashTagTwitterSearch, HistoryView, PasswordResetHandler, TokenExpirationChecker, UserLogin, UserProfilePhotoView, UserView, SearchFromChrome
+from .views import AnalizeText, AnalysisReportListCreateView, CreateCheckoutSessionView, CreateHashTag, CreateUserHistory, CreateUserView, DeleteAllHashTag, DeleteAnalysisReport, DeleteHistory, DeleteUser, ForgotPassword, GetAllAnalysisReport, GetAllStoredApifyData, GetAnalysisReport, GetHashTagData, GetStoreApifyHashtag, GetUser, GetUserHistoryByID, GetUserProfilePhoto, HashTagListView, HashTagTwitterSearch, HistoryView, PasswordResetHandler, TokenExpirationChecker, UserLogin, UserProfilePhotoView, UserView, SearchFromChrome
 
 urlpatterns = [
     path('user',UserView.as_view()),
@@ -31,6 +31,7 @@ urlpatterns = [
     path('get-user-profile-photo/<str:user_id>/profile_photos/<str:png_id>', GetUserProfilePhoto.as_view()),
     path('analize-text',AnalizeText.as_view()),
     path('get-stored-apify-hashtag/<str:hashtag>',GetStoreApifyHashtag.as_view()),
-    path('get-all-stored-apify-hashtag',GetAllStoredApifyData.as_view())
+    path('get-all-stored-apify-hashtag',GetAllStoredApifyData.as_view()),
+    path('create-checkout-session',CreateCheckoutSessionView.as_view())
 ]
     
