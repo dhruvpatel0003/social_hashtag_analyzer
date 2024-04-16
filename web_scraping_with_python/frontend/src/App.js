@@ -69,6 +69,10 @@ const router = createBrowserRouter([
   {
     path:'/cancel',
     element: <Cancel />
+  },
+  {
+    path:'/upload-file-to-analysis',
+    element : <UploadFileToAnalysis />
   }
 ]);
 

@@ -35,6 +35,10 @@ const Analysis = () => {
   const [dataToCompare, setDataToCompare] = useState([]);
   const [showCompareData, setShowCompareData] = useState([]);
 
+  const [disableToShowCompareHashtag, setDisableToShowCompareHashtag] =
+    useState(false);
+
+
   useEffect(() => {
     const fetchData = () => {
       fetch(`/api/get-stored-apify-hashtag/${hashtag}`, { method: "GET" })
@@ -382,18 +386,16 @@ const Analysis = () => {
       }));
 
     // Additional graph for YouTube
-    console.log(
-      "Youtube stats : ",
-      dataDict.hashtag_stats[0].youtube_stats
-    );
+    console.log("Youtube stats : ", dataDict.hashtag_stats[0].youtube_stats);
 
-    transformedData_graph_youtube =
-      dataDict.hashtag_stats[0].youtube_stats.map((status) => ({
+    transformedData_graph_youtube = dataDict.hashtag_stats[0].youtube_stats.map(
+      (status) => ({
         name: status.current_date,
         video_count: parseInt(status.video_count, 10),
         subscriber_count: parseInt(status.subscription_count, 10),
         views_count: parseInt(status.views_count, 10),
-      }));
+      })
+    );
   }
 
   ////////////////////////////////////////////////////// twitter /////////////////////////////////////////////////////
@@ -613,6 +615,8 @@ const Analysis = () => {
   const handleOnClickToShowCompareData = () => {
     // console.log("inside handle to compare : ",hashtags);
     if (hashtags.length == 1) {
+      console.log("Only one hashtag to compare", hashtags[0]);
+      const temp = [];
       fetch(`/api/get-stored-apify-hashtag/${hashtags[0]}`, { method: "GET" })
         .then((response) => response.json())
         .then((data) => {
@@ -620,7 +624,8 @@ const Analysis = () => {
           //   "Data to compare : ",
           //   data
           // );
-          setDataToCompare(data);
+          temp.push(data);
+          setDataToCompare(temp);
         });
     } else {
       fetch("/api/get-all-stored-apify-hashtag")
@@ -634,6 +639,7 @@ const Analysis = () => {
     console.log("data to compare : ???????????????????? ", dataToCompare);
     setShowCompareData(true);
   };
+
 
   return (
     <div>
@@ -931,30 +937,6 @@ const Analysis = () => {
               </table>
             </div>
           </div>
-          {/* <div>
-            <h1>Instagram Followers Changing</h1>
-            <ResponsiveContainer width={800} height={500}>
-              <LineChart
-                data={followersChanging.map((value, index) => ({
-                  name: transformedData_graph_instagram[index]["name"],
-                  followersChanging: value,
-                }))} // Transforming the array to have an object with 'name' and 'followersChanging' properties
-                margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
-              >
-                <CartesianGrid stroke="#f5f5f5" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="followersChanging"
-                  stroke="#8884d8"
-                />
-                <Brush dataKey="name" height={30} stroke="#8884d8" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div> */}
           <div>
             <h1>Hashtag Comparison</h1>
             <div>
@@ -972,15 +954,20 @@ const Analysis = () => {
               )}
             </div>
             <ul>
-              {hashtags.map((hashtag, index) => (
-                <li key={index}>{hashtag}</li>
-              ))}
+              <div>
+                {hashtags.map((hashtag, index) => (
+                  <li key={index}>{hashtag}</li>
+                ))}
+              </div>
             </ul>
             <div>
               {hashtags.length > 0 && (
-                <button onClick={handleOnClickToShowCompareData}>
-                  Show Compare Data
-                </button>
+                <div>
+                  <button onClick={handleOnClickToShowCompareData}>
+                    Show Compare Data
+                  </button>
+
+                </div>
               )}
             </div>
           </div>

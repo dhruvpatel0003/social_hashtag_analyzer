@@ -393,7 +393,8 @@ const SearchPage = () => {
   const handleOnHistoryClick = () => {
     console.log("inside history ", document.cookie.split(";")[0].split("=")[1]);
     const user_id = document.cookie.split(";")[0].split("=")[1];
-    fetch(`/api/my-history/${user_id}`, {
+    fetch(`/api/my-history/Dt5bCOCoD46TxFNhW8tFEFiKVlNGXVm1`, {
+    // fetch(`/api/my-history/${user_id}`, {
       method: "GET",
     })
       .then((response) => {

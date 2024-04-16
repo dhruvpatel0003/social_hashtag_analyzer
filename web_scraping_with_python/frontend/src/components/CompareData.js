@@ -64,6 +64,8 @@ const CompareData = (props) => {
     props.compareWithYouTubeData,
   ]);
 
+  let flag = props.dataToCompareWith.length == 1 ? true : false;
+
   const handleOnGetData = () => {
     console.log("Compare component props : ", props);
 
@@ -127,14 +129,36 @@ const CompareData = (props) => {
   };
 
   const handleOnClickGraph = (hashtagDetails) => {
+    console.log("value of flag ::::::::::::: ", flag);
     setDataToCompare(hashtagDetails);
     console.log("On graph click : ", dataToCompare);
 
     //variables
-    const instagram_current_status =
-      hashtagDetails["hashtag_stats"][0]["instagram_stats"]["current_status"];
+    let instagram_current_status = [];
+    let youtube_current_status = [];
     const newFollowersChanges = [];
+
+    const newSubscriberChanges = [];
+
+    if (flag) {
+      instagram_current_status =
+      hashtagDetails["hashtag_stats"][0]["instagram_stats"];
+      youtube_current_status =
+      hashtagDetails["hashtag_stats"][0]["youtube_stats"];
+    } else {
+      instagram_current_status =
+      hashtagDetails["hashtag_stats"][0]["instagram_stats"]["current_status"];
+      youtube_current_status =
+      hashtagDetails["hashtag_stats"][0]["youtube_stats"]["current_status"];
+    }
+    
+    console.log(
+      "length is one : ",
+      instagram_current_status,
+      youtube_current_status
+    );
     /////////
+    console.log("insta status ", instagram_current_status);
     instagram_current_status.forEach((status, index) => {
       instagram_status_date.push(status.current_date);
       const previousStatus =
@@ -154,9 +178,6 @@ const CompareData = (props) => {
 
     //////////// Youtube ////////////////
 
-    const youtube_current_status =
-      hashtagDetails["hashtag_stats"][0]["youtube_stats"]["current_status"];
-    const newSubscriberChanges = [];
     /////////
     console.log("Youtube current status : ", youtube_current_status);
     youtube_current_status.forEach((status, index) => {
@@ -205,7 +226,7 @@ const CompareData = (props) => {
       {tempState && (
         <button onClick={handleOnGetData}>Compare with current hashtag</button>
       )}
-      
+
       <div>
         {dataToCompareWith.map((item, index) => (
           <div key={index}>
@@ -214,11 +235,11 @@ const CompareData = (props) => {
             <button onClick={() => handleOnClickGraph(item)}>Graph</button>
           </div>
         ))}
-        <div style={{margin:"10px 0 0 0"}}>
-        <button onClick={handleOnClickInstagram}>Instagram</button>
-        <button onClick={handleOnClickYouTube}>YouTube</button>
-        <button onClick={handleOnClickTwitter}>Twitter</button>
-      </div>
+        <div style={{ margin: "10px 0 0 0" }}>
+          <button onClick={handleOnClickInstagram}>Instagram</button>
+          <button onClick={handleOnClickYouTube}>YouTube</button>
+          <button onClick={handleOnClickTwitter}>Twitter</button>
+        </div>
         {clickOnDetail && <div>Details content</div>}
         {clickOnGraph && showInstagramResult && (
           <div>
