@@ -126,7 +126,7 @@ const SearchPage = () => {
     });
   };
   const handleOnTwitterHashtagSearch = () => {
-    const tempVariable = "IndianPolitics";
+    const tempVariable = "BJP";
     console.log(
       "temp variable :::::::::::::::::::::::::::::::::::: ",
       tempVariable

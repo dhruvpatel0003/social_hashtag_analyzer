@@ -26,18 +26,15 @@ const Analysis = () => {
   // console.log("hashtag passed from searchPage ", hashtag);
   const [dataDict, setDataDict] = useState();
   const [showGraphData, setShowGraphData] = useState(false);
-  const followersChanging = [];
-
   const [showInputField, setShowInputField] = useState(false);
   const [hashtags, setHashtags] = useState([]);
   const [newHashtag, setNewHashtag] = useState("");
-
   const [dataToCompare, setDataToCompare] = useState([]);
   const [showCompareData, setShowCompareData] = useState([]);
-
   const [disableToShowCompareHashtag, setDisableToShowCompareHashtag] =
     useState(false);
-
+  let instagram_followers_change = [];
+  let youtube_subscribers_change = [];
 
   useEffect(() => {
     const fetchData = () => {
@@ -374,8 +371,10 @@ const Analysis = () => {
   var transformedData_graph_instagram = {};
   var transformedData_graph_youtube = {};
   var followersChangeData = [];
+  var instagram_
 
   if (dataDict) {
+    
     console.log("inside the if statement : ", dataDict);
     transformedData_graph_instagram =
       dataDict.hashtag_stats[0].instagram_stats.map((status) => ({
@@ -384,6 +383,21 @@ const Analysis = () => {
         followings: parseInt(status.followings, 10),
         posts: parseInt(status.posts, 10),
       }));
+
+    transformedData_graph_instagram.forEach((status, index) => {
+      // console.log("status : ",status);
+      const previousStatus =
+        index > 0 ? transformedData_graph_instagram[index - 1] : null;
+
+      const followersChange = previousStatus
+        ? status.followers - previousStatus.followers
+        : 0;
+
+      instagram_followers_change.push({
+        date: status.name,
+        followersChanging: followersChange,
+      });
+    });
 
     // Additional graph for YouTube
     console.log("Youtube stats : ", dataDict.hashtag_stats[0].youtube_stats);
@@ -396,6 +410,21 @@ const Analysis = () => {
         views_count: parseInt(status.views_count, 10),
       })
     );
+
+    transformedData_graph_youtube.forEach((status, index) => {
+      // console.log("status : ",status);
+      const previousStatus =
+        index > 0 ? transformedData_graph_youtube[index - 1] : null;
+
+      const subscriberChanges = previousStatus
+        ? status.subscriber_count - previousStatus.subscriber_count
+        : 0;
+
+      youtube_subscribers_change.push({
+        date: status.name,
+        subscriberChanging: subscriberChanges,
+      });
+    });
   }
 
   ////////////////////////////////////////////////////// twitter /////////////////////////////////////////////////////
@@ -640,7 +669,6 @@ const Analysis = () => {
     setShowCompareData(true);
   };
 
-
   return (
     <div>
       {!showGraphData && <p>Show Graphs</p>}
@@ -697,21 +725,21 @@ const Analysis = () => {
               <h1>Instagram Profile</h1>
               <ResponsiveContainer width={800} height={500}>
                 <LineChart
-                  width={800}
-                  height={500}
-                  data={transformedData_graph_instagram}
                   margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
                 >
                   <CartesianGrid stroke="#f5f5f5" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="date" />
                   <YAxis />
-                  <YAxis tickFormatter={formatNumber} />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="followers" stroke="#8884d8" />
-                  <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
-                  <Line type="monotone" dataKey="posts" stroke="#ffc658" />
-                  <Brush dataKey="name" height={30} stroke="#8884d8" />
+                  <Line
+                    type="monotone"
+                    dataKey="followersChanging"
+                    stroke="#8884d8"
+                    name={hashtag}
+                    data={instagram_followers_change}
+                  />
+                  {/* <Brush data={instagram_status_date} height={30} stroke="#8884d8" /> */}
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -719,35 +747,22 @@ const Analysis = () => {
             <div id="youtube-profile-container">
               <h1>YouTube Profile</h1>
               <ResponsiveContainer width={800} height={500}>
-                <LineChart
-                  width={800}
-                  height={500}
-                  data={transformedData_graph_youtube}
-                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
-                >
-                  <CartesianGrid stroke="#f5f5f5" />
-                  <XAxis dataKey="name" />
-                  <YAxis tickFormatter={formatNumber} />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="video_count"
-                    stroke="#8884d8"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="subscriber_count"
-                    stroke="#82ca9d"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="views_count"
-                    stroke="#ffc658"
-                  />
-                  <Brush dataKey="name" height={30} stroke="#8884d8" />
-                </LineChart>
-              </ResponsiveContainer>
+              <LineChart margin={{ top: 20, right: 20, left: 20, bottom: 10 }}>
+                <CartesianGrid stroke="#f5f5f5" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="subscriberChanging"
+                  stroke="#8884d8"
+                  name={hashtag}
+                  data={youtube_subscribers_change}
+                />
+                {/* <Brush data={instagram_status_date} height={30} stroke="#8884d8" /> */}
+              </LineChart>
+            </ResponsiveContainer>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "row" }}>
@@ -854,7 +869,6 @@ const Analysis = () => {
                       ? status.followers - previousStatus.followers
                       : 0;
 
-                    followersChanging.push(followersChange);
                     // console.log("followers changing : ", followersChanging);
                     const changeIndicator =
                       followersChange > 0 ? (
@@ -966,7 +980,6 @@ const Analysis = () => {
                   <button onClick={handleOnClickToShowCompareData}>
                     Show Compare Data
                   </button>
-
                 </div>
               )}
             </div>

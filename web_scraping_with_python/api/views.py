@@ -32,7 +32,7 @@ APIFY_CLIENT_API_KEY = os.getenv("APIFY_CLIENT_API_KEY")
 CLIENT_ACTOR = os.getenv("CLIENT_ACTOR")
 api_service_name = "youtube"
 api_version = "v3"
-                
+stripe.api_key = 'sk_test_51NYsYCSJ6PO4bMYod8pERLQYbxcgnE82yOpr9glXAb0CvlZSRKFD4WL6w2MF2q0k5PugQGS2wx9chwCikKhc4eZm00pnqlCLSN'
 
 from rest_framework.parsers import FileUploadParser
 from django.http import  HttpResponse, HttpResponseForbidden
@@ -849,7 +849,6 @@ class GetAllStoredApifyData(generics.ListAPIView):
 
 class CreateCheckoutSessionView(APIView):
     def post(self, request, *args, **kwargs):
-        subscriptionAmount = 75
         print("inside create checkout session")
         YOUR_DOMAIN = "http://127.0.0.1:8000"
         checkout_session = stripe.checkout.Session.create(
@@ -858,9 +857,9 @@ class CreateCheckoutSessionView(APIView):
                 {
                     'price_data': {
                         'currency': 'usd',
-                        'unit_amount': subscriptionAmount,
+                        'unit_amount':request.data.get('subscription_amount'),
                         'product_data': {
-                            'name': "$78 / MONTH",
+                            'name': "Subscription",
                         },
                     },
                     'quantity': 1,
@@ -869,11 +868,11 @@ class CreateCheckoutSessionView(APIView):
             metadata={
                 "product_id": "123"
             },
-            mode='subscription',
+            mode='payment',
             success_url=YOUR_DOMAIN + '/success',
             cancel_url=YOUR_DOMAIN + '/cancel',
         )
         
         print("The session was created successfully : ",checkout_session)
-        
-        return Response({'id':checkout_session.id}, status=status.HTTP_200_OK)
+        # return redirect(checkout_session.url, code=303)
+        return Response({'redirect_url': checkout_session.url}, status=status.HTTP_200_OK)
