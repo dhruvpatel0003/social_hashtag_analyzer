@@ -857,9 +857,9 @@ class CreateCheckoutSessionView(APIView):
                 {
                     'price_data': {
                         'currency': 'usd',
-                        'unit_amount':request.data.get('subscription_amount'),
+                        'unit_amount':int(request.data.get('subscription_amount'))*100,
                         'product_data': {
-                            'name': "Subscription",
+                            'name': f'Subscription (per {request.data.get('subscription_duration')})',
                         },
                     },
                     'quantity': 1,

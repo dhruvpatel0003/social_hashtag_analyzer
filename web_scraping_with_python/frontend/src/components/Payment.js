@@ -9,7 +9,8 @@ const Payment = (props) => {
         // "X-CSRFToken"
       },
       body: JSON.stringify({
-        subscription_amount : props.subscriptionAmount
+        subscription_amount : props.subscriptionAmount,
+        subscription_duration : props.subscriptionDuration
       }),
     })
       .then((response) =>  response.json())

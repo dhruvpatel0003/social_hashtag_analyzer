@@ -18,6 +18,7 @@ const SignUpPage = () => {
   const [subscriptionPlan, setSubscriptionPlan] = useState("");
   const [subscriptionExpiresDate, setSubscriptionExpiresDate] = useState("");
   const [subscriptionDate,setSubScriptionDate] = useState("");
+  const [subscriptionDuration, setSubscriptionDuration] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -98,7 +99,7 @@ const SignUpPage = () => {
   const handleOnSubscriptionPlan = (amount, duration) => {
 
     setPaymentValue(amount);
-
+    setSubscriptionDuration(duration);
     setSubscriptionPlan(amount);
     const currentDate = new Date();
     setSubScriptionDate(currentDate.toISOString().split("T")[0]);
@@ -158,7 +159,7 @@ const SignUpPage = () => {
           $936/year
         </button>
       </div>
-      {paymentValue && <Payment subscriptionAmount={paymentValue}/>}
+      {paymentValue && <Payment subscriptionAmount={paymentValue} subscriptionDuration={subscriptionDuration}/>}
       <button onClick={handleSubmit}>Sign Up</button>
       <button onClick={handleLogin}>Login</button>
 
