@@ -4,7 +4,7 @@ import ExcelJS from "exceljs";
 import { DataContext } from "./DataContext";
 
 const SearchPage = () => {
-  const { setData } = useContext(DataContext);
+  const { setData, email } = useContext(DataContext);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [hashtagData, setHashtagData] = useState(null);
@@ -83,9 +83,11 @@ const SearchPage = () => {
                         posts:
                           dict["hashtag_stats"][0]["instagram_stats"][
                             "current_status"
-                          ][0].length === 3  ? 0 :dict["hashtag_stats"][0]["instagram_stats"][
-                            "current_status"
-                          ][0]['posts']
+                          ][0].length === 3
+                            ? 0
+                            : dict["hashtag_stats"][0]["instagram_stats"][
+                                "current_status"
+                              ][0]["posts"],
                       },
                     ],
                   }
@@ -124,7 +126,7 @@ const SearchPage = () => {
             //         })),
             //       }
             //     : {},
-            twitter_stats : {}
+            twitter_stats: {},
           },
         ],
       }),
@@ -293,11 +295,15 @@ const SearchPage = () => {
     }
     setShowMessage(false);
     fetch(`/api/search?key=${searchTerm}`, {
-      method: "GET",
+      method: "POST",
+      // method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
       },
+      body : JSON.stringify({
+        'email':email
+      })
     })
       .then((response) => {
         if (!response.ok) {
@@ -400,8 +406,8 @@ const SearchPage = () => {
   const handleOnHistoryClick = () => {
     console.log("inside history ", document.cookie.split(";")[0].split("=")[1]);
     const user_id = document.cookie.split(";")[0].split("=")[1];
-    fetch(`/api/my-history/Dt5bCOCoD46TxFNhW8tFEFiKVlNGXVm1`, {
-    // fetch(`/api/my-history/${user_id}`, {
+    // fetch(`/api/my-history/Dt5bCOCoD46TxFNhW8tFEFiKVlNGXVm1`, {
+      fetch(`/api/my-history/${user_id}`, {
       method: "GET",
     })
       .then((response) => {
@@ -439,10 +445,14 @@ const SearchPage = () => {
           <button onClick={() => handleOnHashtagClick("mumbaiindians")}>
             #MumbaiIndians
           </button>
-          <button onClick={() => handleOnHashtagClick("royalchallengers.bengaluru")}>
+          <button
+            onClick={() => handleOnHashtagClick("royalchallengers.bengaluru")}
+          >
             #RoyalChallengersBengaluru
           </button>
-          <button onClick={() => handleOnHashtagClick("gujarat_titans")}>#Gujara Titans</button>
+          <button onClick={() => handleOnHashtagClick("gujarat_titans")}>
+            #Gujara Titans
+          </button>
           <button onClick={handleOnApify}>RunApify</button>
         </div>
       </div>

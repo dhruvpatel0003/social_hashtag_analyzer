@@ -769,26 +769,7 @@ const Analysis = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div id="twitter-profile-container">
-              <h1>Twitter Profile</h1>
-              <ResponsiveContainer width={800} height={500}>
-                <LineChart
-                  width={800}
-                  height={500}
-                  data={transformedData_graph_twitter}
-                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
-                >
-                  <CartesianGrid stroke="#f5f5f5" />
-                  <XAxis dataKey="name" />
-                  <YAxis tickFormatter={formatNumber} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="followers" stroke="#8884d8" />
-                  <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
-                  <Brush dataKey="name" height={30} stroke="#8884d8" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            
             <div id="instagram-profile-container">
               <h1>Instagram Profile</h1>
               <ResponsiveContainer width={800} height={500}>

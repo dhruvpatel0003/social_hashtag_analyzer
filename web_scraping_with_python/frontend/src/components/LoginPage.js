@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { DataContext } from "./DataContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setEmail } = useContext(DataContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -67,6 +69,7 @@ const LoginPage = () => {
       })
       .then((data) => {
         console.log("User ID:", data.token);
+        setEmail(credentials.username);
         const twoDaysInSeconds = 2 * 24 * 60 * 60; // 2 days in seconds
         const expirationDate = new Date(
           Date.now() + twoDaysInSeconds * 1000
@@ -189,14 +192,14 @@ const LoginPage = () => {
               {/* Horizontal Line */}
               <hr />
               {/* Sign in with Text */}
-              <p>Sign in with</p>
+              {/* <p>Sign in with</p> */}
               {/* Social Media Options */}
-              <div>
-                <span>Google</span>
-                <span>Facebook</span>
-                <span>Microsoft</span>
-                <span>GitHub</span>
-              </div>
+              {/* <div> */}
+                {/* <span>Google</span> */}
+                {/* <span>Facebook</span> */}
+                {/* <span>Microsoft</span> */}
+                {/* <span>GitHub</span> */}
+              {/* </div> */}
             </div>
           )}
         </div>
