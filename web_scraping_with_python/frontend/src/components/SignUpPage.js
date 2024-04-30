@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Payment from './Payment';
+import Payment from "./Payment";
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 
@@ -14,16 +14,15 @@ const SignUpPage = () => {
 
   const [paymentValue, setPaymentValue] = useState(0);
 
-
   const [subscriptionPlan, setSubscriptionPlan] = useState("");
   const [subscriptionExpiresDate, setSubscriptionExpiresDate] = useState("");
-  const [subscriptionDate,setSubScriptionDate] = useState("");
+  const [subscriptionDate, setSubScriptionDate] = useState("");
   const [subscriptionDuration, setSubscriptionDuration] = useState("");
-
+  const [enableRouting, setEnableRouting] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    // e.preventDefault();
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,40 +50,45 @@ const SignUpPage = () => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     console.log("subscriptionPlan ::::::: ", subscriptionPlan);
 
-    const subscriptionStatus = [{
-      "subscription_amount": subscriptionPlan,
-      "subscription_date" : subscriptionDate,
-      "subscription_expires_date" : subscriptionExpiresDate,
-    }]
+    const subscriptionStatus = [
+      {
+        subscription_amount: subscriptionPlan,
+        subscription_date: subscriptionDate,
+        subscription_expires_date: subscriptionExpiresDate,
+      },
+    ];
 
-
+    console.log("subscription status : ",subscriptionStatus);
     const requestOptions = {
-      method: "POST",   
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email,
         password: hashedPassword,
         phone_number: phoneNumber,
-        subscription_status : subscriptionStatus
+        subscription_status: subscriptionStatus,
       }),
     };
 
     try {
       const response = await fetch("/api/create-user", requestOptions);
       const data = await response.json();
-      if(data.phone_number){
+      if (data.phone_number) {
         setErrorMessage(data.phone_number[0]);
       }
-      if(data.email){
+      if (data.email) {
         setErrorMessage(data.email[0]);
       }
-    //   console.log("daata ::::::: ", data.phone_number);
+      //   console.log("daata ::::::: ", data.phone_number);
       if (data && response.status === 201) {
         // console.log(response.status);
         const userId = data.user_id;
         document.cookie = `user_id=${userId}`;
         console.log("document coookiee ::::::: ", document.cookie);
-        navigate("/login");
+        console.log("About the routing :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ");
+        if (!enableRouting) {
+          navigate("/login");
+        }
       }
     } catch (error) {
       setErrorMessage(error);
@@ -97,7 +101,11 @@ const SignUpPage = () => {
   };
 
   const handleOnSubscriptionPlan = (amount, duration) => {
-
+    if (amount != 0) {
+      setEnableRouting(true);
+    } else {
+      setEnableRouting(false);
+    }
     setPaymentValue(amount);
     setSubscriptionDuration(duration);
     setSubscriptionPlan(amount);
@@ -106,12 +114,18 @@ const SignUpPage = () => {
     const endDate = new Date(currentDate);
     if (duration === "month") {
       endDate.setMonth(endDate.getMonth() + 1);
-    }else{
-        endDate.setFullYear(endDate.getFullYear() + 1);
-        console.log("endDate ::::::: ", endDate.toISOString().split("T")[0], amount);
+    } else {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+      console.log(
+        "endDate ::::::: ",
+        endDate.toISOString().split("T")[0],
+        amount
+      );
     }
     // console.log("endDate ::::::: ", endDate.toISOString().split("T")[0], amount);
     setSubscriptionExpiresDate(endDate.toISOString().split("T")[0]);
+    console.log("before handleSubmit call :::::::::: ");
+    handleSubmit();
     // console.log("subscriptionPlan ::::::: "+subscriptionPlan);
     // console.log("subscriptionDuration ::::::: " + subscriptionDuration);
   };
@@ -152,6 +166,7 @@ const SignUpPage = () => {
                     onChange={(e) => setSubscriptionStatus(e.target.checked)}
                 /> */}
         </label>
+        <button onClick={() => handleOnSubscriptionPlan(0, "NA")}>Free</button>
         <button onClick={() => handleOnSubscriptionPlan("78", "month")}>
           $78/month
         </button>
@@ -159,8 +174,13 @@ const SignUpPage = () => {
           $936/year
         </button>
       </div>
-      {paymentValue && <Payment subscriptionAmount={paymentValue} subscriptionDuration={subscriptionDuration}/>}
-      <button onClick={handleSubmit}>Sign Up</button>
+      {paymentValue != 0 && (
+        <Payment
+          subscriptionAmount={paymentValue}
+          subscriptionDuration={subscriptionDuration}
+        />
+      )}
+      {/* <button onClick={()=>handleOnSubscriptionPlan(0,"NA")}>Start For Free</button> */}
       <button onClick={handleLogin}>Login</button>
 
       {errorMessage && <p>{errorMessage}</p>}

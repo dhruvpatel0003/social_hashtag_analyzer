@@ -21,6 +21,8 @@ const ViewReport = () => {
   const [reportData, setReportData] = useState();
   const [loading, setLoading] = useState(true);
   const [selectedReportIndex, setSelectedReportIndex] = useState(0); // Added state for selected report index
+  let instagram_followers_change = [];
+  let youtube_subscribers_change = [];
 
   const navigate = useNavigate();
   const userId = document.cookie.split(";")[0].split("=")[1]; // Replace with the actual user ID
@@ -48,29 +50,7 @@ const ViewReport = () => {
       "data ",
       selectedReportData
     );
-    // const dict = {
-    //   user_id: userId, // Replace with the actual user_id value
-    //   hashtag: selectedReportData["hashtag"], // Replace with the actual hashtag value
-    //   hashtag_stats: selectedReportData.map((report) => ({
-    //     user: reportData[0]["user_id"],
-    //     youtube_stats: {
-    //       name: report.hashtag_stats[0]?.youtube_stats?.name || "", // Replace with the actual name value
-    //       current_status:
-    //         report.hashtag_stats[0]?.youtube_stats?.current_status || [],
-    //     },
-    //     instagram_stats: {
-    //       current_status:
-    //         report.hashtag_stats[0]?.instagram_stats?.current_status || [],
-    //     },
-    //     twitter_stats: {
-    //       joining_date:
-    //         report.hashtag_stats[0]?.twitter_stats?.joining_date || "", // Replace with the actual joining_date value
-    //       comments: report.hashtag_stats[0]?.twitter_stats?.comments || [],
-    //       current_status:
-    //         report.hashtag_stats[0]?.twitter_stats?.current_status || [],
-    //     },
-    //   })),
-    // };
+
     const dict = {
       user_id: userId,
       hashtag: selectedReportData["hashtag"],
@@ -87,27 +67,27 @@ const ViewReport = () => {
             selectedReportData.hashtag_stats[0]?.instagram_stats
               ?.current_status || [],
         },
-        twitter_stats: {
-          joining_date:
-            selectedReportData.hashtag_stats[0]?.twitter_stats?.joining_date ||
-            "",
-          comments:
-            selectedReportData.hashtag_stats[0]?.twitter_stats?.comments || [],
-          current_status:
-            selectedReportData.hashtag_stats[0]?.twitter_stats
-              ?.current_status || [],
-        },
+        // twitter_stats: {
+        //   joining_date:
+        //     selectedReportData.hashtag_stats[0]?.twitter_stats?.joining_date ||
+        //     "",
+        //   comments:
+        //     selectedReportData.hashtag_stats[0]?.twitter_stats?.comments || [],
+        //   current_status:
+        //     selectedReportData.hashtag_stats[0]?.twitter_stats
+        //       ?.current_status || [],
+        // },
       },
     };
     console.log("dict in the view componenet : ::::::::::::::::::::::: ", dict);
 
-    const transformedData_graph1 =
-      dict.hashtag_stats.twitter_stats.comments.map((comment) => ({
-        name: comment.comment_date,
-        likes: parseInt(comment.likes, 10),
-        retweets: parseInt(comment.retweets, 10),
-        comments: parseInt(comment.comments, 10),
-      }));
+    // const transformedData_graph1 =
+    //   dict.hashtag_stats.twitter_stats.comments.map((comment) => ({
+    //     name: comment.comment_date,
+    //     likes: parseInt(comment.likes, 10),
+    //     retweets: parseInt(comment.retweets, 10),
+    //     comments: parseInt(comment.comments, 10),
+    //   }));
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     const parseInstagramFollowers = (followers) => {
@@ -131,6 +111,21 @@ const ViewReport = () => {
         posts: parseInt(status.posts, 10),
       }));
 
+      transformedData_graph_instagram.forEach((status, index) => {
+        // console.log("status : ",status);
+        const previousStatus =
+          index > 0 ? transformedData_graph_instagram[index - 1] : null;
+  
+        const followersChange = previousStatus
+          ? status.followers - previousStatus.followers
+          : 0;
+  
+        instagram_followers_change.push({
+          date: status.name,
+          followersChanging: followersChange,
+        });
+      });
+
     // Additional graph for YouTube
     const transformedData_graph_youtube =
       dict.hashtag_stats.youtube_stats.current_status.map((status) => ({
@@ -140,38 +135,53 @@ const ViewReport = () => {
         views_count: parseInt(status.views_count, 10),
       }));
 
+      transformedData_graph_youtube.forEach((status, index) => {
+        // console.log("status : ",status);
+        const previousStatus =
+          index > 0 ? transformedData_graph_youtube[index - 1] : null;
+  
+        const subscriberChanges = previousStatus
+          ? status.subscriber_count - previousStatus.subscriber_count
+          : 0;
+  
+        youtube_subscribers_change.push({
+          date: status.name,
+          subscriberChanging: subscriberChanges,
+        });
+      });
+
     ////////////////////////////////////////////////////// twitter /////////////////////////////////////////////////////
 
-    const parseTwitterFollowers = (followers) => {
-      const numericValue = parseFloat(followers);
+    // const parseTwitterFollowers = (followers) => {
+    //   const numericValue = parseFloat(followers);
 
-      if (followers.includes("M")) {
-        return numericValue * 1000000;
-      } else if (followers.includes("K")) {
-        return numericValue * 1000;
-      } else {
-        return numericValue;
-      }
-    };
+    //   if (followers.includes("M")) {
+    //     return numericValue * 1000000;
+    //   } else if (followers.includes("K")) {
+    //     return numericValue * 1000;
+    //   } else {
+    //     return numericValue;
+    //   }
+    // };
 
-    const parseTwitterFollowings = (followings) => {
-      const numericValue = parseFloat(followings);
+    // const parseTwitterFollowings = (followings) => {
+    //   const numericValue = parseFloat(followings);
 
-      if (followings.includes("M")) {
-        return numericValue * 1000000;
-      } else if (followings.includes("K")) {
-        return numericValue * 1000;
-      } else {
-        return numericValue;
-      }
-    };
+    //   if (followings.includes("M")) {
+    //     return numericValue * 1000000;
+    //   } else if (followings.includes("K")) {
+    //     return numericValue * 1000;
+    //   } else {
+    //     return numericValue;
+    //   }
+    // };
 
-    const transformedData_graph_twitter =
-      dict.hashtag_stats.twitter_stats.current_status.map((status) => ({
-        name: status.current_date,
-        followers: parseTwitterFollowers(status.followers),
-        followings: parseTwitterFollowings(status.followings),
-      }));
+    // const transformedData_graph_twitter =
+    //   dict.hashtag_stats.twitter_stats.current_status.map((status) => ({
+    //     name: status.current_date,
+    //     followers: parseTwitterFollowers(status.followers),
+    //     followings: parseTwitterFollowings(status.followings),
+    //   }));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -210,13 +220,13 @@ const ViewReport = () => {
 
       const sheet = workbook.addWorksheet("Analysis");
 
-      const graph1Image = await captureAndConvertToBase64("#graph1-container");
-      addImageToWorksheet(sheet, graph1Image, 1, 1);
+      // const graph1Image = await captureAndConvertToBase64("#graph1-container");
+      // addImageToWorksheet(sheet, graph1Image, 1, 1);
 
-      const twitterProfileImage = await captureAndConvertToBase64(
-        "#twitter-profile-container"
-      );
-      addImageToWorksheet(sheet, twitterProfileImage, 12, 1);
+      // const twitterProfileImage = await captureAndConvertToBase64(
+      //   "#twitter-profile-container"
+      // );
+      // addImageToWorksheet(sheet, twitterProfileImage, 12, 1);
 
       const instagramProfileImage = await captureAndConvertToBase64(
         "#instagram-profile-container"
@@ -228,8 +238,8 @@ const ViewReport = () => {
       );
       addImageToWorksheet(sheet, youtubeProfileImage, 12, 20);
 
-      addTableToWorksheet(sheet, "#twitter-comments-table-container", 1, 40);
-      addTableToWorksheet(sheet, "#twitter-profile-table-container", 1, 60);
+      // addTableToWorksheet(sheet, "#twitter-comments-table-container", 1, 40);
+      // addTableToWorksheet(sheet, "#twitter-profile-table-container", 1, 60);
       addTableToWorksheet(sheet, "#instagram-profile-table-container", 1, 80);
       addTableToWorksheet(sheet, "#youtube-profile-table-container", 1, 100);
 
@@ -305,7 +315,7 @@ const ViewReport = () => {
         </div>
 
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <div id="graph1-container">
+          {/* <div id="graph1-container">
             <h1>Twitter Comments Graph</h1>
             <ResponsiveContainer width={800} height={500}>
               <LineChart
@@ -345,25 +355,25 @@ const ViewReport = () => {
                 <Brush dataKey="name" height={30} stroke="#8884d8" />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </div> */}
           <div id="instagram-profile-container">
             <h1>Instagram Profile</h1>
             <ResponsiveContainer width={800} height={500}>
               <LineChart
                 width={800}
                 height={500}
-                data={transformedData_graph_instagram}
+                data={instagram_followers_change}
                 margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
               >
                 <CartesianGrid stroke="#f5f5f5" />
-                <XAxis dataKey="name" />
+                <XAxis dataKey="date" />
                 <YAxis tickFormatter={formatNumber} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="followers" stroke="#8884d8" />
-                <Line type="monotone" dataKey="followings" stroke="#82ca9d" />
-                <Line type="monotone" dataKey="posts" stroke="#ffc658" />
-                <Brush dataKey="name" height={30} stroke="#8884d8" />
+                <Line type="monotone" dataKey="followersChanging" stroke="#8884d8" />
+                {/* <Line type="monotone" dataKey="followings" stroke="#82ca9d" /> */}
+                {/* <Line type="monotone" dataKey="posts" stroke="#ffc658" /> */}
+                {/* <Brush dataKey="name" height={30} stroke="#8884d8" /> */}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -377,24 +387,30 @@ const ViewReport = () => {
                 margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
               >
                 <CartesianGrid stroke="#f5f5f5" />
-                <XAxis dataKey="name" />
+                <XAxis dataKey="date" />
                 <YAxis tickFormatter={formatNumber} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="video_count" stroke="#8884d8" />
+                {/* <Line type="monotone" dataKey="video_count" stroke="#8884d8" />
                 <Line
                   type="monotone"
                   dataKey="subscriber_count"
                   stroke="#82ca9d"
                 />
                 <Line type="monotone" dataKey="views_count" stroke="#ffc658" />
-                <Brush dataKey="name" height={30} stroke="#8884d8" />
+                <Brush dataKey="name" height={30} stroke="#8884d8" /> */}
+                 <Line
+                    type="monotone"
+                    dataKey="subscriberChanging"
+                    stroke="#8884d8"
+                    data={youtube_subscribers_change}
+                  />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <div id="twitter-comments-table-container" style={{ margin: "10px" }}>
+          {/* <div id="twitter-comments-table-container" style={{ margin: "10px" }}>
             <h1>Twitter Comments Table</h1>
             <table border="1">
               <thead>
@@ -416,9 +432,9 @@ const ViewReport = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div> */}
 
-          <div id="twitter-profile-table-container" style={{ margin: "10px" }}>
+          {/* <div id="twitter-profile-table-container" style={{ margin: "10px" }}>
             <h1>Twitter Profile Table</h1>
             <table border="1">
               <thead>
@@ -462,7 +478,7 @@ const ViewReport = () => {
                 })}
               </tbody>
             </table>
-          </div>
+          </div> */}
           <div
             id="instagram-profile-table-container"
             style={{ margin: "10px" }}

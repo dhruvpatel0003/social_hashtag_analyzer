@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import ExcelJS from "exceljs";
+import { DataContext } from "./DataContext";
 
 const SearchPage = () => {
+  const { setData } = useContext(DataContext);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [hashtagData, setHashtagData] = useState(null);
@@ -81,52 +83,55 @@ const SearchPage = () => {
                         posts:
                           dict["hashtag_stats"][0]["instagram_stats"][
                             "current_status"
-                          ][0]["posts"],
+                          ][0].length === 3  ? 0 :dict["hashtag_stats"][0]["instagram_stats"][
+                            "current_status"
+                          ][0]['posts']
                       },
                     ],
                   }
                 : {},
-            twitter_stats:
-              (dict.hashtag_stats[0]["twitter_stats"]["current_status"].length !=
-              0)
-                ? {
-                    current_status: [
-                      {
-                        current_date:
-                          dict["hashtag_stats"][0]["twitter_stats"][
-                            "current_status"
-                          ][0]["current_date"],
-                        followers:
-                          dict["hashtag_stats"][0]["twitter_stats"][
-                            "current_status"
-                          ][0]["followers"],
-                        followings:
-                          dict["hashtag_stats"][0]["twitter_stats"][
-                            "current_status"
-                          ][0]["followings"],
-                      },
-                    ],
-                    joining_date:
-                      dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
-                    comments: dict["hashtag_stats"][0]["twitter_stats"][
-                      "comments"
-                    ].map((comment) => ({
-                      text: comment.text,
-                      comments: comment.comments,
-                      url: comment.url,
-                      likes: comment.likes,
-                      retweets: comment.retweets,
-                      comment_date: comment.comment_date,
-                    })),
-                  }
-                : {},
+            // twitter_stats:
+            //   (dict.hashtag_stats[0]["twitter_stats"]["current_status"].length !=
+            //   0)
+            //     ? {
+            //         current_status: [
+            //           {
+            //             current_date:
+            //               dict["hashtag_stats"][0]["twitter_stats"][
+            //                 "current_status"
+            //               ][0]["current_date"],
+            //             followers:
+            //               dict["hashtag_stats"][0]["twitter_stats"][
+            //                 "current_status"
+            //               ][0]["followers"],
+            //             followings:
+            //               dict["hashtag_stats"][0]["twitter_stats"][
+            //                 "current_status"
+            //               ][0]["followings"],
+            //           },
+            //         ],
+            //         joining_date:
+            //           dict["hashtag_stats"][0]["twitter_stats"]["joining_date"],
+            //         comments: dict["hashtag_stats"][0]["twitter_stats"][
+            //           "comments"
+            //         ].map((comment) => ({
+            //           text: comment.text,
+            //           comments: comment.comments,
+            //           url: comment.url,
+            //           likes: comment.likes,
+            //           retweets: comment.retweets,
+            //           comment_date: comment.comment_date,
+            //         })),
+            //       }
+            //     : {},
+            twitter_stats : {}
           },
         ],
       }),
     });
   };
   const handleOnTwitterHashtagSearch = () => {
-    const tempVariable = "BJP";
+    const tempVariable = "gujarat_titans";
     console.log(
       "temp variable :::::::::::::::::::::::::::::::::::: ",
       tempVariable
@@ -256,6 +261,7 @@ const SearchPage = () => {
   };
 
   const handleSearchClick = () => {
+    setLoading(true);
     setHistoryData(null);
     console.log("Starting of the handle Search loading status ", loading);
 
@@ -286,87 +292,88 @@ const SearchPage = () => {
       return;
     }
     setShowMessage(false);
-    // fetch(`/api/search?key=${searchTerm}`, {
-    //   method: "GET",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
-    //   },
-    // })
-    //   .then((response) => {
-    //     if (!response.ok) {
-    //       throw new Error(
-    //         `Network response was not ok, status: ${response.status}`
-    //       );
-    //     }
-    //     return response.json();
-    //   })
-    //   .then((data) => {
-    //     setLoading(false);
-    //     setHashtagData(data);
-    //   })
-    //   .catch((error) => console.error("Error during fetch:", error));
-
-    setHashtagData({
-      data: {
-        hashtag: "carryminati",
-        hashtag_stats: [
-          {
-            youtube_stats: {
-              current_status: [
-                {
-                  current_date: "2022-01-22",
-                  views_count: 1002,
-                  subscription_count: 197,
-                  video_count: 50,
-                },
-              ],
-            },
-            instagram_stats: {
-              current_status: [
-                {
-                  current_date: "2022-01-22",
-                  followers: "139 M",
-                  followings: "231 K",
-                  posts: 193,
-                },
-                {
-                  current_date: "2022-01-21",
-                  followers: "911 M",
-                  followings: "201 K",
-                  posts: 183,
-                },
-              ],
-            },
-            twitter_stats: {
-              current_status: [
-                {
-                  current_date: "2022-01-19",
-                  followers: "200 M",
-                  followings: "100 K",
-                },
-                {
-                  current_date: "2022-01-18",
-                  followers: "333 M",
-                  followings: "222 K",
-                },
-              ],
-              joining_date: "2020-01-1",
-              comments: [
-                {
-                  text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
-                  url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
-                  comments: "120",
-                  likes: 2350,
-                  retweets: 101,
-                  comment_date: "2023-12-23",
-                },
-              ],
-            },
-          },
-        ],
+    fetch(`/api/search?key=${searchTerm}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${document.cookie.split(" ")[0].split("=")[1]}`,
       },
-    });
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok, status: ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // setLoading(true);
+        setHashtagData(data);
+        setData(data);
+      })
+      .catch((error) => console.error("Error during fetch:", error));
+
+    // setHashtagData({
+    //   data: {
+    //     hashtag: "carryminati",
+    //     hashtag_stats: [
+    //       {
+    //         youtube_stats: {
+    //           current_status: [
+    //             {
+    //               current_date: "2022-01-22",
+    //               views_count: 1002,
+    //               subscription_count: 197,
+    //               video_count: 50,
+    //             },
+    //           ],
+    //         },
+    //         instagram_stats: {
+    //           current_status: [
+    //             {
+    //               current_date: "2022-01-22",
+    //               followers: "139 M",
+    //               followings: "231 K",
+    //               posts: 193,
+    //             },
+    //             {
+    //               current_date: "2022-01-21",
+    //               followers: "911 M",
+    //               followings: "201 K",
+    //               posts: 183,
+    //             },
+    //           ],
+    //         },
+    //         twitter_stats: {
+    //           current_status: [
+    //             {
+    //               current_date: "2022-01-19",
+    //               followers: "200 M",
+    //               followings: "100 K",
+    //             },
+    //             {
+    //               current_date: "2022-01-18",
+    //               followers: "333 M",
+    //               followings: "222 K",
+    //             },
+    //           ],
+    //           joining_date: "2020-01-1",
+    //           comments: [
+    //             {
+    //               text: "NEW ROAST VIDEO OUT NOW! RARE INDIAN STREET FOOD....YUMMYY🤤  WATCH: https://appopener.com/yt/nuxajzr6s Bhaagke jao aur dekho #Food",
+    //               url: "https://twitter.com/CarryMinati/status/1738817018881515790#m",
+    //               comments: "120",
+    //               likes: 2350,
+    //               retweets: 101,
+    //               comment_date: "2023-12-23",
+    //             },
+    //           ],
+    //         },
+    //       },
+    //     ],
+    //   },
+    // });
     setLoading(false);
   };
 
@@ -429,13 +436,13 @@ const SearchPage = () => {
       <div>
         <h3>Predefined Hashtags:</h3>
         <div>
-          <button onClick={() => handleOnHashtagClick("imVKholi")}>
-            #imVKohli
+          <button onClick={() => handleOnHashtagClick("mumbaiindians")}>
+            #MumbaiIndians
           </button>
-          <button onClick={() => handleOnHashtagClick("carryminati")}>
-            #Carryminati
+          <button onClick={() => handleOnHashtagClick("royalchallengers.bengaluru")}>
+            #RoyalChallengersBengaluru
           </button>
-          <button onClick={() => handleOnHashtagClick("BJP")}>#BJP</button>
+          <button onClick={() => handleOnHashtagClick("gujarat_titans")}>#Gujara Titans</button>
           <button onClick={handleOnApify}>RunApify</button>
         </div>
       </div>
@@ -483,12 +490,12 @@ const SearchPage = () => {
 
       {!hashtagIncludeData && hashtagData && !historyData && (
         <div>
-          <h3>Hashtag Data:</h3>
-          <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
           <button onClick={() => handleOnDownloadTxTFile(hashtagData)}>
             Download TxT
           </button>
           <button onClick={handleOnClickStastatic}>Stastatic</button>
+          <h3>Hashtag Data:</h3>
+          <pre>{JSON.stringify(hashtagData, null, 2)}</pre>
         </div>
       )}
       {hashtagIncludeData && (

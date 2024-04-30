@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 // import { Bar } from "react-chartjs-2";
 import "chart.js";
 import { useNavigate, useParams } from "react-router-dom";
@@ -16,10 +16,12 @@ import {
 import html2canvas from "html2canvas";
 import ExcelJS from "exceljs";
 import CompareData from "./CompareData";
+import { DataContext } from "./DataContext";
 
 let workbook;
 
 const Analysis = () => {
+  const { data } = useContext(DataContext);
   const navigate = useNavigate();
   const { hashtag } = useParams();
   const userId = document.cookie.split(";")[0].split("=")[1]; // Replace with the actual user ID
@@ -285,74 +287,83 @@ const Analysis = () => {
 
   // console.log("Dict data : ", dict);
   // console.log("inside the if condition, and getting the dict :");
-  const savingData = {
-    user_id: userId,
-    report_data: dict.hashtag_stats.map((hashtagStat) => ({
-      hashtag: dict.hashtag,
-      hashtag_stats: [
-        {
-          youtube_stats: hashtagStat.youtube_stats.current_status
-            ? {
-                current_status: hashtagStat.youtube_stats.current_status.map(
-                  (status) => ({
-                    current_date: status.current_date,
-                    views_count: status.views_count,
-                    subscriber_count: status.subscriber_count,
-                    video_count: status.video_count,
-                  })
-                ),
-              }
-            : {},
-          instagram_stats: hashtagStat.instagram_stats.current_status
-            ? {
-                current_status: hashtagStat.instagram_stats.current_status.map(
-                  (status) => ({
-                    current_date: status.current_date,
-                    followers: status.followers,
-                    followings: status.followings,
-                    posts: status.posts,
-                  })
-                ),
-              }
-            : {},
-          twitter_stats: hashtagStat.twitter_stats.current_status
-            ? {
-                current_status: hashtagStat.twitter_stats.current_status.map(
-                  (status) => ({
-                    current_date: status.current_date,
-                    followers: status.followers,
-                    followings: status.followings,
-                  })
-                ),
-                joining_date: hashtagStat.twitter_stats.joining_date,
-                comments: hashtagStat.twitter_stats.comments.map((comment) => ({
-                  text: comment.text,
-                  url: comment.url,
-                  comments: comment.comments,
-                  likes: comment.likes,
-                  retweets: comment.retweets,
-                  comment_date: comment.comment_date,
-                })),
-              }
-            : {},
-        },
-      ],
-    })),
-  };
+  let savingData = {};
+  // if(dataDict){
+  // console.log("data dict inside if statement: ", dataDict);
+  // savingData = {
+  //   user_id: userId,
+  //   report_data: dataDict.hashtag_stats.map((hashtagStat) => ({
+  //     hashtag: dataDict.hashtag,
+  //     hashtag_stats: [
+  //       {
+  //         youtube_stats: hashtagStat.youtube_stats.current_status
+  //           ? {
+  //               current_status: hashtagStat.youtube_stats.current_status.map(
+  //                 (status) => ({
+  //                   current_date: status.current_date,
+  //                   views_count: status.views_count,
+  //                   subscriber_count: status.subscriber_count,
+  //                   video_count: status.video_count,
+  //                 })
+  //               ),
+  //             }
+  //           : {},
+  //         instagram_stats: hashtagStat.instagram_stats.current_status
+  //           ? {
+  //               current_status: hashtagStat.instagram_stats.current_status.map(
+  //                 (status) => ({
+  //                   current_date: status.current_date,
+  //                   followers: status.followers,
+  //                   followings: status.followings,
+  //                   posts: status.posts,
+  //                 })
+  //               ),
+  //             }
+  //           : {},
+  //         twitter_stats: hashtagStat.twitter_stats.current_status
+  //           ? {
+  //               current_status: hashtagStat.twitter_stats.current_status.map(
+  //                 (status) => ({
+  //                   current_date: status.current_date,
+  //                   followers: status.followers,
+  //                   followings: status.followings,
+  //                 })
+  //               ),
+  //               joining_date: hashtagStat.twitter_stats.joining_date,
+  //               comments: hashtagStat.twitter_stats.comments.map((comment) => ({
+  //                 text: comment.text,
+  //                 url: comment.url,
+  //                 comments: comment.comments,
+  //                 likes: comment.likes,
+  //                 retweets: comment.retweets,
+  //                 comment_date: comment.comment_date,
+  //               })),
+  //             }
+  //           : {},
+  //       },
+  //     ],
+  //   })),
+  // };
+  // }
 
   const handleOnViewReport = () => {
     navigate("/view-reports");
   };
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // console.log("before the transformed data of graph1 : ", dataDict);
-  const transformedData_graph1 =
-    dict.hashtag_stats[0].twitter_stats.comments.map((comment) => ({
-      name: comment.comment_date,
-      likes: parseInt(comment.likes, 10),
-      retweets: parseInt(comment.retweets, 10),
-      comments: parseInt(comment.comments, 10),
-    }));
+  ////////////////////////////////////  ////////////////////////////////////////////////////////////////////////////
+  console.log(
+    "before the transformed data of graph1 ::::::::::::::::::::::::::::::  ",
+    data["data"],
+    data["data"].hashtag_stats[0].twitter_stats.comments[0].comment_data
+  );
+  const transformedData_graph1 = data[
+    "data"
+  ].hashtag_stats[0].twitter_stats.comments.map((comment) => ({
+    name: comment.comment_data,
+    likes: parseInt(comment.likes, 10),
+    retweets: parseInt(comment.retweets, 10),
+    // comments: parseInt(comment.comments, 10),
+  }));
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const parseInstagramFollowers = (followers) => {
@@ -370,11 +381,10 @@ const Analysis = () => {
   // Additional graph for Instagram
   var transformedData_graph_instagram = {};
   var transformedData_graph_youtube = {};
-  var followersChangeData = [];
-  var instagram_
+  // var followersChangeData = [];
+  // var instagram_
 
   if (dataDict) {
-    
     console.log("inside the if statement : ", dataDict);
     transformedData_graph_instagram =
       dataDict.hashtag_stats[0].instagram_stats.map((status) => ({
@@ -503,13 +513,13 @@ const Analysis = () => {
 
     const sheet = workbook.addWorksheet("Analysis");
 
-    const graph1Image = await captureAndConvertToBase64("#graph1-container");
-    addImageToWorksheet(sheet, graph1Image, 1, 1);
+    // const graph1Image = await captureAndConvertToBase64("#graph1-container");
+    // addImageToWorksheet(sheet, graph1Image, 1, 1);
 
-    const twitterProfileImage = await captureAndConvertToBase64(
-      "#twitter-profile-container"
-    );
-    addImageToWorksheet(sheet, twitterProfileImage, 12, 1);
+    // const twitterProfileImage = await captureAndConvertToBase64(
+    //   "#twitter-profile-container"
+    // );
+    // addImageToWorksheet(sheet, twitterProfileImage, 12, 1);
 
     const instagramProfileImage = await captureAndConvertToBase64(
       "#instagram-profile-container"
@@ -521,8 +531,8 @@ const Analysis = () => {
     );
     addImageToWorksheet(sheet, youtubeProfileImage, 12, 20);
 
-    addTableToWorksheet(sheet, "#twitter-comments-table-container", 1, 40);
-    addTableToWorksheet(sheet, "#twitter-profile-table-container", 1, 60);
+    // addTableToWorksheet(sheet, "#twitter-comments-table-container", 1, 40);
+    // addTableToWorksheet(sheet, "#twitter-profile-table-container", 1, 60);
     addTableToWorksheet(sheet, "#instagram-profile-table-container", 1, 80);
     addTableToWorksheet(sheet, "#youtube-profile-table-container", 1, 100);
 
@@ -571,11 +581,69 @@ const Analysis = () => {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const handleOnSaveReport = () => {
+    console.log("dict ", dict);
+    console.log("data dict ", dataDict);
     saveReport();
   };
 
   const saveReport = () => {
-    // console.log(JSON.stringify(savingData));
+    console.log("data dict inside if statement: >>>>>>>>> ", dataDict.hashtag_stats);
+    savingData = {
+      user_id: userId,
+      report_data: [{
+        hashtag: dataDict.hashtag,
+        hashtag_stats: [
+          {
+            youtube_stats: dataDict.hashtag_stats[0].youtube_stats.length > 0
+              ? {
+                  current_status: dataDict.hashtag_stats[0].youtube_stats.map(
+                    (status) => ({
+                      current_date: status.current_date,
+                      views_count: status.views_count,
+                      subscriber_count: status.subscriber_count,
+                      video_count: status.video_count,
+                    })
+                  ),
+                }
+              : {},
+            instagram_stats: dataDict.hashtag_stats[0].instagram_stats.length > 0
+              ? {
+                  current_status: dataDict.hashtag_stats[0].instagram_stats.map(
+                    (status) => ({
+                      current_date: status.current_date,
+                      followers: status.followers,
+                      followings: status.followings,
+                      posts: status.posts,
+                    })
+                  ),
+                }
+              : {},
+            // twitter_stats: dataDict.hashtag_stats.twitter_stats.length > 0
+            //   ? {
+            //       current_status: dataDict.hashtag_stats.twitter_stats.current_status.map(
+            //         (status) => ({
+            //           current_date: status.current_date,
+            //           followers: status.followers,
+            //           followings: status.followings,
+            //         })
+            //       ),
+            //       joining_date: dataDict.hashtag_stats.joining_date,
+            //       comments: hashtagStat.twitter_stats.comments.map((comment) => ({
+            //         text: comment.text,
+            //         url: comment.url,
+            //         comments: comment.comments,
+            //         likes: comment.likes,
+            //         retweets: comment.retweets,
+            //         comment_date: comment.comment_date,
+            //       })),
+            //     }
+            //   : {},
+            twitter_stats : {}
+          },
+        ],
+      }],
+    };
+    console.log("The saving data : ",JSON.stringify(savingData));
     fetch("/api/save-analysis-reports", {
       method: "POST",
       headers: {
@@ -696,7 +764,7 @@ const Analysis = () => {
                   <Legend />
                   <Line type="monotone" dataKey="likes" stroke="#8884d8" />
                   <Line type="monotone" dataKey="retweets" stroke="#82ca9d" />
-                  <Line type="monotone" dataKey="comments" stroke="#ffc658" />
+                  {/* <Line type="monotone" dataKey="comments" stroke="#ffc658" /> */}
                   <Brush dataKey="name" height={30} stroke="#8884d8" />
                 </LineChart>
               </ResponsiveContainer>
@@ -747,22 +815,24 @@ const Analysis = () => {
             <div id="youtube-profile-container">
               <h1>YouTube Profile</h1>
               <ResponsiveContainer width={800} height={500}>
-              <LineChart margin={{ top: 20, right: 20, left: 20, bottom: 10 }}>
-                <CartesianGrid stroke="#f5f5f5" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="subscriberChanging"
-                  stroke="#8884d8"
-                  name={hashtag}
-                  data={youtube_subscribers_change}
-                />
-                {/* <Brush data={instagram_status_date} height={30} stroke="#8884d8" /> */}
-              </LineChart>
-            </ResponsiveContainer>
+                <LineChart
+                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="subscriberChanging"
+                    stroke="#8884d8"
+                    name={hashtag}
+                    data={youtube_subscribers_change}
+                  />
+                  {/* <Brush data={instagram_status_date} height={30} stroke="#8884d8" /> */}
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "row" }}>
@@ -777,7 +847,7 @@ const Analysis = () => {
                     <th>Comment Date</th>
                     <th>Likes</th>
                     <th>Retweets</th>
-                    <th>Comments</th>
+                    {/* <th>Comments</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -786,7 +856,7 @@ const Analysis = () => {
                       <td>{comment.name}</td>
                       <td>{comment.likes}</td>
                       <td>{comment.retweets}</td>
-                      <td>{comment.comments}</td>
+                      {/* <td>{comment.comments}</td> */}
                     </tr>
                   ))}
                 </tbody>

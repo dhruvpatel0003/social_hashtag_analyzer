@@ -15,6 +15,7 @@ import UploadFileToAnalysis from "./components/UploadFileToAnalysis";
 import Payment from "./components/Payment";
 import Success from "./components/Success";
 import Cancel from "./components/Cancel";
+import { DataProvider } from "./components/DataContext";
 
 const router = createBrowserRouter([
   {
@@ -55,29 +56,33 @@ const router = createBrowserRouter([
   },
   {
     // path:'/reset-password/:token',
-    path:'/reset-password/:email/:token',
-    element:<ResetPasswordPage />
+    path: "/reset-password/:email/:token",
+    element: <ResetPasswordPage />,
   },
   {
-    path:'/view-reports',
-    element:<ViewReport />
+    path: "/view-reports",
+    element: <ViewReport />,
   },
   {
-    path:'/success',
-    element:<Success />
+    path: "/success",
+    element: <Success />,
   },
   {
-    path:'/cancel',
-    element: <Cancel />
+    path: "/cancel",
+    element: <Cancel />,
   },
   {
-    path:'/upload-file-to-analysis',
-    element : <UploadFileToAnalysis />
-  }
+    path: "/upload-file-to-analysis",
+    element: <UploadFileToAnalysis />,
+  },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <DataProvider>
+      <RouterProvider router={router} />
+    </DataProvider>
+  );
 }
 
 export default App;
